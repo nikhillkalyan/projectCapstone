@@ -1,0 +1,1 @@
+export { FavoriteCourses as default } from './EnrolledCourses';
