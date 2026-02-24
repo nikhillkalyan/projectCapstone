@@ -1,172 +1,256 @@
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Award, ArrowRight, Zap, Star, ChevronDown, Code, Cloud, Shield, BarChart3 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, NAVY, NAVY2, DANGER } from '../theme';
 
 const categories = [
-  { name: 'AI & Machine Learning', icon: '🤖', color: 'badge-aiml', courses: 12, key: 'AIML' },
-  { name: 'Cloud Computing', icon: '☁️', color: 'badge-cloud', courses: 8, key: 'Cloud' },
-  { name: 'Data Science', icon: '📊', color: 'badge-datascience', courses: 10, key: 'DataScience' },
-  { name: 'Cybersecurity', icon: '🔒', color: 'badge-cybersecurity', courses: 7, key: 'Cybersecurity' },
+  { name: 'AI & Machine Learning', icon: '🤖', key: 'AIML', color: ACCENT2, bg: 'rgba(108,127,216,0.12)', border: 'rgba(108,127,216,0.25)', courses: 12 },
+  { name: 'Cloud Computing', icon: '☁️', key: 'Cloud', color: TEAL, bg: 'rgba(78,205,196,0.12)', border: 'rgba(78,205,196,0.25)', courses: 8 },
+  { name: 'Data Science', icon: '📊', key: 'DataScience', color: GOLD, bg: 'rgba(212,168,67,0.12)', border: 'rgba(212,168,67,0.25)', courses: 10 },
+  { name: 'Cybersecurity', icon: '🔒', key: 'Cybersecurity', color: DANGER, bg: 'rgba(231,76,111,0.12)', border: 'rgba(231,76,111,0.25)', courses: 7 },
 ];
 
 const stats = [
-  { value: '10,000+', label: 'Students Enrolled' },
-  { value: '200+', label: 'Expert Instructors' },
-  { value: '500+', label: 'Courses Available' },
-  { value: '95%', label: 'Completion Rate' },
+  { value: '10,000+', label: 'Students Enrolled', icon: PeopleRoundedIcon, color: ACCENT2 },
+  { value: '200+', label: 'Expert Instructors', icon: SchoolRoundedIcon, color: TEAL },
+  { value: '500+', label: 'Courses Available', icon: EmojiEventsRoundedIcon, color: GOLD },
+  { value: '95%', label: 'Completion Rate', icon: TrendingUpRoundedIcon, color: DANGER },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen hero-gradient grid-bg relative overflow-hidden">
+    <Box className="hero-bg grid-bg" sx={{ minHeight: '100vh', overflowX: 'hidden' }}>
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5" style={{ background: 'rgba(20, 25, 40, 0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(172, 186, 196, 0.1)' }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #6B7FD4, #4ECDC4)' }}>
-              <Zap size={18} className="text-white" />
-            </div>
-            <span className="text-xl font-bold gradient-text" style={{ fontFamily: 'Syne' }}>EduForge</span>
-          </div>
+      <Box component="nav" sx={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        px: { xs: 2, md: 6 }, py: 2,
+        background: 'rgba(8,12,20,0.8)', backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(139,155,180,0.08)',
+      }}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box className="anim-pulse-glow" sx={{
+              width: 36, height: 36, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `linear-gradient(135deg, ${ACCENT} 0%, ${TEAL} 100%)`,
+            }}>
+              <BoltRoundedIcon sx={{ color: '#fff', fontSize: 20 }} />
+            </Box>
+            <Typography className="gradient-text" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.15rem' }}>
+              Ed Tech
+            </Typography>
+          </Box>
 
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/student/login')} className="btn-outline px-5 py-2 rounded-xl text-sm">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Button variant="outlined" color="primary" size="small" onClick={() => navigate('/student/login')}
+              sx={{ px: 2.2, py: 0.8, fontSize: '0.8rem', display: { xs: 'none', sm: 'flex' } }}>
               Student Login
-            </button>
-            <button onClick={() => navigate('/instructor/login')} className="btn-outline px-5 py-2 rounded-xl text-sm">
+            </Button>
+            <Button variant="outlined" color="primary" size="small" onClick={() => navigate('/instructor/login')}
+              sx={{ px: 2.2, py: 0.8, fontSize: '0.8rem', display: { xs: 'none', sm: 'flex' } }}>
               Instructor Login
-            </button>
-            <button onClick={() => navigate('/student/signup')} className="btn-sand px-5 py-2 rounded-xl text-sm">
+            </Button>
+            <Button variant="contained" color="secondary" size="small" onClick={() => navigate('/student/signup')}
+              sx={{ px: 2.5, py: 0.85, fontSize: '0.8rem' }}>
               Get Started
-            </button>
-          </div>
-        </div>
-      </nav>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Hero */}
-      <section className="pt-40 pb-24 px-8 relative">
-        <div className="max-w-7xl mx-auto text-center">
+      <Box component="section" sx={{ pt: { xs: 14, md: 20 }, pb: { xs: 10, md: 16 }, px: { xs: 2, md: 4 }, textAlign: 'center', position: 'relative' }}>
+        <Container maxWidth="lg">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 animate-fadeInUp" style={{ background: 'rgba(107, 127, 212, 0.15)', border: '1px solid rgba(107, 127, 212, 0.3)' }}>
-            <Star size={14} style={{ color: '#D4A843' }} fill="#D4A843" />
-            <span className="text-sm font-semibold" style={{ color: 'var(--accent-light)' }}>India's Top Tech Learning Platform</span>
-          </div>
+          <Box className="anim-fadeInUp" sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+            <Chip
+              icon={<StarRoundedIcon sx={{ color: `${GOLD} !important`, fontSize: '14px !important' }} />}
+              label="India's Top Tech Learning Platform"
+              sx={{
+                background: 'rgba(108,127,216,0.12)', border: '1px solid rgba(108,127,216,0.28)',
+                color: ACCENT2, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.78rem',
+                py: 2, px: 1,
+              }}
+            />
+          </Box>
 
-          <h1 className="text-6xl lg:text-8xl font-black mb-8 leading-none animate-fadeInUp delay-100" style={{ fontFamily: 'Syne', letterSpacing: '-2px' }}>
-            <span className="gradient-text">Forge Your</span>
+          {/* Headline */}
+          <Typography className="anim-fadeInUp delay-1" variant="h1"
+            sx={{ fontSize: { xs: '2.8rem', sm: '4rem', md: '5.5rem', lg: '6.5rem' }, lineHeight: 1.05, letterSpacing: '-2px', mb: 3 }}>
+            <Box component="span" className="gradient-text">Forge Your</Box>
             <br />
-            <span style={{ color: 'var(--cream)' }}>Tech Career</span>
-          </h1>
+            <Box component="span" sx={{ color: CREAM }}>Tech Career</Box>
+          </Typography>
 
-          <p className="text-xl max-w-2xl mx-auto mb-12 leading-relaxed animate-fadeInUp delay-200" style={{ color: 'var(--steel)' }}>
-            Learn from industry experts in AI/ML, Cloud, Data Science & Cybersecurity. 
+          <Typography className="anim-fadeInUp delay-2"
+            sx={{ fontSize: { xs: '1rem', md: '1.15rem' }, color: STEEL, maxWidth: 580, mx: 'auto', lineHeight: 1.75, mb: 5.5 }}>
+            Learn from industry experts in AI/ML, Cloud, Data Science & Cybersecurity.
             Earn certificates that matter. Build projects that impress.
-          </p>
+          </Typography>
 
-          <div className="flex items-center justify-center gap-4 animate-fadeInUp delay-300">
-            <button
+          <Box className="anim-fadeInUp delay-3" sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Button variant="contained" color="secondary" size="large"
+              endIcon={<ArrowForwardRoundedIcon />}
               onClick={() => navigate('/student/signup')}
-              className="btn-sand px-8 py-4 rounded-2xl text-lg flex items-center gap-3 group"
-            >
+              sx={{ px: 4, py: 1.6, fontSize: '1rem', borderRadius: 3,
+                background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`,
+                color: NAVY, '&:hover': { boxShadow: `0 12px 32px rgba(226,217,190,0.35)` } }}>
               Start Learning Free
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
+            </Button>
+            <Button variant="outlined" color="primary" size="large"
               onClick={() => navigate('/instructor/signup')}
-              className="btn-outline px-8 py-4 rounded-2xl text-lg"
-            >
+              sx={{ px: 4, py: 1.6, fontSize: '1rem', borderRadius: 3 }}>
               Become an Instructor
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Box>
 
-        {/* Floating elements */}
-        <div className="absolute left-16 top-1/2 animate-float" style={{ animationDelay: '0.5s', opacity: 0.6 }}>
-          <div className="glass rounded-2xl p-4 w-48">
-            <div className="text-xs mb-1" style={{ color: 'var(--steel)' }}>Course Completed</div>
-            <div className="font-bold text-sm" style={{ color: 'var(--cream)', fontFamily: 'Syne' }}>ML Fundamentals</div>
-            <div className="progress-bar mt-2"><div className="progress-fill" style={{ width: '100%' }} /></div>
-          </div>
-        </div>
-        <div className="absolute right-16 top-1/3 animate-float" style={{ animationDelay: '1s', opacity: 0.6 }}>
-          <div className="glass rounded-2xl p-4 w-44">
-            <div className="flex items-center gap-2 mb-2">
-              <Award size={18} style={{ color: '#D4A843' }} />
-              <span className="text-xs font-bold" style={{ color: 'var(--sand)', fontFamily: 'Syne' }}>Certificate Earned!</span>
-            </div>
-            <div className="text-xs" style={{ color: 'var(--steel)' }}>AWS Cloud Architect</div>
-          </div>
-        </div>
-      </section>
+          {/* Floating cards */}
+          <Box className="anim-float" sx={{
+            display: { xs: 'none', lg: 'block' },
+            position: 'absolute', left: 40, top: '55%', transform: 'translateY(-50%)',
+            background: 'rgba(22,27,39,0.85)', backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(139,155,180,0.12)', borderRadius: 3, p: 2, width: 200,
+          }}>
+            <Typography sx={{ color: STEEL, fontSize: '0.72rem', mb: 0.5 }}>Course Completed</Typography>
+            <Typography sx={{ color: CREAM, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.85rem', mb: 1 }}>
+              ML Fundamentals
+            </Typography>
+            <LinearProgress variant="determinate" value={100} sx={{ borderRadius: 2, height: 5 }} />
+            <Typography sx={{ color: TEAL, fontSize: '0.7rem', mt: 0.8, fontWeight: 600 }}>✓ 100% Complete</Typography>
+          </Box>
+
+          <Box className="anim-float delay-2" sx={{
+            display: { xs: 'none', lg: 'block' },
+            position: 'absolute', right: 40, top: '40%',
+            background: 'rgba(22,27,39,0.85)', backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(212,168,67,0.2)', borderRadius: 3, p: 2, width: 190,
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
+              <EmojiEventsRoundedIcon sx={{ color: GOLD, fontSize: 18 }} />
+              <Typography sx={{ color: GOLD, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.78rem' }}>Certificate Earned!</Typography>
+            </Box>
+            <Typography sx={{ color: STEEL, fontSize: '0.73rem' }}>AWS Cloud Architect</Typography>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Stats */}
-      <section className="py-16 px-8 border-t border-b" style={{ borderColor: 'rgba(172, 186, 196, 0.1)' }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-8">
-          {stats.map((s, i) => (
-            <div key={i} className="text-center animate-fadeInUp" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="text-4xl font-black mb-2 gradient-text" style={{ fontFamily: 'Syne' }}>{s.value}</div>
-              <div className="text-sm" style={{ color: 'var(--steel)' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <Box component="section" sx={{ py: { xs: 6, md: 10 }, borderTop: '1px solid rgba(139,155,180,0.08)', borderBottom: '1px solid rgba(139,155,180,0.08)' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={3} justifyContent="center">
+            {stats.map(({ value, label, icon: Icon, color }, i) => (
+              <Grid item xs={6} md={3} key={label}>
+                <Box className={`anim-fadeInUp delay-${i + 1}`} sx={{ textAlign: 'center', py: 2 }}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2.5, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
+                    <Icon sx={{ color, fontSize: 24 }} />
+                  </Box>
+                  <Typography className="gradient-text" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.2rem' }, lineHeight: 1 }}>
+                    {value}
+                  </Typography>
+                  <Typography sx={{ color: STEEL, fontSize: '0.82rem', mt: 0.5 }}>{label}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
       {/* Categories */}
-      <section className="py-20 px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-4xl font-black mb-4" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>
+      <Box component="section" sx={{ py: { xs: 8, md: 12 }, px: { xs: 2, md: 4 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 7 }}>
+            <Typography variant="h2" sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, color: CREAM, mb: 1.5 }}>
               What You'll Learn
-            </h2>
-            <p style={{ color: 'var(--steel)' }}>Industry-focused courses designed for the future of tech</p>
-          </div>
+            </Typography>
+            <Typography sx={{ color: STEEL, fontSize: '1rem' }}>
+              Industry-focused courses designed for the future of tech
+            </Typography>
+          </Box>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <Grid container spacing={3}>
             {categories.map((cat, i) => (
-              <div key={cat.key} className="glass rounded-2xl p-6 text-center group hover:scale-105 transition-all duration-300 cursor-pointer animate-fadeInUp"
-                style={{ animationDelay: `${i * 0.1}s` }}
-                onClick={() => navigate('/student/signup')}>
-                <div className="text-4xl mb-4">{cat.icon}</div>
-                <h3 className="font-bold text-sm mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{cat.name}</h3>
-                <span className={`badge ${cat.color}`}>{cat.courses} Courses</span>
-              </div>
+              <Grid item xs={12} sm={6} lg={3} key={cat.key}>
+                <Box
+                  className={`anim-fadeInUp delay-${i + 1}`}
+                  onClick={() => navigate('/student/signup')}
+                  sx={{
+                    p: 3.5, borderRadius: 4, textAlign: 'center', cursor: 'pointer',
+                    background: cat.bg, border: `1px solid ${cat.border}`,
+                    transition: 'all 0.3s cubic-bezier(.22,.68,0,1.2)',
+                    '&:hover': { transform: 'translateY(-8px) scale(1.02)', boxShadow: `0 20px 40px ${cat.border}` },
+                  }}>
+                  <Typography sx={{ fontSize: '2.5rem', mb: 1.5 }}>{cat.icon}</Typography>
+                  <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.95rem', mb: 1 }}>
+                    {cat.name}
+                  </Typography>
+                  <Chip label={`${cat.courses} Courses`} size="small"
+                    sx={{ background: `${cat.color}22`, color: cat.color, border: `1px solid ${cat.border}`, fontSize: '0.68rem', fontFamily: '"Syne",sans-serif', fontWeight: 600 }} />
+                </Box>
+              </Grid>
             ))}
-          </div>
-        </div>
-      </section>
+          </Grid>
+        </Container>
+      </Box>
 
       {/* CTA */}
-      <section className="py-20 px-8">
-        <div className="max-w-4xl mx-auto text-center glass rounded-3xl p-16">
-          <div className="text-5xl mb-6 animate-float">🚀</div>
-          <h2 className="text-4xl font-black mb-4" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>
-            Ready to Forge Your Future?
-          </h2>
-          <p className="mb-10" style={{ color: 'var(--steel)' }}>
-            Join thousands of students learning cutting-edge tech skills
-          </p>
-          <div className="flex justify-center gap-4">
-            <button onClick={() => navigate('/student/signup')} className="btn-sand px-8 py-4 rounded-2xl flex items-center gap-2">
-              <BookOpen size={20} /> Join as Student
-            </button>
-            <button onClick={() => navigate('/instructor/signup')} className="btn-primary px-8 py-4 rounded-2xl flex items-center gap-2">
-              <Users size={20} /> Join as Instructor
-            </button>
-          </div>
-        </div>
-      </section>
+      <Box component="section" sx={{ py: { xs: 6, md: 10 }, px: { xs: 2, md: 4 } }}>
+        <Container maxWidth="md">
+          <Box sx={{
+            textAlign: 'center', borderRadius: 5, p: { xs: 5, md: 8 },
+            background: 'rgba(22,27,39,0.7)', backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(139,155,180,0.12)',
+            position: 'relative', overflow: 'hidden',
+            '&::before': {
+              content: '""', position: 'absolute', top: -80, right: -80,
+              width: 240, height: 240, borderRadius: '50%',
+              background: `radial-gradient(circle, ${ACCENT}22 0%, transparent 70%)`,
+            },
+          }}>
+            <Typography className="anim-float" sx={{ fontSize: '3rem', mb: 2.5 }}>🚀</Typography>
+            <Typography variant="h2" sx={{ fontSize: { xs: '1.6rem', md: '2.2rem' }, color: CREAM, mb: 2 }}>
+              Ready to Forge Your Future?
+            </Typography>
+            <Typography sx={{ color: STEEL, mb: 4.5, fontSize: '0.98rem' }}>
+              Join thousands of students learning cutting-edge tech skills
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Button variant="contained" color="secondary" size="large"
+                startIcon={<SchoolRoundedIcon />} onClick={() => navigate('/student/signup')}
+                sx={{ px: 3.5, py: 1.4, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY }}>
+                Join as Student
+              </Button>
+              <Button variant="contained" color="primary" size="large"
+                startIcon={<PeopleRoundedIcon />} onClick={() => navigate('/instructor/signup')}
+                sx={{ px: 3.5, py: 1.4 }}>
+                Join as Instructor
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Footer */}
-      <footer className="py-8 px-8 border-t text-center" style={{ borderColor: 'rgba(172, 186, 196, 0.1)' }}>
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6B7FD4, #4ECDC4)' }}>
-            <Zap size={14} className="text-white" />
-          </div>
-          <span className="font-bold gradient-text" style={{ fontFamily: 'Syne' }}>EduForge</span>
-        </div>
-        <p className="text-sm" style={{ color: 'var(--steel)' }}>© 2024 EduForge. Built for the next generation of tech professionals.</p>
-      </footer>
-    </div>
+      <Box component="footer" sx={{ py: 5, px: 4, borderTop: '1px solid rgba(139,155,180,0.08)', textAlign: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 1.5 }}>
+          <Box sx={{ width: 28, height: 28, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${ACCENT} 0%, ${TEAL} 100%)` }}>
+            <BoltRoundedIcon sx={{ color: '#fff', fontSize: 16 }} />
+          </Box>
+          <Typography className="gradient-text" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '0.95rem' }}>Ed Tech</Typography>
+        </Box>
+      </Box>
+    </Box>
   );
 }

@@ -1,5 +1,36 @@
 import { useState } from 'react';
-import { CheckCircle, XCircle, Award, ChevronRight, RefreshCw } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, DANGER, GOLD } from '../../theme';
+
+function ScoreRing({ score }) {
+  const color = score >= 70 ? TEAL : DANGER;
+  return (
+    <Box sx={{ position: 'relative', display: 'inline-flex', mb: 2 }}>
+      <CircularProgress variant="determinate" value={100} size={110}
+        sx={{ color: 'rgba(139,155,180,0.1)', position: 'absolute', top: 0, left: 0 }} />
+      <CircularProgress variant="determinate" value={score} size={110}
+        sx={{ color, '& .MuiCircularProgress-circle': { strokeLinecap: 'round' } }} />
+      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.5rem', color }}>
+          {score}%
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
 
 export default function Assessment({ assessment, onComplete, onClose }) {
   const [answers, setAnswers] = useState({});
@@ -9,6 +40,9 @@ export default function Assessment({ assessment, onComplete, onClose }) {
 
   const questions = assessment.questions;
   const totalQ = questions.length;
+  const answeredCount = Object.keys(answers).length;
+  const currentQ = questions[current];
+  const passed = score >= 70;
 
   const selectAnswer = (qIdx, optIdx) => {
     if (submitted) return;
@@ -17,9 +51,7 @@ export default function Assessment({ assessment, onComplete, onClose }) {
 
   const handleSubmit = () => {
     let correct = 0;
-    questions.forEach((q, i) => {
-      if (answers[i] === q.correct) correct++;
-    });
+    questions.forEach((q, i) => { if (answers[i] === q.correct) correct++; });
     const pct = Math.round((correct / totalQ) * 100);
     setScore(pct);
     setSubmitted(true);
@@ -27,151 +59,166 @@ export default function Assessment({ assessment, onComplete, onClose }) {
   };
 
   const handleReset = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setScore(null);
-    setCurrent(0);
+    setAnswers({}); setSubmitted(false); setScore(null); setCurrent(0);
   };
 
-  const answeredCount = Object.keys(answers).length;
-  const currentQ = questions[current];
-
-  if (submitted) {
+  if (submitted && score !== null) {
     return (
-      <div className="animate-scaleIn text-center p-8">
-        <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl`}
-          style={{ background: score >= 70 ? 'rgba(78, 205, 196, 0.2)' : 'rgba(231, 76, 111, 0.2)', border: `2px solid ${score >= 70 ? '#4ECDC4' : '#E74C6F'}` }}>
-          {score >= 70 ? '🎉' : '📚'}
-        </div>
-        
-        <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>
-          {score >= 70 ? 'Great Job!' : 'Keep Practicing!'}
-        </h2>
-        <p className="mb-6" style={{ color: 'var(--steel)' }}>
-          You scored <span className="text-2xl font-bold" style={{ color: score >= 70 ? '#4ECDC4' : '#E74C6F' }}>{score}%</span>
-          {' '}({Math.round(score * totalQ / 100)}/{totalQ} correct)
-        </p>
+      <Box className="anim-scaleIn" sx={{ textAlign: 'center', py: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <ScoreRing score={score} />
+        </Box>
+        <Box sx={{ mb: 0.5 }}>
+          {passed
+            ? <EmojiEventsRoundedIcon sx={{ fontSize: 32, color: GOLD }} />
+            : <AutoStoriesRoundedIcon sx={{ fontSize: 32, color: ACCENT2 }} />}
+        </Box>
+        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.4rem', color: CREAM, mb: 0.5 }}>
+          {passed ? 'Excellent Work!' : 'Keep Practicing!'}
+        </Typography>
+        <Typography sx={{ color: STEEL, mb: 3, fontSize: '0.9rem' }}>
+          {Math.round(score * totalQ / 100)}/{totalQ} correct answers
+        </Typography>
 
-        {/* Answer review */}
-        <div className="text-left space-y-3 mb-8 max-h-64 overflow-y-auto">
+        {/* Review */}
+        <Box sx={{ textAlign: 'left', mb: 3, maxHeight: 260, overflowY: 'auto', pr: 1,
+          '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.2)', borderRadius: 2 } }}>
           {questions.map((q, i) => {
             const isCorrect = answers[i] === q.correct;
             return (
-              <div key={i} className="p-3 rounded-xl text-sm" style={{ 
-                background: isCorrect ? 'rgba(78, 205, 196, 0.1)' : 'rgba(231, 76, 111, 0.1)',
-                border: `1px solid ${isCorrect ? 'rgba(78, 205, 196, 0.3)' : 'rgba(231, 76, 111, 0.3)'}`
+              <Box key={i} sx={{
+                p: 1.5, borderRadius: 2.5, mb: 1,
+                background: isCorrect ? 'rgba(78,205,196,0.08)' : 'rgba(231,76,111,0.08)',
+                border: `1px solid ${isCorrect ? 'rgba(78,205,196,0.25)' : 'rgba(231,76,111,0.25)'}`,
               }}>
-                <div className="flex items-start gap-2">
-                  {isCorrect ? <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" /> : <XCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />}
-                  <div>
-                    <p style={{ color: 'var(--cream)' }}>{q.question}</p>
-                    {!isCorrect && <p className="text-xs mt-1" style={{ color: '#4ECDC4' }}>✓ {q.options[q.correct]}</p>}
-                  </div>
-                </div>
-              </div>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  {isCorrect
+                    ? <CheckCircleRoundedIcon sx={{ fontSize: 16, color: TEAL, flexShrink: 0, mt: 0.2 }} />
+                    : <CancelRoundedIcon sx={{ fontSize: 16, color: DANGER, flexShrink: 0, mt: 0.2 }} />}
+                  <Box>
+                    <Typography sx={{ color: CREAM, fontSize: '0.82rem' }}>{q.question}</Typography>
+                    {!isCorrect && (
+                      <Typography sx={{ color: TEAL, fontSize: '0.75rem', mt: 0.4 }}>
+                        ✓ {q.options[q.correct]}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
             );
           })}
-        </div>
+        </Box>
 
-        <div className="flex gap-3">
-          <button onClick={handleReset} className="btn-outline flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm">
-            <RefreshCw size={16} /> Try Again
-          </button>
-          <button onClick={onClose} className="btn-primary flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm">
-            Continue <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button variant="outlined" color="primary" startIcon={<RefreshRoundedIcon />}
+            onClick={handleReset} fullWidth sx={{ py: 1.3 }}>
+            Try Again
+          </Button>
+          <Button variant="contained" color="primary" endIcon={<ChevronRightRoundedIcon />}
+            onClick={onClose} fullWidth sx={{ py: 1.3 }}>
+            Continue
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="animate-fadeIn">
-      {/* Progress */}
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-sm" style={{ color: 'var(--steel)' }}>Question {current + 1} of {totalQ}</span>
-        <span className="text-sm" style={{ color: 'var(--accent-light)' }}>{answeredCount}/{totalQ} answered</span>
-      </div>
-      
-      <div className="progress-bar mb-6">
-        <div className="progress-fill" style={{ width: `${((current + 1) / totalQ) * 100}%` }} />
-      </div>
+    <Box className="anim-fadeIn">
+      {/* Progress header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography sx={{ color: STEEL, fontSize: '0.82rem' }}>
+          Question <b style={{ color: CREAM }}>{current + 1}</b> of {totalQ}
+        </Typography>
+        <Chip
+          label={`${answeredCount}/${totalQ} answered`}
+          size="small"
+          sx={{ background: 'rgba(108,127,216,0.15)', color: ACCENT2, border: '1px solid rgba(108,127,216,0.25)', fontSize: '0.7rem' }}
+        />
+      </Box>
+
+      <LinearProgress variant="determinate" value={((current + 1) / totalQ) * 100} sx={{ mb: 3, borderRadius: 2 }} />
 
       {/* Question */}
-      <div className="mb-6 p-5 rounded-2xl" style={{ background: 'rgba(48, 54, 79, 0.4)', border: '1px solid rgba(172, 186, 196, 0.15)' }}>
-        <p className="text-lg font-semibold leading-relaxed" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>
+      <Box sx={{
+        p: 2.5, borderRadius: 3, mb: 3,
+        background: 'rgba(13,17,23,0.5)', border: '1px solid rgba(139,155,180,0.12)',
+      }}>
+        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '1rem', color: CREAM, lineHeight: 1.6 }}>
           {currentQ.question}
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Options */}
-      <div className="space-y-3 mb-8">
-        {currentQ.options.map((opt, i) => (
-          <button
-            key={i}
-            onClick={() => selectAnswer(current, i)}
-            className={`quiz-option w-full text-left transition-all duration-200 ${answers[current] === i ? 'selected' : ''}`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all duration-200`}
-                style={{ 
-                  background: answers[current] === i ? 'var(--accent)' : 'rgba(172, 186, 196, 0.1)',
-                  color: answers[current] === i ? 'white' : 'var(--steel)',
-                  fontFamily: 'Syne'
-                }}>
-                {String.fromCharCode(65 + i)}
-              </div>
-              <span style={{ color: 'var(--cream)' }}>{opt}</span>
-            </div>
-          </button>
-        ))}
-      </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mb: 3.5 }}>
+        {currentQ.options.map((opt, i) => {
+          const selected = answers[current] === i;
+          return (
+            <Box key={i} onClick={() => selectAnswer(current, i)}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 1.8,
+                p: '14px 18px', borderRadius: 2.5, cursor: 'pointer',
+                background: selected ? 'rgba(108,127,216,0.18)' : 'rgba(30,37,53,0.6)',
+                border: `1.5px solid ${selected ? 'rgba(108,127,216,0.5)' : 'rgba(139,155,180,0.15)'}`,
+                transition: 'all 0.2s cubic-bezier(.22,.68,0,1.2)',
+                '&:hover': { borderColor: 'rgba(108,127,216,0.4)', background: 'rgba(108,127,216,0.1)', transform: 'translateX(4px)' },
+              }}>
+              <Box sx={{
+                width: 30, height: 30, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, background: selected ? ACCENT : 'rgba(139,155,180,0.1)',
+                transition: 'all 0.2s ease',
+              }}>
+                <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.72rem', color: selected ? '#fff' : STEEL }}>
+                  {String.fromCharCode(65 + i)}
+                </Typography>
+              </Box>
+              <Typography sx={{ color: CREAM, fontSize: '0.88rem', lineHeight: 1.5 }}>{opt}</Typography>
+            </Box>
+          );
+        })}
+      </Box>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setCurrent(c => Math.max(0, c - 1))}
-          disabled={current === 0}
-          className="btn-outline px-5 py-2.5 rounded-xl text-sm disabled:opacity-30"
-        >
-          ← Previous
-        </button>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Button variant="outlined" color="primary" startIcon={<ChevronLeftRoundedIcon />}
+          onClick={() => setCurrent(c => Math.max(0, c - 1))} disabled={current === 0}
+          sx={{ px: 2.5 }}>
+          Previous
+        </Button>
 
-        <div className="flex gap-2">
+        {/* Dot indicators */}
+        <Box sx={{ display: 'flex', gap: 0.8 }}>
           {questions.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className="w-2 h-2 rounded-full transition-all duration-200"
-              style={{ background: i === current ? 'var(--accent)' : answers[i] !== undefined ? 'var(--success)' : 'rgba(172, 186, 196, 0.3)' }}
-            />
+            <Box key={i} onClick={() => setCurrent(i)}
+              sx={{
+                width: i === current ? 20 : 8, height: 8, borderRadius: 4, cursor: 'pointer',
+                background: i === current ? ACCENT : answers[i] !== undefined ? `${TEAL}80` : 'rgba(139,155,180,0.25)',
+                transition: 'all 0.3s ease',
+              }} />
           ))}
-        </div>
+        </Box>
 
         {current < totalQ - 1 ? (
-          <button
-            onClick={() => setCurrent(c => Math.min(totalQ - 1, c + 1))}
-            className="btn-primary px-5 py-2.5 rounded-xl text-sm"
-          >
-            Next →
-          </button>
+          <Button variant="contained" color="primary" endIcon={<ChevronRightRoundedIcon />}
+            onClick={() => setCurrent(c => Math.min(totalQ - 1, c + 1))} sx={{ px: 2.5 }}>
+            Next
+          </Button>
         ) : (
-          <button
+          <Button variant="contained" color="secondary"
+            startIcon={<EmojiEventsRoundedIcon />}
             onClick={handleSubmit}
             disabled={answeredCount < totalQ}
-            className="btn-sand px-5 py-2.5 rounded-xl text-sm disabled:opacity-40"
-          >
-            <Award size={15} className="inline mr-1" />
+            sx={{ px: 2.5, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: '#1a1a2e', '&:disabled': { opacity: 0.4 } }}>
             Submit
-          </button>
+          </Button>
         )}
-      </div>
+      </Box>
 
       {answeredCount < totalQ && current === totalQ - 1 && (
-        <p className="text-center text-xs mt-3" style={{ color: 'var(--steel)' }}>
-          Please answer all {totalQ - answeredCount} remaining question{totalQ - answeredCount > 1 ? 's' : ''}
-        </p>
+        <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.78rem', mt: 1.5 }}>
+          {totalQ - answeredCount} question{totalQ - answeredCount > 1 ? 's' : ''} remaining
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 }

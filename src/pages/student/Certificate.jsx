@@ -3,7 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import StudentSidebar from '../../components/layout/StudentSidebar';
-import { Download, ArrowLeft, Award, Star } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import Rating from '@mui/material/Rating';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, NAVY } from '../../theme';
+
+const SIDEBAR_W = 248;
 
 export default function Certificate() {
   const { courseId } = useParams();
@@ -17,164 +28,142 @@ export default function Certificate() {
 
   if (!course || !completedData) {
     return (
-      <div className="flex">
+      <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
         <StudentSidebar />
-        <div className="main-content flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xl mb-4" style={{ color: 'var(--steel)' }}>Certificate not available</p>
-            <p className="text-sm mb-6" style={{ color: 'var(--steel)' }}>Complete the course to earn your certificate</p>
-            <button onClick={() => navigate(`/student/course/${courseId}`)} className="btn-primary px-6 py-3 rounded-2xl">
-              Go to Course
-            </button>
-          </div>
-        </div>
-      </div>
+        <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: { xs: 7, md: 0 } }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography sx={{ fontSize: '3rem', mb: 2 }}>🎓</Typography>
+            <Typography variant="h6" sx={{ color: CREAM, mb: 1.5 }}>Certificate not available</Typography>
+            <Typography sx={{ color: STEEL, mb: 3, fontSize: '0.9rem' }}>Complete the course to earn your certificate</Typography>
+            <Button variant="contained" color="primary" onClick={() => navigate(`/student/course/${courseId}`)}>Go to Course</Button>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
-  const completedDate = new Date(completedData.completedAt).toLocaleDateString('en-IN', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  });
+  const completedDate = new Date(completedData.completedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+  const starCount = Math.round(completedData.score / 20);
 
   const handleDownload = () => {
-    // Create a canvas-based download
-    const cert = certRef.current;
-    if (!cert) return;
-    
-    // Use html2canvas-like approach with window.print
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
-      <html>
-      <head>
-        <title>Certificate - ${course.title}</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-          body { margin: 0; padding: 40px; background: #1a1f35; font-family: 'DM Sans', sans-serif; }
-          .cert { width: 900px; min-height: 620px; background: linear-gradient(135deg, #1a1f35 0%, #252d4a 50%, #1a1f35 100%); 
-                  border: 3px solid #E1D9BC; position: relative; padding: 60px; box-sizing: border-box;
-                  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-          .inner-border { position: absolute; top: 12px; bottom: 12px; left: 12px; right: 12px; border: 1px solid rgba(225,217,188,0.3); pointer-events: none; }
-          h1 { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800; color: #E1D9BC; margin: 0 0 8px; }
-          .subtitle { color: #ACBAC4; font-size: 16px; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 4px; }
-          .student-name { font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800; 
-                          background: linear-gradient(135deg, #F0F0DB, #E1D9BC, #8FA4E8);
-                          -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 16px 0; }
-          .body-text { color: rgba(240,240,219,0.8); font-size: 16px; margin-bottom: 12px; }
-          .course-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: #F0F0DB; margin: 8px 0; }
-          .score { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: #4ECDC4; margin: 16px 0; }
-          .footer { display: flex; justify-content: space-between; width: 100%; margin-top: 50px; padding-top: 24px; border-top: 1px solid rgba(225,217,188,0.2); }
-          .footer-item { text-align: center; }
-          .footer-label { color: #ACBAC4; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
-          .footer-value { color: #F0F0DB; font-size: 13px; font-weight: 600; }
-          .emoji { font-size: 48px; margin-bottom: 16px; }
-          @media print { body { background: white; padding: 0; } }
-        </style>
-      </head>
-      <body>
-        <div class="cert">
-          <div class="inner-border"></div>
-          <div class="emoji">🏆</div>
-          <h1>CERTIFICATE</h1>
-          <div class="subtitle">of completion</div>
-          <div class="body-text">This is to certify that</div>
-          <div class="student-name">${user.name}</div>
-          <div class="body-text">has successfully completed the course</div>
-          <div class="course-title">${course.title}</div>
-          <div class="body-text" style="margin-top:8px">with a grand assessment score of</div>
-          <div class="score">${completedData.score}%</div>
-          <div class="footer">
-            <div class="footer-item">
-              <div class="footer-label">Instructor</div>
-              <div class="footer-value">${course.instructorName}</div>
-            </div>
-            <div class="footer-item">
-              <div class="footer-label">EduForge LMS</div>
-              <div class="footer-value">eduforge.in</div>
-            </div>
-            <div class="footer-item">
-              <div class="footer-label">Completed On</div>
-              <div class="footer-value">${completedDate}</div>
-            </div>
-          </div>
+      <html><head><title>Certificate - ${course.title}</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+        body { margin:0; padding:40px; background:#0D1117; font-family:'DM Sans',sans-serif; display:flex; justify-content:center; }
+        .cert { width:860px; min-height:580px; background:linear-gradient(135deg,#0D1117 0%,#161B27 50%,#0D1117 100%); border:2.5px solid #E2D9BE; position:relative; padding:60px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .inner { position:absolute; top:12px; bottom:12px; left:12px; right:12px; border:1px solid rgba(226,217,190,0.25); }
+        h1 { font-family:'Syne',sans-serif; font-size:40px; font-weight:800; color:#E2D9BE; margin:0 0 6px; }
+        .sub { color:#8B9BB4; font-size:13px; letter-spacing:4px; text-transform:uppercase; margin-bottom:36px; }
+        .name { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; background:linear-gradient(135deg,#F0EED8,#E2D9BE,#8FA4E8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:12px 0; }
+        .body { color:rgba(240,238,216,0.8); font-size:15px; margin-bottom:10px; }
+        .course { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; color:#F0EED8; margin:6px 0; }
+        .score { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; color:#4ECDC4; margin:14px 0; }
+        .footer { display:flex; justify-content:space-between; width:100%; margin-top:44px; padding-top:20px; border-top:1px solid rgba(226,217,190,0.2); }
+        .fl { color:#8B9BB4; font-size:10px; text-transform:uppercase; letter-spacing:2px; margin-bottom:5px; }
+        .fv { color:#F0EED8; font-size:12px; font-weight:600; font-family:'Syne',sans-serif; }
+        @media print { body { background:white; } }
+      </style></head>
+      <body><div class="cert"><div class="inner"></div>
+        <div style="font-size:44px;margin-bottom:14px">🏆</div>
+        <h1>CERTIFICATE</h1><div class="sub">of completion</div>
+        <div class="body">This is to certify that</div>
+        <div class="name">${user.name}</div>
+        <div class="body">has successfully completed</div>
+        <div class="course">${course.title}</div>
+        <div class="body" style="margin-top:6px">with a grand assessment score of</div>
+        <div class="score">${completedData.score}%</div>
+        <div class="footer">
+          <div><div class="fl">Instructor</div><div class="fv">${course.instructorName}</div></div>
+          <div><div class="fl">EduForge LMS</div><div class="fv">eduforge.in</div></div>
+          <div><div class="fl">Completed On</div><div class="fv">${completedDate}</div></div>
         </div>
-      </body>
-      </html>
+      </div></body></html>
     `);
     printWindow.document.close();
     setTimeout(() => { printWindow.print(); }, 500);
   };
 
   return (
-    <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
       <StudentSidebar />
-      <div className="main-content p-8">
-        <div className="max-w-4xl mx-auto">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 mb-8 text-sm" style={{ color: 'var(--steel)' }}>
-            <ArrowLeft size={18} /> Back
-          </button>
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+        <Box sx={{ maxWidth: 860, mx: 'auto' }}>
+          <Button startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate(-1)}
+            sx={{ color: STEEL, mb: 3, '&:hover': { color: CREAM, background: 'rgba(139,155,180,0.08)' } }}>
+            Back
+          </Button>
 
-          <div className="text-center mb-8 animate-fadeInUp">
-            <h1 className="text-3xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Your Certificate</h1>
-            <p style={{ color: 'var(--steel)' }}>Congratulations on completing {course.title}!</p>
-          </div>
+          <Box className="anim-fadeInUp" sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, mb: 0.7 }}>Your Certificate</Typography>
+            <Typography sx={{ color: STEEL }}>Congratulations on completing {course.title}!</Typography>
+          </Box>
 
           {/* Certificate */}
-          <div ref={certRef} className="certificate rounded-3xl p-16 text-center animate-scaleIn mb-8" style={{ minHeight: '480px' }}>
-            <div className="text-6xl mb-6 animate-float">🏆</div>
-            <h2 className="text-4xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--sand)', letterSpacing: '-1px' }}>CERTIFICATE</h2>
-            <p className="text-sm tracking-widest uppercase mb-10" style={{ color: 'var(--steel)' }}>of Completion</p>
+          <Box ref={certRef} className="certificate-bg anim-scaleIn"
+            sx={{ borderRadius: 4, p: { xs: 5, sm: 8, md: 10 }, textAlign: 'center', mb: 4, position: 'relative', zIndex: 0 }}>
+            <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 3, position: 'relative', zIndex: 1 }}>🏆</Typography>
 
-            <p className="text-base mb-4" style={{ color: 'var(--steel)' }}>This is to certify that</p>
-            <h3 className="text-5xl font-black mb-4 gradient-text" style={{ fontFamily: 'Syne', letterSpacing: '-1px' }}>
+            <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: { xs: '1.8rem', sm: '2.6rem' }, color: SAND, letterSpacing: '-1px', position: 'relative', zIndex: 1 }}>
+              CERTIFICATE
+            </Typography>
+            <Typography sx={{ color: STEEL, letterSpacing: 4, fontSize: '0.72rem', textTransform: 'uppercase', mt: 0.5, mb: 4, position: 'relative', zIndex: 1 }}>
+              of Completion
+            </Typography>
+
+            <Typography sx={{ color: STEEL, mb: 1.5, position: 'relative', zIndex: 1 }}>This is to certify that</Typography>
+
+            <Typography className="gradient-text" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: { xs: '2rem', sm: '3rem', md: '3.5rem' }, letterSpacing: '-1.5px', lineHeight: 1.1, mb: 2, position: 'relative', zIndex: 1 }}>
               {user.name}
-            </h3>
-            <p className="text-base mb-3" style={{ color: 'rgba(240, 240, 219, 0.8)' }}>has successfully completed</p>
-            <h4 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{course.title}</h4>
-            <p className="text-sm mb-8" style={{ color: 'var(--steel)' }}>with a grand assessment score of</p>
+            </Typography>
 
-            <div className="text-5xl font-black mb-8 gradient-text-accent" style={{ fontFamily: 'Syne' }}>
+            <Typography sx={{ color: 'rgba(240,238,216,0.8)', mb: 1.5, position: 'relative', zIndex: 1 }}>has successfully completed</Typography>
+            <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: { xs: '1.1rem', sm: '1.4rem' }, mb: 1, position: 'relative', zIndex: 1 }}>{course.title}</Typography>
+            <Typography sx={{ color: STEEL, mb: 2.5, fontSize: '0.9rem', position: 'relative', zIndex: 1 }}>with a grand assessment score of</Typography>
+
+            <Typography className="gradient-text-teal" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: { xs: '3rem', sm: '4rem' }, mb: 3, position: 'relative', zIndex: 1 }}>
               {completedData.score}%
-            </div>
+            </Typography>
 
-            {/* Decorative stars */}
-            <div className="flex justify-center gap-2 mb-10">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={20} fill={i < Math.round(completedData.score / 20) ? '#D4A843' : 'none'} 
-                  style={{ color: '#D4A843' }} />
-              ))}
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
+              <Rating value={starCount} readOnly max={5} sx={{ '& .MuiRating-iconFilled': { color: GOLD }, '& .MuiRating-iconEmpty': { color: 'rgba(212,168,67,0.25)' } }} />
+            </Box>
 
-            {/* Footer */}
-            <div className="border-t pt-8 flex justify-between" style={{ borderColor: 'rgba(225, 217, 188, 0.2)' }}>
-              <div className="text-center">
-                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--steel)', fontSize: '10px' }}>Instructor</p>
-                <p className="text-sm font-semibold" style={{ color: 'var(--cream)', fontFamily: 'Syne' }}>{course.instructorName}</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center gap-2 justify-center mb-1">
-                  <Award size={16} style={{ color: 'var(--sand)' }} />
-                  <p className="text-xs font-bold" style={{ color: 'var(--sand)', fontFamily: 'Syne', fontSize: '11px' }}>EduForge LMS</p>
-                </div>
-                <p className="text-xs" style={{ color: 'var(--steel)' }}>eduforge.in</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--steel)', fontSize: '10px' }}>Completed On</p>
-                <p className="text-sm font-semibold" style={{ color: 'var(--cream)', fontFamily: 'Syne' }}>{completedDate}</p>
-              </div>
-            </div>
-          </div>
+            <Divider sx={{ borderColor: 'rgba(226,217,190,0.15)', mb: 3, position: 'relative', zIndex: 1 }} />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, position: 'relative', zIndex: 1 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ color: STEEL, fontSize: '0.62rem', letterSpacing: 2, textTransform: 'uppercase', mb: 0.5 }}>Instructor</Typography>
+                <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600, color: CREAM, fontSize: '0.85rem' }}>{course.instructorName}</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, justifyContent: 'center', mb: 0.3 }}>
+                  <EmojiEventsRoundedIcon sx={{ color: GOLD, fontSize: 16 }} />
+                  <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: GOLD, fontSize: '0.82rem' }}>EduForge LMS</Typography>
+                </Box>
+                <Typography sx={{ color: STEEL, fontSize: '0.72rem' }}>eduforge.in</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ color: STEEL, fontSize: '0.62rem', letterSpacing: 2, textTransform: 'uppercase', mb: 0.5 }}>Completed On</Typography>
+                <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600, color: CREAM, fontSize: '0.85rem' }}>{completedDate}</Typography>
+              </Box>
+            </Box>
+          </Box>
 
           {/* Actions */}
-          <div className="flex justify-center gap-4">
-            <button onClick={handleDownload} className="btn-sand px-8 py-4 rounded-2xl flex items-center gap-3 text-base">
-              <Download size={20} /> Download Certificate
-            </button>
-            <button onClick={() => navigate('/student/explore')} className="btn-outline px-8 py-4 rounded-2xl">
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Button variant="contained" size="large" startIcon={<DownloadRoundedIcon />} onClick={handleDownload}
+              sx={{ px: 4, py: 1.5, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY, fontWeight: 700 }}>
+              Download Certificate
+            </Button>
+            <Button variant="outlined" color="primary" size="large" startIcon={<ExploreRoundedIcon />}
+              onClick={() => navigate('/student/explore')} sx={{ px: 4, py: 1.5 }}>
               Explore More Courses
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

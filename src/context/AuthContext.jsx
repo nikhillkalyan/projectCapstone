@@ -50,7 +50,6 @@ export function AuthProvider({ children }) {
     const updated = { ...user, ...updates };
     setUser(updated);
     localStorage.setItem('lms_user', JSON.stringify(updated));
-    // Also update in db
     if (user.role === 'student') {
       const idx = db.students.findIndex(s => s.id === user.id);
       if (idx !== -1) db.students[idx] = updated;

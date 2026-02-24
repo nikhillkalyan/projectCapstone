@@ -1,72 +1,80 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import StudentSidebar from '../../components/layout/StudentSidebar';
 import CourseCard from '../../components/shared/CourseCard';
-import { BookOpen, Compass } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded';
+import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
+
+const SIDEBAR_W = 248;
+
+function Section({ title, courses, user }) {
+  if (courses.length === 0) return null;
+  return (
+    <Box className="anim-fadeInUp" sx={{ mb: 4 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>{title}</Typography>
+      <Grid container spacing={2.5}>
+        {courses.map(course => (
+          <Grid item xs={12} sm={6} lg={4} key={course.id}>
+            <CourseCard course={course} enrolled favorited={user?.favoriteCourses?.includes(course.id)} />
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+}
 
 export function EnrolledCourses() {
   const { user } = useAuth();
   const { db, getCourseProgress } = useApp();
   const navigate = useNavigate();
 
-  const enrolled = useMemo(() => 
-    db.courses.filter(c => user?.enrolledCourses?.includes(c.id)),
-    [user, db.courses]
-  );
-
+  const enrolled = useMemo(() => db.courses.filter(c => user?.enrolledCourses?.includes(c.id)), [user, db.courses]);
   const inProgress = enrolled.filter(c => { const p = getCourseProgress(c.id); return p > 0 && p < 100; });
   const notStarted = enrolled.filter(c => getCourseProgress(c.id) === 0);
   const completed = user?.completedCourses?.map(cc => db.courses.find(c => c.id === cc.courseId)).filter(Boolean) || [];
 
-  const Section = ({ title, courses, empty }) => (
-    <section className="mb-10 animate-fadeInUp">
-      <h2 className="text-xl font-bold mb-5" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{title}</h2>
-      {courses.length === 0 ? (
-        <p style={{ color: 'var(--steel)' }}>{empty}</p>
-      ) : (
-        <div className="grid grid-cols-3 gap-5">
-          {courses.map(course => (
-            <CourseCard key={course.id} course={course}
-              enrolled={true}
-              favorited={user?.favoriteCourses?.includes(course.id)} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-
   return (
-    <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
       <StudentSidebar />
-      <div className="main-content p-8">
-        <div className="flex items-center justify-between mb-10 animate-fadeInUp">
-          <div>
-            <h1 className="text-4xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>My Courses</h1>
-            <p style={{ color: 'var(--steel)' }}>{enrolled.length} courses enrolled</p>
-          </div>
-          <button onClick={() => navigate('/student/explore')} className="btn-sand px-5 py-3 rounded-2xl flex items-center gap-2">
-            <Compass size={18} /> Explore More
-          </button>
-        </div>
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+        <Box className="anim-fadeInUp" sx={{ display: 'flex', alignItems: { sm: 'center' }, justifyContent: 'space-between', mb: 4, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>My Courses</Typography>
+            <Typography sx={{ color: STEEL, mt: 0.5, fontSize: '0.9rem' }}>{enrolled.length} courses enrolled</Typography>
+          </Box>
+          <Button variant="contained" color="secondary" startIcon={<ExploreRoundedIcon />}
+            onClick={() => navigate('/student/explore')}
+            sx={{ background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY, whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Explore More
+          </Button>
+        </Box>
 
         {enrolled.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-6 animate-float">📚</div>
-            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>No enrolled courses yet</h2>
-            <p className="mb-8" style={{ color: 'var(--steel)' }}>Start your learning journey today!</p>
-            <button onClick={() => navigate('/student/explore')} className="btn-sand px-8 py-4 rounded-2xl">Explore Courses</button>
-          </div>
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 2.5 }}>📚</Typography>
+            <Typography variant="h5" sx={{ color: CREAM, fontWeight: 700, mb: 1.5 }}>No enrolled courses yet</Typography>
+            <Typography sx={{ color: STEEL, mb: 4 }}>Start your learning journey today!</Typography>
+            <Button variant="contained" color="secondary" size="large" onClick={() => navigate('/student/explore')}
+              sx={{ px: 5, py: 1.5, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY }}>
+              Explore Courses
+            </Button>
+          </Box>
         ) : (
           <>
-            {inProgress.length > 0 && <Section title="📖 In Progress" courses={inProgress} empty="" />}
-            {notStarted.length > 0 && <Section title="🆕 Not Started" courses={notStarted} empty="" />}
-            {completed.length > 0 && <Section title="✅ Completed" courses={completed} empty="" />}
+            {inProgress.length > 0 && <Section title="📖 In Progress" courses={inProgress} user={user} />}
+            {notStarted.length > 0 && <Section title="🆕 Not Started" courses={notStarted} user={user} />}
+            {completed.length > 0 && <Section title="✅ Completed" courses={completed} user={user} />}
           </>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -75,40 +83,42 @@ export function FavoriteCourses() {
   const { db } = useApp();
   const navigate = useNavigate();
 
-  const favorites = useMemo(() =>
-    db.courses.filter(c => user?.favoriteCourses?.includes(c.id)),
-    [user, db.courses]
-  );
+  const favorites = useMemo(() => db.courses.filter(c => user?.favoriteCourses?.includes(c.id)), [user, db.courses]);
 
   return (
-    <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
       <StudentSidebar />
-      <div className="main-content p-8">
-        <div className="mb-10 animate-fadeInUp">
-          <h1 className="text-4xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+        <Box className="anim-fadeInUp" sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>
             ❤️ Favorite Courses
-          </h1>
-          <p style={{ color: 'var(--steel)' }}>{favorites.length} course{favorites.length !== 1 ? 's' : ''} saved</p>
-        </div>
+          </Typography>
+          <Typography sx={{ color: STEEL, mt: 0.5, fontSize: '0.9rem' }}>
+            {favorites.length} course{favorites.length !== 1 ? 's' : ''} saved
+          </Typography>
+        </Box>
 
         {favorites.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-6 animate-float">💝</div>
-            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>No favorites yet</h2>
-            <p className="mb-8" style={{ color: 'var(--steel)' }}>Add courses to your favorites by clicking the heart icon</p>
-            <button onClick={() => navigate('/student/explore')} className="btn-sand px-8 py-4 rounded-2xl">Explore Courses</button>
-          </div>
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 2.5 }}>💝</Typography>
+            <Typography variant="h5" sx={{ color: CREAM, fontWeight: 700, mb: 1.5 }}>No favorites yet</Typography>
+            <Typography sx={{ color: STEEL, mb: 4 }}>Add courses to favorites by clicking the heart icon</Typography>
+            <Button variant="contained" color="secondary" size="large" onClick={() => navigate('/student/explore')}
+              sx={{ px: 5, py: 1.5, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY }}>
+              Explore Courses
+            </Button>
+          </Box>
         ) : (
-          <div className="grid grid-cols-3 gap-5 animate-fadeInUp">
+          <Grid container spacing={2.5} className="anim-fadeInUp">
             {favorites.map(course => (
-              <CourseCard key={course.id} course={course}
-                enrolled={user?.enrolledCourses?.includes(course.id)}
-                favorited={true} />
+              <Grid item xs={12} sm={6} lg={4} key={course.id}>
+                <CourseCard course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited />
+              </Grid>
             ))}
-          </div>
+          </Grid>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

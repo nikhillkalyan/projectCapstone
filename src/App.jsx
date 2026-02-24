@@ -3,14 +3,12 @@ import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import { useAuth } from './context/AuthContext';
 
-// Auth Pages
 import LandingPage from './pages/LandingPage';
 import StudentLogin from './pages/auth/StudentLogin';
 import StudentSignup from './pages/auth/StudentSignup';
 import InstructorLogin from './pages/auth/InstructorLogin';
 import InstructorSignup from './pages/auth/InstructorSignup';
 
-// Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import ExploreCourses from './pages/student/ExploreCourses';
 import CoursePlayer from './pages/student/CoursePlayer';
@@ -20,7 +18,6 @@ import FavoriteCourses from './pages/student/FavoriteCourses';
 import Certificate from './pages/student/Certificate';
 import StudentChat from './pages/student/StudentChat';
 
-// Instructor Pages
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import CreateCourse from './pages/instructor/CreateCourse';
 import ManageCourse from './pages/instructor/ManageCourse';
@@ -48,7 +45,6 @@ function App() {
             <Route path="/instructor/login" element={<InstructorLogin />} />
             <Route path="/instructor/signup" element={<InstructorSignup />} />
 
-            {/* Student Routes */}
             <Route path="/student" element={<PrivateRoute role="student"><StudentDashboard /></PrivateRoute>} />
             <Route path="/student/explore" element={<PrivateRoute role="student"><ExploreCourses /></PrivateRoute>} />
             <Route path="/student/course/:courseId" element={<PrivateRoute role="student"><CoursePlayer /></PrivateRoute>} />
@@ -58,7 +54,6 @@ function App() {
             <Route path="/student/chat" element={<PrivateRoute role="student"><StudentChat /></PrivateRoute>} />
             <Route path="/student/profile" element={<PrivateRoute role="student"><StudentProfile /></PrivateRoute>} />
 
-            {/* Instructor Routes */}
             <Route path="/instructor" element={<PrivateRoute role="instructor"><InstructorDashboard /></PrivateRoute>} />
             <Route path="/instructor/courses" element={<PrivateRoute role="instructor"><InstructorCourses /></PrivateRoute>} />
             <Route path="/instructor/create-course" element={<PrivateRoute role="instructor"><CreateCourse /></PrivateRoute>} />

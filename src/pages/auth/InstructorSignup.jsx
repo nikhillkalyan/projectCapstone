@@ -1,1 +1,1 @@
-export { InstructorSignup as default } from './InstructorLogin';
+export { InstructorSignupPage as default } from './_AuthPages';

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { db } from '../data/mockDatabase';
 import { useAuth } from './AuthContext';
 
@@ -10,15 +12,15 @@ export function AppProvider({ children }) {
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
   };
+
+  const handleClose = () => setNotification(null);
 
   const enrollCourse = (courseId) => {
     if (!user || user.role !== 'student') return;
     if (user.enrolledCourses?.includes(courseId)) return;
     const enrolled = [...(user.enrolledCourses || []), courseId];
     updateUser({ enrolledCourses: enrolled });
-    // Update course enrollment count
     const course = db.courses.find(c => c.id === courseId);
     if (course) course.enrolledCount = (course.enrolledCount || 0) + 1;
     showNotification('Successfully enrolled in course!');
@@ -43,17 +45,12 @@ export function AppProvider({ children }) {
 
   const submitAssessment = (courseId, chapterId, answers, questions) => {
     let score = 0;
-    questions.forEach((q, i) => {
-      if (answers[i] === q.correct) score++;
-    });
+    questions.forEach((q, i) => { if (answers[i] === q.correct) score++; });
     const percentage = Math.round((score / questions.length) * 100);
     updateProgress(courseId, chapterId, { assessmentScore: percentage, assessmentCompleted: true });
-    
-    // Save to db for instructor visibility
     if (!db.assessmentResults[user.id]) db.assessmentResults[user.id] = {};
     if (!db.assessmentResults[user.id][courseId]) db.assessmentResults[user.id][courseId] = {};
     db.assessmentResults[user.id][courseId][chapterId] = { score: percentage, completedAt: new Date().toISOString() };
-    
     return percentage;
   };
 
@@ -83,18 +80,20 @@ export function AppProvider({ children }) {
       courseId,
       message,
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
     };
     db.messages.push(msg);
     return msg;
   };
 
   const getMessages = (otherId, courseId) => {
-    return db.messages.filter(m =>
-      ((m.fromId === user?.id && m.toId === otherId) ||
-       (m.fromId === otherId && m.toId === user?.id)) &&
-      m.courseId === courseId
-    ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    return db.messages
+      .filter(m =>
+        ((m.fromId === user?.id && m.toId === otherId) ||
+         (m.fromId === otherId && m.toId === user?.id)) &&
+        m.courseId === courseId
+      )
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   };
 
   const getCourseProgress = (courseId) => {
@@ -111,15 +110,24 @@ export function AppProvider({ children }) {
       notification, showNotification,
       enrollCourse, toggleFavorite, updateProgress,
       submitAssessment, completeCourse, rateCourse,
-      sendMessage, getMessages, getCourseProgress, db
+      sendMessage, getMessages, getCourseProgress, db,
     }}>
       {children}
-      {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-2xl text-sm font-semibold transition-all duration-300
-          ${notification.type === 'success' ? 'bg-[#30364F] text-[#E1D9BC] border border-[#E1D9BC]/20' : 'bg-red-900 text-red-100'}`}>
-          {notification.message}
-        </div>
-      )}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={notification?.type || 'success'}
+          variant="standard"
+          sx={{ minWidth: 260, fontWeight: 500 }}
+        >
+          {notification?.message}
+        </Alert>
+      </Snackbar>
     </AppContext.Provider>
   );
 }

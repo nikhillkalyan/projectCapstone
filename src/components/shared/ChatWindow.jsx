@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, MessageSquare } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
+import Fade from '@mui/material/Fade';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, NAVY, NAVY2, NAVY3 } from '../../theme';
 
 export default function ChatWindow({ otherId, otherName, courseId, courseTitle }) {
   const { user } = useAuth();
@@ -26,78 +34,143 @@ export default function ChatWindow({ otherId, otherName, courseId, courseTitle }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   const formatTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  const formatDate = (ts) => {
+    const d = new Date(ts);
+    const today = new Date();
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+  };
+
+  const initials = otherName?.charAt(0)?.toUpperCase() || '?';
+  const isInstructor = user?.role === 'student';
+
   return (
-    <div className="flex flex-col h-full">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'rgba(13,17,23,0.4)' }}>
       {/* Header */}
-      <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(172, 186, 196, 0.15)' }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm"
-          style={{ background: 'linear-gradient(135deg, #6B7FD4, #4ECDC4)', fontFamily: 'Syne' }}>
-          {otherName?.charAt(0)}
-        </div>
-        <div>
-          <div className="font-semibold" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{otherName}</div>
-          <div className="text-xs" style={{ color: 'var(--steel)' }}>{courseTitle}</div>
-        </div>
-      </div>
+      <Box sx={{
+        px: 3, py: 2.2, borderBottom: '1px solid rgba(139,155,180,0.1)',
+        display: 'flex', alignItems: 'center', gap: 2,
+        background: 'rgba(8,12,20,0.6)', backdropFilter: 'blur(12px)',
+      }}>
+        <Avatar sx={{
+          width: 42, height: 42, borderRadius: 2.5, fontFamily: '"Syne",sans-serif', fontWeight: 700,
+          background: isInstructor
+            ? `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`
+            : `linear-gradient(135deg, ${ACCENT} 0%, ${TEAL} 100%)`,
+          color: isInstructor ? NAVY : '#fff',
+          fontSize: '1rem',
+        }}>
+          {initials}
+        </Avatar>
+        <Box>
+          <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.95rem' }}>
+            {otherName}
+          </Typography>
+          <Typography sx={{ color: STEEL, fontSize: '0.75rem' }}>{courseTitle}</Typography>
+        </Box>
+        <Box sx={{ ml: 'auto', width: 8, height: 8, borderRadius: '50%', background: TEAL, boxShadow: `0 0 8px ${TEAL}` }} />
+      </Box>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      <Box sx={{
+        flex: 1, overflowY: 'auto', px: 3, py: 2.5,
+        display: 'flex', flexDirection: 'column', gap: 1.5,
+        '&::-webkit-scrollbar': { width: 4 },
+        '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.15)', borderRadius: 2 },
+      }}>
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full opacity-40">
-            <MessageSquare size={40} style={{ color: 'var(--steel)' }} />
-            <p className="mt-3 text-sm" style={{ color: 'var(--steel)' }}>No messages yet. Start the conversation!</p>
-          </div>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
+            <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 44, color: STEEL, mb: 1.5 }} />
+            <Typography sx={{ color: STEEL, fontSize: '0.88rem' }}>No messages yet. Start the conversation!</Typography>
+          </Box>
         ) : (
-          messages.map(msg => {
+          messages.map((msg, idx) => {
             const isMine = msg.fromId === user?.id;
+            const prevMsg = messages[idx - 1];
+            const showDate = !prevMsg || formatDate(msg.timestamp) !== formatDate(prevMsg.timestamp);
+
             return (
-              <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} animate-fadeInUp`}>
-                {!isMine && (
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold mr-2 flex-shrink-0 self-end"
-                    style={{ background: 'linear-gradient(135deg, #D4A843, #E1D9BC)', color: 'var(--navy)', fontFamily: 'Syne' }}>
-                    {msg.fromName?.charAt(0)}
-                  </div>
-                )}
-                <div className={`max-w-xs lg:max-w-md px-4 py-3 ${isMine ? 'chat-bubble-sent' : 'chat-bubble-received'}`}>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--cream)' }}>{msg.message}</p>
-                  <p className="text-xs mt-1 opacity-60" style={{ color: 'var(--cream)' }}>{formatTime(msg.timestamp)}</p>
-                </div>
-              </div>
+              <Fade in key={msg.id} timeout={300}>
+                <Box>
+                  {showDate && (
+                    <Box sx={{ textAlign: 'center', my: 1.5 }}>
+                      <Typography sx={{ color: STEEL, fontSize: '0.72rem', background: 'rgba(30,37,53,0.6)', px: 2, py: 0.5, borderRadius: 10, display: 'inline-block' }}>
+                        {formatDate(msg.timestamp)}
+                      </Typography>
+                    </Box>
+                  )}
+                  <Box sx={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 1 }}>
+                    {!isMine && (
+                      <Avatar sx={{
+                        width: 28, height: 28, borderRadius: 1.5, fontSize: '0.72rem', fontWeight: 700,
+                        background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, flexShrink: 0,
+                      }}>
+                        {initials}
+                      </Avatar>
+                    )}
+                    <Box sx={{
+                      maxWidth: { xs: '85%', sm: '65%' },
+                      px: 2, py: 1.2, borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      background: isMine
+                        ? `linear-gradient(135deg, ${ACCENT} 0%, #5A6BC4 100%)`
+                        : 'rgba(30,37,53,0.85)',
+                      border: isMine ? 'none' : '1px solid rgba(139,155,180,0.13)',
+                      boxShadow: isMine ? `0 4px 16px rgba(108,127,216,0.25)` : 'none',
+                    }}>
+                      <Typography sx={{ color: CREAM, fontSize: '0.88rem', lineHeight: 1.55 }}>
+                        {msg.message}
+                      </Typography>
+                      <Typography sx={{ color: 'rgba(240,238,216,0.5)', fontSize: '0.67rem', mt: 0.5, textAlign: 'right' }}>
+                        {formatTime(msg.timestamp)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Fade>
             );
           })
         )}
         <div ref={bottomRef} />
-      </div>
+      </Box>
 
       {/* Input */}
-      <div className="p-4 border-t" style={{ borderColor: 'rgba(172, 186, 196, 0.15)' }}>
-        <div className="flex gap-3">
-          <textarea
+      <Box sx={{
+        px: 2.5, py: 2, borderTop: '1px solid rgba(139,155,180,0.1)',
+        background: 'rgba(8,12,20,0.5)', backdropFilter: 'blur(12px)',
+      }}>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
+          <TextField
+            fullWidth multiline maxRows={4}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            rows={1}
-            className="input-field resize-none text-sm"
-            style={{ paddingTop: '10px', paddingBottom: '10px' }}
+            placeholder="Type your message... (Enter to send)"
+            variant="outlined"
+            size="small"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3, background: 'rgba(22,27,39,0.7)',
+                '& textarea': { color: CREAM, fontSize: '0.88rem', lineHeight: 1.5 },
+              },
+            }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="btn-primary p-3 rounded-xl flex-shrink-0 disabled:opacity-40"
-          >
-            <Send size={18} />
-          </button>
-        </div>
-      </div>
-    </div>
+          <IconButton onClick={handleSend} disabled={!input.trim()}
+            sx={{
+              width: 44, height: 44, borderRadius: 2.5, flexShrink: 0,
+              background: input.trim() ? `linear-gradient(135deg, ${ACCENT} 0%, #5A6BC4 100%)` : 'rgba(30,37,53,0.6)',
+              transition: 'all 0.2s ease',
+              '&:hover': { transform: 'scale(1.08)', boxShadow: `0 4px 16px rgba(108,127,216,0.4)` },
+              '&:disabled': { opacity: 0.4 },
+            }}>
+            <SendRoundedIcon sx={{ color: '#fff', fontSize: 18 }} />
+          </IconButton>
+        </Box>
+      </Box>
+    </Box>
   );
 }
