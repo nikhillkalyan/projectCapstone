@@ -3,352 +3,460 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import InstructorSidebar from '../../components/layout/InstructorSidebar';
-import { Plus, Trash2, ChevronDown, ChevronUp, Video, FileText, ArrowLeft, ArrowRight } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Accordion from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import MuiAccordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Alert from '@mui/material/Alert';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
+import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import PublishRoundedIcon from '@mui/icons-material/PublishRounded';
+import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } from '../../theme';
 
-const categories = ['AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
-const levels = ['Beginner', 'Intermediate', 'Advanced'];
+const SIDEBAR_W = 248;
+const STEPS = ['Basic Info', 'Course Content', 'Grand Assessment'];
+const CATEGORIES = ['AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
+const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 
-const newChapter = () => ({
-  id: `ch${Date.now()}${Math.random().toString(36).slice(2)}`,
-  title: '', duration: '', type: 'text',
-  content: { textContent: '', videoUrl: '', description: '' },
-  assessment: { id: `a${Date.now()}`, questions: [{ question: '', options: ['', '', '', ''], correct: 0 }] }
-});
-
-const newQuestion = () => ({ question: '', options: ['', '', '', ''], correct: 0 });
-
-export default function CreateCourse() {
-  const { user, updateUser } = useAuth();
-  const { db, showNotification } = useApp();
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [expanded, setExpanded] = useState({ 0: true });
-  const [form, setForm] = useState({
-    title: '', description: '', longDescription: '',
-    category: 'AIML', level: 'Beginner', duration: '', thumbnail: '', tags: '',
-    chapters: [newChapter()],
-    grandAssessment: { id: `ga${Date.now()}`, title: '', passingScore: 70, questions: [newQuestion()] }
-  });
-
-  const updateForm = (field, val) => setForm(p => ({ ...p, [field]: val }));
-
-  const updateChapter = (idx, field, val) => {
-    setForm(p => {
-      const chs = [...p.chapters];
-      if (field.includes('.')) {
-        const [a, b] = field.split('.');
-        chs[idx] = { ...chs[idx], [a]: { ...chs[idx][a], [b]: val } };
-      } else {
-        chs[idx] = { ...chs[idx], [field]: val };
-      }
-      return { ...p, chapters: chs };
-    });
+function emptyQuestion() {
+  return { question: '', options: ['', '', '', ''], correct: 0 };
+}
+function emptyChapter() {
+  return {
+    id: `ch_${Date.now()}`,
+    title: '',
+    type: 'text',
+    duration: '',
+    content: { videoUrl: '', textContent: '' },
+    assessment: { questions: [emptyQuestion()] },
   };
+}
 
-  const updateChapterQuestion = (chIdx, qIdx, field, val) => {
-    setForm(p => {
-      const chs = [...p.chapters];
-      const qs = [...chs[chIdx].assessment.questions];
-      if (field.startsWith('opt.')) {
-        const oIdx = +field.split('.')[1];
-        const opts = [...qs[qIdx].options]; opts[oIdx] = val;
-        qs[qIdx] = { ...qs[qIdx], options: opts };
-      } else qs[qIdx] = { ...qs[qIdx], [field]: val };
-      chs[chIdx] = { ...chs[chIdx], assessment: { ...chs[chIdx].assessment, questions: qs } };
-      return { ...p, chapters: chs };
-    });
+// ─── Question editor (defined once, no duplicate bug) ──────────────────────
+function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
+  const update = (field, val) => onChange({ ...q, [field]: val });
+  const updateOption = (oi, val) => {
+    const opts = [...q.options]; opts[oi] = val;
+    onChange({ ...q, options: opts });
   };
-
-  const updateGrandQuestion = (qIdx, field, val) => {
-    setForm(p => {
-      const qs = [...p.grandAssessment.questions];
-      if (field.startsWith('opt.')) {
-        const oIdx = +field.split('.')[1];
-        const opts = [...qs[qIdx].options]; opts[oIdx] = val;
-        qs[qIdx] = { ...qs[qIdx], options: opts };
-      } else qs[qIdx] = { ...qs[qIdx], [field]: val };
-      return { ...p, grandAssessment: { ...p.grandAssessment, questions: qs } };
-    });
-  };
-
-  const handleCreate = () => {
-    const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
-    const course = {
-      ...form, tags,
-      id: `c${Date.now()}`,
-      instructorId: user.id,
-      instructorName: user.name,
-      price: 'Free', rating: 0, enrolledCount: 0,
-      reviews: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    db.courses.push(course);
-    updateUser({ courses: [...(user.courses || []), course.id] });
-    showNotification('Course created successfully! 🎉');
-    navigate('/instructor/courses');
-  };
-
-  // Render question editor
-  const QuestionEditor = ({ q, qIdx, onChange, onDelete, canDelete }) => (
-    <div className="p-4 rounded-xl mb-3" style={{ background: 'rgba(20, 25, 40, 0.5)', border: '1px solid rgba(172, 186, 196, 0.1)' }}>
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-bold" style={{ color: 'var(--accent-light)', fontFamily: 'Syne' }}>Q{qIdx + 1}</span>
-        {canDelete && <button onClick={onDelete} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>}
-      </div>
-      <input className="input-field text-sm mb-3" placeholder="Enter question..." value={q.question} onChange={e => onChange('question', e.target.value)} />
-      <div className="space-y-2 mb-3">
-        {q.options.map((opt, oi) => (
-          <div key={oi} className="flex items-center gap-2">
-            <button onClick={() => onChange('correct', oi)}
-              className="w-5 h-5 rounded-full flex-shrink-0 transition-all duration-200"
-              style={{ background: q.correct === oi ? '#4ECDC4' : 'rgba(172, 186, 196, 0.2)', border: `2px solid ${q.correct === oi ? '#4ECDC4' : 'rgba(172, 186, 196, 0.3)'}` }} />
-            <input className="input-field text-sm py-2" placeholder={`Option ${String.fromCharCode(65 + oi)}`} value={opt} onChange={e => onChange(`opt.${oi}`, e.target.value)} />
-          </div>
-        ))}
-      </div>
-      <p className="text-xs" style={{ color: 'var(--steel)' }}>Click circle to mark correct answer</p>
-    </div>
-  );
 
   return (
-    <div className="flex">
-      <InstructorSidebar />
-      <div className="main-content p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8 animate-fadeInUp">
-            <h1 className="text-4xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Create New Course</h1>
-            <div className="flex gap-3 mt-5">
-              {['Course Details', 'Chapters & Content', 'Grand Assessment'].map((s, i) => (
-                <button key={i} onClick={() => setStep(i + 1)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: step === i + 1 ? 'rgba(107, 127, 212, 0.25)' : 'rgba(48, 54, 79, 0.3)',
-                    border: `1.5px solid ${step === i + 1 ? 'rgba(107, 127, 212, 0.5)' : 'rgba(172, 186, 196, 0.15)'}`,
-                    color: step === i + 1 ? 'var(--cream)' : 'var(--steel)', fontFamily: 'Syne'
-                  }}>
-                  {i + 1}. {s}
-                </button>
-              ))}
-            </div>
-          </div>
+    <Box sx={{ p: 2.5, borderRadius: 3, background: 'rgba(13,17,23,0.5)', border: '1px solid rgba(139,155,180,0.1)', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Typography sx={{ color: ACCENT2, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.82rem' }}>
+          Question {qi + 1}
+        </Typography>
+        {showDelete && (
+          <IconButton size="small" onClick={onDelete} sx={{ color: DANGER, background: 'rgba(231,76,111,0.1)', borderRadius: 1.5,
+            '&:hover': { background: 'rgba(231,76,111,0.2)' } }}>
+            <DeleteRoundedIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+      <TextField fullWidth size="small" label="Question text *" value={q.question}
+        onChange={e => update('question', e.target.value)} sx={{ mb: 1.5 }} />
 
-          {/* STEP 1 */}
-          {step === 1 && (
-            <div className="glass rounded-3xl p-8 animate-fadeInUp space-y-5">
-              <div>
-                <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Course Title *</label>
-                <input className="input-field" placeholder="Machine Learning Fundamentals" value={form.title} onChange={e => updateForm('title', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Short Description *</label>
-                <textarea className="input-field resize-none" rows={2} value={form.description} onChange={e => updateForm('description', e.target.value)} placeholder="Brief course overview..." />
-              </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Long Description</label>
-                <textarea className="input-field resize-none" rows={4} value={form.longDescription} onChange={e => updateForm('longDescription', e.target.value)} placeholder="Detailed course description..." />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Category *</label>
-                  <select className="input-field" value={form.category} onChange={e => updateForm('category', e.target.value)} style={{ appearance: 'none' }}>
-                    {categories.map(c => <option key={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Level *</label>
-                  <select className="input-field" value={form.level} onChange={e => updateForm('level', e.target.value)} style={{ appearance: 'none' }}>
-                    {levels.map(l => <option key={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Duration</label>
-                  <input className="input-field" placeholder="24 hours" value={form.duration} onChange={e => updateForm('duration', e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Thumbnail URL</label>
-                <input className="input-field" placeholder="https://..." value={form.thumbnail} onChange={e => updateForm('thumbnail', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Tags (comma-separated)</label>
-                <input className="input-field" placeholder="Python, ML, TensorFlow" value={form.tags} onChange={e => updateForm('tags', e.target.value)} />
-              </div>
-              <button onClick={() => form.title && form.description && setStep(2)} disabled={!form.title || !form.description} className="btn-sand py-3 px-8 rounded-2xl disabled:opacity-40 flex items-center gap-2">
-                Next: Chapters <ArrowRight size={18} />
-              </button>
-            </div>
-          )}
-
-          {/* STEP 2 */}
-          {step === 2 && (
-            <div className="animate-fadeInUp space-y-4">
-              {form.chapters.map((ch, idx) => (
-                <div key={ch.id} className="glass rounded-2xl overflow-hidden">
-                  <button className="w-full p-5 flex items-center justify-between" onClick={() => setExpanded(p => ({ ...p, [idx]: !p[idx] }))}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: 'rgba(107,127,212,0.2)', color: 'var(--accent-light)', fontFamily: 'Syne' }}>{idx + 1}</div>
-                      <span className="font-semibold" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{ch.title || `Chapter ${idx + 1}`}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {form.chapters.length > 1 && (
-                        <span onClick={e => { e.stopPropagation(); setForm(p => ({ ...p, chapters: p.chapters.filter((_, i) => i !== idx) })); }} className="p-1.5 rounded-lg cursor-pointer text-red-400 hover:bg-red-900/20">
-                          <Trash2 size={14} />
-                        </span>
-                      )}
-                      {expanded[idx] ? <ChevronUp size={18} style={{ color: 'var(--steel)' }} /> : <ChevronDown size={18} style={{ color: 'var(--steel)' }} />}
-                    </div>
-                  </button>
-
-                  {expanded[idx] && (
-                    <div className="px-5 pb-5 border-t space-y-4" style={{ borderColor: 'rgba(172,186,196,0.1)', paddingTop: '16px' }}>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-2">
-                          <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--sand)' }}>Title *</label>
-                          <input className="input-field" placeholder="Chapter title" value={ch.title} onChange={e => updateChapter(idx, 'title', e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--sand)' }}>Duration</label>
-                          <input className="input-field" placeholder="45 min" value={ch.duration} onChange={e => updateChapter(idx, 'duration', e.target.value)} />
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        {['text', 'video'].map(t => (
-                          <button key={t} onClick={() => updateChapter(idx, 'type', t)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all"
-                            style={{
-                              background: ch.type === t ? 'rgba(107,127,212,0.2)' : 'rgba(48,54,79,0.3)',
-                              border: `1.5px solid ${ch.type === t ? 'rgba(107,127,212,0.5)' : 'rgba(172,186,196,0.15)'}`,
-                              color: ch.type === t ? 'var(--cream)' : 'var(--steel)'
-                            }}>
-                            {t === 'video' ? <Video size={14} /> : <FileText size={14} />}
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                          </button>
-                        ))}
-                      </div>
-
-                      {ch.type === 'video' && (
-                        <div>
-                          <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--sand)' }}>YouTube Embed URL</label>
-                          <input className="input-field" placeholder="https://www.youtube.com/embed/..." value={ch.content.videoUrl} onChange={e => updateChapter(idx, 'content.videoUrl', e.target.value)} />
-                        </div>
-                      )}
-                      <div>
-                        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--sand)' }}>Text Content (supports markdown)</label>
-                        <textarea className="input-field resize-none font-mono text-xs" rows={6} placeholder="# Chapter Title&#10;&#10;Write your content here in Markdown..." value={ch.content.textContent} onChange={e => updateChapter(idx, 'content.textContent', e.target.value)} />
-                      </div>
-
-                      {/* Assessment */}
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-bold" style={{ fontFamily: 'Syne', color: 'var(--sand)' }}>Chapter Assessment</h4>
-                          <button onClick={() => {
-                            const chs = [...form.chapters];
-                            chs[idx].assessment.questions.push(newQuestion());
-                            setForm(p => ({ ...p, chapters: chs }));
-                          }} className="btn-outline px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
-                            <Plus size={12} /> Add Question
-                          </button>
-                        </div>
-                        {ch.assessment.questions.map((q, qi) => (
-                          <QuestionEditor key={qi} q={q} qIdx={qi}
-                            onChange={(field, val) => updateChapterQuestion(idx, qi, field, val)}
-                            onDelete={() => {
-                              const chs = [...form.chapters];
-                              chs[idx].assessment.questions.splice(qi, 1);
-                              setForm(p => ({ ...p, chapters: chs }));
-                            }}
-                            canDelete={ch.assessment.questions.length > 1} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <button onClick={() => { setForm(p => ({ ...p, chapters: [...p.chapters, newChapter()] })); setExpanded(p => ({ ...p, [form.chapters.length]: true })); }}
-                className="btn-outline w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm">
-                <Plus size={16} /> Add Chapter
-              </button>
-
-              <div className="flex gap-3">
-                <button onClick={() => setStep(1)} className="btn-outline py-3 px-6 rounded-2xl flex items-center gap-2"><ArrowLeft size={18} /> Back</button>
-                <button onClick={() => form.chapters.every(c => c.title) && setStep(3)} disabled={!form.chapters.every(c => c.title)} className="btn-sand flex-1 py-3 rounded-2xl disabled:opacity-40 flex items-center justify-center gap-2">
-                  Next: Grand Assessment <ArrowRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3 */}
-          {step === 3 && (
-            <div className="glass rounded-3xl p-8 animate-fadeInUp space-y-5">
-              <div>
-                <h2 className="text-xl font-bold mb-1" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Grand Assessment</h2>
-                <p className="text-sm" style={{ color: 'var(--steel)' }}>Final test students must pass to earn their certificate</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Assessment Title</label>
-                  <input className="input-field" placeholder="Final Assessment" value={form.grandAssessment.title} onChange={e => setForm(p => ({ ...p, grandAssessment: { ...p.grandAssessment, title: e.target.value } }))} />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block" style={{ color: 'var(--sand)' }}>Passing Score (%)</label>
-                  <input className="input-field" type="number" min="50" max="100" value={form.grandAssessment.passingScore}
-                    onChange={e => setForm(p => ({ ...p, grandAssessment: { ...p.grandAssessment, passingScore: +e.target.value } }))} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold" style={{ fontFamily: 'Syne', color: 'var(--sand)' }}>Questions ({form.grandAssessment.questions.length})</h4>
-                  <button onClick={() => setForm(p => ({ ...p, grandAssessment: { ...p.grandAssessment, questions: [...p.grandAssessment.questions, newQuestion()] } }))}
-                    className="btn-outline px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
-                    <Plus size={12} /> Add Question
-                  </button>
-                </div>
-                {form.grandAssessment.questions.map((q, qi) => (
-                  <QuestionEditor key={qi} q={q} qIdx={qi}
-                    onChange={(f, v) => updateGrandQuestion(qi, f, v)}
-                    onDelete={() => setForm(p => ({ ...p, grandAssessment: { ...p.grandAssessment, questions: p.grandAssessment.questions.filter((_, i) => i !== qi) } }))}
-                    canDelete={form.grandAssessment.questions.length > 1} />
-                ))}
-              </div>
-
-              <div className="flex gap-3">
-                <button onClick={() => setStep(2)} className="btn-outline py-3 px-6 rounded-2xl flex items-center gap-2"><ArrowLeft size={18} /> Back</button>
-                <button onClick={handleCreate} className="btn-sand flex-1 py-3 rounded-2xl flex items-center justify-center gap-2">
-                  🚀 Publish Course
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      <Typography sx={{ color: STEEL, fontSize: '0.75rem', mb: 1, fontWeight: 500 }}>Options (click radio to set correct answer)</Typography>
+      {q.options.map((opt, oi) => (
+        <Box key={oi} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box onClick={() => update('correct', oi)}
+            sx={{
+              width: 22, height: 22, borderRadius: '50%', flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: q.correct === oi ? TEAL : 'rgba(139,155,180,0.1)',
+              border: `2px solid ${q.correct === oi ? TEAL : 'rgba(139,155,180,0.25)'}`,
+              transition: 'all 0.2s ease',
+            }}>
+            {q.correct === oi && <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
+          </Box>
+          <TextField fullWidth size="small" placeholder={`Option ${oi + 1}`} value={opt}
+            onChange={e => updateOption(oi, e.target.value)}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, ...(q.correct === oi ? { '& fieldset': { borderColor: `${TEAL} !important` } } : {}) } }} />
+        </Box>
+      ))}
+    </Box>
   );
 }
 
-function QuestionEditor({ q, qIdx, onChange, onDelete, canDelete }) {
+// ─── Step 1: Basic Info ─────────────────────────────────────────────────────
+function Step1({ data, onChange }) {
   return (
-    <div className="p-4 rounded-xl mb-3" style={{ background: 'rgba(20, 25, 40, 0.5)', border: '1px solid rgba(172, 186, 196, 0.1)' }}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold" style={{ color: 'var(--accent-light)', fontFamily: 'Syne' }}>Q{qIdx + 1}</span>
-        {canDelete && <button onClick={onDelete} className="text-red-400 hover:text-red-300"><Trash2 size={13} /></button>}
-      </div>
-      <input className="input-field text-sm mb-3" placeholder="Enter question..." value={q.question} onChange={e => onChange('question', e.target.value)} />
-      <div className="space-y-2 mb-2">
-        {q.options.map((opt, oi) => (
-          <div key={oi} className="flex items-center gap-2">
-            <button onClick={() => onChange('correct', oi)}
-              className="w-5 h-5 rounded-full flex-shrink-0 border-2 transition-all"
-              style={{ background: q.correct === oi ? '#4ECDC4' : 'transparent', borderColor: q.correct === oi ? '#4ECDC4' : 'rgba(172,186,196,0.3)' }} />
-            <input className="input-field text-sm py-2" placeholder={`Option ${String.fromCharCode(65 + oi)}`} value={opt} onChange={e => onChange(`opt.${oi}`, e.target.value)} />
-          </div>
-        ))}
-      </div>
-      <p className="text-xs" style={{ color: 'var(--steel)' }}>● = correct answer</p>
-    </div>
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>📋 Course Details</Typography>
+      <Grid container spacing={2.5}>
+        <Grid item xs={12}>
+          <TextField label="Course Title *" fullWidth value={data.title}
+            onChange={e => onChange({ ...data, title: e.target.value })}
+            placeholder="e.g. Complete Machine Learning Bootcamp 2024" />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField label="Short Description *" fullWidth multiline rows={2} value={data.description}
+            onChange={e => onChange({ ...data, description: e.target.value })}
+            placeholder="Brief overview shown on course cards" />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField label="Full Description" fullWidth multiline rows={4} value={data.longDescription}
+            onChange={e => onChange({ ...data, longDescription: e.target.value })}
+            placeholder="Detailed description for the course page" />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel sx={{ color: STEEL }}>Category *</InputLabel>
+            <Select value={data.category} label="Category *"
+              onChange={e => onChange({ ...data, category: e.target.value })}
+              sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
+              {CATEGORIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel sx={{ color: STEEL }}>Level *</InputLabel>
+            <Select value={data.level} label="Level *"
+              onChange={e => onChange({ ...data, level: e.target.value })}
+              sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
+              {LEVELS.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField label="Duration *" fullWidth value={data.duration}
+            onChange={e => onChange({ ...data, duration: e.target.value })}
+            placeholder="e.g. 24 hours" />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField label="Thumbnail URL" fullWidth value={data.thumbnail}
+            onChange={e => onChange({ ...data, thumbnail: e.target.value })}
+            placeholder="https://example.com/image.jpg" />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField label="Tags (comma-separated)" fullWidth value={data.tagsRaw}
+            onChange={e => onChange({ ...data, tagsRaw: e.target.value })}
+            placeholder="Python, TensorFlow, Deep Learning" helperText="Helps students discover your course" />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}
+
+// ─── Step 2: Chapters ────────────────────────────────────────────────────────
+function Step2({ chapters, onChange }) {
+  const addChapter = () => onChange([...chapters, emptyChapter()]);
+
+  const updateChapter = (idx, updated) => {
+    const next = [...chapters]; next[idx] = updated; onChange(next);
+  };
+
+  const deleteChapter = (idx) => {
+    if (chapters.length <= 1) return;
+    onChange(chapters.filter((_, i) => i !== idx));
+  };
+
+  const addQuestion = (ci) => {
+    const ch = { ...chapters[ci] };
+    ch.assessment = { ...ch.assessment, questions: [...(ch.assessment?.questions || []), emptyQuestion()] };
+    updateChapter(ci, ch);
+  };
+
+  const deleteQuestion = (ci, qi) => {
+    const ch = { ...chapters[ci] };
+    const qs = ch.assessment.questions.filter((_, i) => i !== qi);
+    ch.assessment = { ...ch.assessment, questions: qs };
+    updateChapter(ci, ch);
+  };
+
+  const updateQuestion = (ci, qi, updated) => {
+    const ch = { ...chapters[ci] };
+    const qs = [...ch.assessment.questions]; qs[qi] = updated;
+    ch.assessment = { ...ch.assessment, questions: qs };
+    updateChapter(ci, ch);
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>📖 Chapters ({chapters.length})</Typography>
+        <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
+          onClick={addChapter} sx={{ borderRadius: 2.5 }}>
+          Add Chapter
+        </Button>
+      </Box>
+
+      {chapters.map((ch, ci) => (
+        <MuiAccordion key={ch.id} defaultExpanded={ci === 0}
+          sx={{ mb: 1.5, background: 'rgba(22,27,39,0.8)', border: '1px solid rgba(139,155,180,0.12)', borderRadius: '14px !important',
+            '&:before': { display: 'none' }, '&.Mui-expanded': { margin: '0 0 12px 0' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: STEEL }} />}
+            sx={{ px: 2.5, py: 1.5, '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
+            <Box sx={{ width: 28, height: 28, borderRadius: 1.5, background: 'rgba(108,127,216,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Typography sx={{ color: ACCENT2, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.75rem' }}>
+                {ci + 1}
+              </Typography>
+            </Box>
+            <Typography sx={{ color: CREAM, fontWeight: 600, fontSize: '0.88rem', flex: 1 }}>
+              {ch.title || `Chapter ${ci + 1}`}
+            </Typography>
+            <Chip label={ch.type} size="small"
+              icon={ch.type === 'video' ? <PlayArrowRoundedIcon sx={{ fontSize: '12px !important' }} /> : <ArticleRoundedIcon sx={{ fontSize: '12px !important' }} />}
+              sx={{ background: ch.type === 'video' ? 'rgba(108,127,216,0.15)' : 'rgba(212,168,67,0.15)',
+                color: ch.type === 'video' ? ACCENT2 : GOLD, fontSize: '0.65rem', mr: 1 }} />
+            {chapters.length > 1 && (
+              <IconButton size="small" onClick={e => { e.stopPropagation(); deleteChapter(ci); }}
+                sx={{ color: DANGER, background: 'rgba(231,76,111,0.1)', borderRadius: 1.5, width: 28, height: 28,
+                  '&:hover': { background: 'rgba(231,76,111,0.2)' } }}>
+                <DeleteRoundedIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            )}
+          </AccordionSummary>
+
+          <AccordionDetails sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={7}>
+                <TextField label="Chapter Title *" fullWidth size="small" value={ch.title}
+                  onChange={e => updateChapter(ci, { ...ch, title: e.target.value })} />
+              </Grid>
+              <Grid item xs={6} sm={2.5}>
+                <TextField label="Duration" fullWidth size="small" value={ch.duration}
+                  onChange={e => updateChapter(ci, { ...ch, duration: e.target.value })}
+                  placeholder="45 min" />
+              </Grid>
+              <Grid item xs={6} sm={2.5}>
+                <ToggleButtonGroup exclusive value={ch.type} size="small"
+                  onChange={(_, v) => v && updateChapter(ci, { ...ch, type: v })}
+                  sx={{ height: 40, '& .MuiToggleButton-root': { px: 1.5, py: 0.5, color: STEEL, borderColor: 'rgba(139,155,180,0.2)', '&.Mui-selected': { background: 'rgba(108,127,216,0.2)', color: ACCENT2 } } }}>
+                  <ToggleButton value="text"><ArticleRoundedIcon sx={{ fontSize: 15 }} /></ToggleButton>
+                  <ToggleButton value="video"><PlayArrowRoundedIcon sx={{ fontSize: 15 }} /></ToggleButton>
+                </ToggleButtonGroup>
+              </Grid>
+            </Grid>
+
+            {ch.type === 'video' && (
+              <TextField label="Video URL (YouTube embed)" fullWidth size="small" value={ch.content.videoUrl}
+                onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, videoUrl: e.target.value } })}
+                placeholder="https://www.youtube.com/embed/..." sx={{ mb: 2 }} />
+            )}
+
+            <TextField label="Text Content (Markdown supported)" fullWidth multiline rows={4} size="small"
+              value={ch.content.textContent}
+              onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, textContent: e.target.value } })}
+              placeholder="# Chapter Title&#10;&#10;Write your content here..." sx={{ mb: 2.5 }} />
+
+            {/* Chapter quiz */}
+            <Box sx={{ borderTop: '1px solid rgba(139,155,180,0.1)', pt: 2.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <QuizRoundedIcon sx={{ color: ACCENT2, fontSize: 18 }} />
+                  <Typography sx={{ color: CREAM, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.88rem' }}>
+                    Chapter Quiz ({ch.assessment?.questions?.length || 0} questions)
+                  </Typography>
+                </Box>
+                <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
+                  onClick={() => addQuestion(ci)} sx={{ borderRadius: 2 }}>
+                  Add Q
+                </Button>
+              </Box>
+
+              {ch.assessment?.questions?.map((q, qi) => (
+                <QuestionEditor key={qi} q={q} qi={qi}
+                  onChange={updated => updateQuestion(ci, qi, updated)}
+                  onDelete={() => deleteQuestion(ci, qi)}
+                  showDelete={(ch.assessment?.questions?.length || 0) > 1} />
+              ))}
+            </Box>
+          </AccordionDetails>
+        </MuiAccordion>
+      ))}
+    </Box>
+  );
+}
+
+// ─── Step 3: Grand Assessment ────────────────────────────────────────────────
+function Step3({ grandAssessment, onChange }) {
+  const addQuestion = () => onChange({ ...grandAssessment, questions: [...(grandAssessment.questions || []), emptyQuestion()] });
+
+  const deleteQuestion = (qi) => {
+    if ((grandAssessment.questions?.length || 0) <= 1) return;
+    onChange({ ...grandAssessment, questions: grandAssessment.questions.filter((_, i) => i !== qi) });
+  };
+
+  const updateQuestion = (qi, updated) => {
+    const qs = [...(grandAssessment.questions || [])]; qs[qi] = updated;
+    onChange({ ...grandAssessment, questions: qs });
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>🏆 Grand Assessment</Typography>
+        <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
+          onClick={addQuestion} sx={{ borderRadius: 2.5 }}>
+          Add Question
+        </Button>
+      </Box>
+      <Typography sx={{ color: STEEL, fontSize: '0.83rem', mb: 3 }}>
+        Students must complete all chapters before taking this final test to earn their certificate.
+      </Typography>
+
+      <TextField label="Passing Score (%)" type="number" value={grandAssessment.passingScore}
+        onChange={e => onChange({ ...grandAssessment, passingScore: Number(e.target.value) })}
+        inputProps={{ min: 1, max: 100 }} sx={{ mb: 3, width: 200 }} size="small" />
+
+      {(grandAssessment.questions || []).map((q, qi) => (
+        <QuestionEditor key={qi} q={q} qi={qi}
+          onChange={updated => updateQuestion(qi, updated)}
+          onDelete={() => deleteQuestion(qi)}
+          showDelete={(grandAssessment.questions?.length || 0) > 1} />
+      ))}
+    </Box>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+export default function CreateCourse() {
+  const { user } = useAuth();
+  const { db, showNotification } = useApp();
+  const navigate = useNavigate();
+
+  const [activeStep, setActiveStep] = useState(0);
+  const [error, setError] = useState('');
+
+  const [courseData, setCourseData] = useState({
+    title: '', description: '', longDescription: '', category: 'AIML',
+    level: 'Beginner', duration: '', thumbnail: '', tagsRaw: '',
+  });
+
+  const [chapters, setChapters] = useState([emptyChapter()]);
+
+  const [grandAssessment, setGrandAssessment] = useState({
+    passingScore: 70,
+    questions: [emptyQuestion()],
+  });
+
+  const step1Valid = courseData.title && courseData.description && courseData.category && courseData.level && courseData.duration;
+  const step2Valid = chapters.every(ch => ch.title);
+  const step3Valid = grandAssessment.questions.every(q => q.question && q.options.every(o => o));
+
+  const handleNext = () => {
+    setError('');
+    if (activeStep === 0 && !step1Valid) { setError('Please fill in all required fields.'); return; }
+    if (activeStep === 1 && !step2Valid) { setError('Please add a title to every chapter.'); return; }
+    setActiveStep(s => s + 1);
+  };
+
+  const handlePublish = () => {
+    if (!step3Valid) { setError('Please complete all questions with options.'); return; }
+
+    const newCourse = {
+      id: `course_${Date.now()}`,
+      ...courseData,
+      tags: courseData.tagsRaw.split(',').map(t => t.trim()).filter(Boolean),
+      instructorId: user.id,
+      instructorName: user.name,
+      chapters: chapters.map((ch, i) => ({ ...ch, id: ch.id || `ch_${i}` })),
+      grandAssessment,
+      enrolledCount: 0,
+      rating: 0,
+      reviews: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    db.courses.push(newCourse);
+    showNotification('🎉 Course published successfully!');
+    navigate('/instructor/courses');
+  };
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
+      <InstructorSidebar />
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+        <Box sx={{ maxWidth: 860, mx: 'auto' }}>
+
+          {/* Header */}
+          <Box className="anim-fadeInUp" sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+              Create Course
+            </Typography>
+            <Typography sx={{ color: STEEL, mt: 0.5, fontSize: '0.9rem' }}>Build and publish your course step by step</Typography>
+          </Box>
+
+          {/* Stepper */}
+          <Stepper activeStep={activeStep} className="anim-fadeInUp delay-1" sx={{ mb: 4,
+            '& .MuiStepLabel-label': { fontFamily: '"Syne",sans-serif', fontWeight: 600, color: STEEL, fontSize: '0.83rem',
+              '&.Mui-active': { color: CREAM }, '&.Mui-completed': { color: TEAL } },
+            '& .MuiStepIcon-root': { color: 'rgba(139,155,180,0.2)', '&.Mui-active': { color: ACCENT }, '&.Mui-completed': { color: TEAL } },
+          }}>
+            {STEPS.map(label => (
+              <Step key={label}><StepLabel>{label}</StepLabel></Step>
+            ))}
+          </Stepper>
+
+          {/* Content card */}
+          <Card className="anim-fadeInUp delay-2"
+            sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 4 }}>
+            <CardContent sx={{ p: { xs: 2.5, md: 4 }, '&:last-child': { pb: { xs: 2.5, md: 4 } } }}>
+              {activeStep === 0 && <Step1 data={courseData} onChange={setCourseData} />}
+              {activeStep === 1 && <Step2 chapters={chapters} onChange={setChapters} />}
+              {activeStep === 2 && <Step3 grandAssessment={grandAssessment} onChange={setGrandAssessment} />}
+
+              {error && <Alert severity="error" sx={{ mt: 2.5, borderRadius: 2.5 }}>{error}</Alert>}
+
+              {/* Navigation */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 4, pt: 3, borderTop: '1px solid rgba(139,155,180,0.1)' }}>
+                <Button variant="outlined" color="primary" startIcon={<ArrowBackRoundedIcon />}
+                  onClick={() => setActiveStep(s => s - 1)} disabled={activeStep === 0}
+                  sx={{ px: 3, py: 1.2 }}>
+                  Back
+                </Button>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {STEPS.map((_, i) => (
+                    <Box key={i} sx={{ width: i === activeStep ? 24 : 8, height: 8, borderRadius: 4, transition: 'all 0.3s ease',
+                      background: i < activeStep ? TEAL : i === activeStep ? ACCENT : 'rgba(139,155,180,0.2)' }} />
+                  ))}
+                </Box>
+
+                {activeStep < STEPS.length - 1 ? (
+                  <Button variant="contained" color="primary" endIcon={<ArrowForwardRoundedIcon />}
+                    onClick={handleNext} sx={{ px: 3, py: 1.2 }}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button variant="contained" startIcon={<PublishRoundedIcon />}
+                    onClick={handlePublish}
+                    sx={{ px: 3.5, py: 1.2, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700 }}>
+                    Publish Course
+                  </Button>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
+    </Box>
   );
 }

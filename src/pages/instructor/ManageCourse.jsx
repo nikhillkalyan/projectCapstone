@@ -1,199 +1,224 @@
-import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import InstructorSidebar from '../../components/layout/InstructorSidebar';
-import { Users, Star, BarChart2, BookOpen, ArrowLeft, CheckCircle, Edit3, Save } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import Rating from '@mui/material/Rating';
+import LinearProgress from '@mui/material/LinearProgress';
+import Divider from '@mui/material/Divider';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
+import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
+import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
+
+const SIDEBAR_W = 248;
+
+const catColors = {
+  AIML:         { bg: 'rgba(108,127,216,0.18)', color: ACCENT2 },
+  Cloud:        { bg: 'rgba(78,205,196,0.18)',  color: TEAL    },
+  DataScience:  { bg: 'rgba(212,168,67,0.18)',  color: GOLD    },
+  Cybersecurity:{ bg: 'rgba(231,76,111,0.18)',  color: DANGER  },
+};
 
 export default function ManageCourse() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { db, showNotification } = useApp();
-  const [editMode, setEditMode] = useState(false);
+  const { db } = useApp();
 
-  const course = db.courses.find(c => c.id === courseId);
+  const course = db.courses.find(c => c.id === courseId && c.instructorId === user?.id);
 
-  const enrolledStudents = useMemo(() => {
-    return db.students.filter(s => s.enrolledCourses?.includes(courseId));
-  }, [db.students, courseId]);
+  if (!course) return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
+      <InstructorSidebar />
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: { xs: 7, md: 0 } }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography sx={{ fontSize: '3rem', mb: 2 }}>🔍</Typography>
+          <Typography variant="h6" sx={{ color: CREAM, mb: 2 }}>Course not found</Typography>
+          <Button variant="outlined" color="primary" onClick={() => navigate('/instructor/courses')}>Back to Courses</Button>
+        </Box>
+      </Box>
+    </Box>
+  );
 
-  if (!course || course.instructorId !== user?.id) {
-    return (
-      <div className="flex"><InstructorSidebar />
-        <div className="main-content flex items-center justify-center">
-          <p style={{ color: 'var(--steel)' }}>Course not found</p>
-        </div>
-      </div>
-    );
-  }
+  const cc = catColors[course.category] || catColors.AIML;
+  const ratingDist = [5,4,3,2,1].map(star => {
+    const count = course.reviews?.filter(r => Math.round(r.rating) === star).length || 0;
+    const pct = course.reviews?.length ? Math.round((count / course.reviews.length) * 100) : 0;
+    return { star, count, pct };
+  });
 
-  const getStudentProgress = (student) => {
-    const progress = student.progress?.[courseId] || {};
-    const totalChapters = course.chapters?.length || 0;
-    const completed = Object.values(progress).filter(p => p.completed).length;
-    return totalChapters ? Math.round((completed / totalChapters) * 100) : 0;
-  };
-
-  const getStudentAvgScore = (student) => {
-    const results = db.assessmentResults?.[student.id]?.[courseId] || {};
-    const scores = Object.values(results).map(r => r.score);
-    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
-  };
+  const stats = [
+    { icon: PeopleRoundedIcon, label: 'Students',  value: course.enrolledCount || 0, color: TEAL },
+    { icon: StarRoundedIcon,   label: 'Rating',    value: course.rating?.toFixed(1) || '—', color: GOLD },
+    { icon: QuizRoundedIcon,   label: 'Reviews',   value: course.reviews?.length || 0, color: ACCENT2 },
+    { icon: BarChartRoundedIcon,label:'Chapters',  value: course.chapters?.length || 0, color: DANGER },
+  ];
 
   return (
-    <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
       <InstructorSidebar />
-      <div className="main-content p-8">
-        <button onClick={() => navigate('/instructor/courses')} className="flex items-center gap-2 mb-6 text-sm" style={{ color: 'var(--steel)' }}>
-          <ArrowLeft size={16} /> Back to Courses
-        </button>
+      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+        <Box sx={{ maxWidth: 900, mx: 'auto' }}>
 
-        {/* Course header */}
-        <div className="glass rounded-3xl p-8 mb-8 animate-fadeInUp">
-          <div className="flex gap-6">
-            <img src={course.thumbnail || 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=300&q=80'} alt=""
-              className="w-40 h-28 rounded-2xl object-cover flex-shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className={`badge badge-${course.category.toLowerCase()} mb-2`}>{course.category} • {course.level}</span>
-                  <h1 className="text-2xl font-black mb-2" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{course.title}</h1>
-                  <p style={{ color: 'var(--steel)', fontSize: '14px' }}>{course.description}</p>
-                </div>
-              </div>
-              <div className="flex gap-5 mt-4">
-                <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--steel)' }}>
-                  <Users size={15} /><b style={{ color: 'var(--cream)' }}>{enrolledStudents.length}</b> enrolled
-                </span>
-                <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--steel)' }}>
-                  <Star size={15} style={{ color: '#D4A843' }} fill="#D4A843" />
-                  <b style={{ color: 'var(--cream)' }}>{course.rating?.toFixed(1)}</b>
-                </span>
-                <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--steel)' }}>
-                  <BookOpen size={15} /><b style={{ color: 'var(--cream)' }}>{course.chapters?.length}</b> chapters
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Button startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate('/instructor/courses')}
+            sx={{ color: STEEL, mb: 3, '&:hover': { color: CREAM } }}>
+            Back to Courses
+          </Button>
 
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8 animate-fadeInUp delay-100">
-          {[
-            { label: 'Total Enrolled', value: enrolledStudents.length, color: '#6B7FD4' },
-            { label: 'Completed', value: db.students.filter(s => s.completedCourses?.find(c => c.courseId === courseId)).length, color: '#4ECDC4' },
-            { label: 'Reviews', value: course.reviews?.length || 0, color: '#D4A843' },
-            { label: 'Avg Rating', value: course.rating?.toFixed(1) || '—', color: '#E74C6F' },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="glass rounded-2xl p-4 text-center">
-              <div className="text-2xl font-black mb-1" style={{ fontFamily: 'Syne', color }}>{value}</div>
-              <div className="text-xs" style={{ color: 'var(--steel)' }}>{label}</div>
-            </div>
-          ))}
-        </div>
+          {/* Hero */}
+          <Card className="anim-fadeInUp" sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)',
+            borderRadius: 4, overflow: 'hidden', mb: 3 }}>
+            <Box sx={{ position: 'relative', height: { xs: 160, sm: 220 } }}>
+              <Box component="img" src={course.thumbnail} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,12,20,0.95) 0%, rgba(8,12,20,0.3) 60%, transparent 100%)' }} />
+              <Box sx={{ position: 'absolute', bottom: 0, left: 0, p: 3 }}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+                  <Chip label={course.category} size="small"
+                    sx={{ background: cc.bg, color: cc.color, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.65rem' }} />
+                  <Chip label={course.level} size="small"
+                    sx={{ background: 'rgba(0,0,0,0.5)', color: SAND, fontSize: '0.65rem', backdropFilter: 'blur(4px)' }} />
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: '#fff', mb: 0.5 }}>{course.title}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <AccessTimeRoundedIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }} />
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>{course.duration}</Typography>
+                </Box>
+              </Box>
+            </Box>
 
-        {/* Chapter overview */}
-        <div className="glass rounded-3xl p-6 mb-8 animate-fadeInUp delay-200">
-          <h2 className="text-lg font-bold mb-5" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Chapter Overview</h2>
-          <div className="space-y-3">
-            {course.chapters?.map((ch, idx) => {
-              const completedByStudents = enrolledStudents.filter(s => s.progress?.[courseId]?.[ch.id]?.completed).length;
-              const pct = enrolledStudents.length > 0 ? Math.round((completedByStudents / enrolledStudents.length) * 100) : 0;
-              return (
-                <div key={ch.id} className="flex items-center gap-4 p-3 rounded-xl" style={{ background: 'rgba(48, 54, 79, 0.3)' }}>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={{ background: 'rgba(107, 127, 212, 0.2)', color: 'var(--accent-light)', fontFamily: 'Syne' }}>{idx + 1}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium" style={{ color: 'var(--cream)' }}>{ch.title}</span>
-                      <span className="text-xs" style={{ color: 'var(--steel)' }}>{completedByStudents}/{enrolledStudents.length} students</span>
-                    </div>
-                    <div className="progress-bar" style={{ height: '4px' }}>
-                      <div className="progress-fill" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold w-10 text-right" style={{ color: 'var(--accent-light)', fontFamily: 'Syne' }}>{pct}%</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+            <CardContent sx={{ p: 3 }}>
+              <Grid container spacing={2.5}>
+                {stats.map(({ icon: Icon, label, value, color }) => (
+                  <Grid item xs={6} sm={3} key={label}>
+                    <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2.5, background: `${color}10`, border: `1px solid ${color}25` }}>
+                      <Icon sx={{ color, fontSize: 22, mb: 0.5 }} />
+                      <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.5rem', color: CREAM, lineHeight: 1 }}>{value}</Typography>
+                      <Typography sx={{ color: STEEL, fontSize: '0.72rem', mt: 0.4 }}>{label}</Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
 
-        {/* Enrolled students */}
-        <div className="glass rounded-3xl p-6 mb-8 animate-fadeInUp delay-300">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Enrolled Students</h2>
-            <button onClick={() => navigate(`/instructor/students/${courseId}`)} className="btn-outline px-4 py-2 rounded-xl text-sm">
-              View Full Progress →
-            </button>
-          </div>
+          <Grid container spacing={3}>
+            {/* Chapters */}
+            <Grid item xs={12} md={7}>
+              <Card className="anim-fadeInUp delay-1" sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3.5 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>
+                    📖 Chapters ({course.chapters?.length || 0})
+                  </Typography>
+                  {course.chapters?.map((ch, i) => (
+                    <Box key={ch.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5,
+                      borderBottom: i < (course.chapters.length - 1) ? '1px solid rgba(139,155,180,0.08)' : 'none' }}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: 2, background: 'rgba(108,127,216,0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {ch.type === 'video'
+                          ? <PlayArrowRoundedIcon sx={{ fontSize: 16, color: ACCENT2 }} />
+                          : <ArticleRoundedIcon sx={{ fontSize: 16, color: GOLD }} />}
+                      </Box>
+                      <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                        <Typography sx={{ color: CREAM, fontWeight: 500, fontSize: '0.85rem',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {ch.title}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3 }}>
+                          <Typography sx={{ color: STEEL, fontSize: '0.72rem' }}>{ch.duration || 'N/A'}</Typography>
+                          {ch.assessment?.questions?.length > 0 && (
+                            <Chip label={`${ch.assessment.questions.length} quiz Q`} size="small"
+                              sx={{ background: 'rgba(108,127,216,0.1)', color: ACCENT2, fontSize: '0.6rem', height: 18 }} />
+                          )}
+                        </Box>
+                      </Box>
+                      <Typography sx={{ color: STEEL, fontSize: '0.72rem', flexShrink: 0 }}>#{i + 1}</Typography>
+                    </Box>
+                  ))}
 
-          {enrolledStudents.length === 0 ? (
-            <p style={{ color: 'var(--steel)' }}>No students enrolled yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {enrolledStudents.map(student => {
-                const progress = getStudentProgress(student);
-                const avgScore = getStudentAvgScore(student);
-                const isCompleted = student.completedCourses?.find(c => c.courseId === courseId);
-                return (
-                  <div key={student.id} className="flex items-center gap-4 p-4 rounded-xl" style={{ background: 'rgba(48, 54, 79, 0.3)' }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                      style={{ background: 'linear-gradient(135deg, #6B7FD4, #8FA4E8)', fontFamily: 'Syne', color: 'white' }}>
-                      {student.name?.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{student.name}</span>
-                        {isCompleted && <CheckCircle size={14} style={{ color: '#4ECDC4' }} />}
-                      </div>
-                      <span className="text-xs" style={{ color: 'var(--steel)' }}>{student.college} • {student.year}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="text-sm font-bold" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{progress}%</div>
-                        <div className="text-xs" style={{ color: 'var(--steel)' }}>Progress</div>
-                      </div>
-                      {avgScore !== null && (
-                        <div className="text-right">
-                          <div className="text-sm font-bold" style={{ fontFamily: 'Syne', color: avgScore >= 70 ? '#4ECDC4' : '#E74C6F' }}>{avgScore}%</div>
-                          <div className="text-xs" style={{ color: 'var(--steel)' }}>Avg Score</div>
-                        </div>
-                      )}
-                      <button onClick={() => navigate(`/instructor/chat?student=${student.id}&course=${courseId}`)} className="btn-outline px-3 py-2 rounded-xl text-xs">
-                        💬 Chat
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <Button variant="outlined" color="primary" fullWidth startIcon={<BarChartRoundedIcon />}
+                    onClick={() => navigate(`/instructor/students/${course.id}`)} sx={{ mt: 2.5, py: 1.2 }}>
+                    View Student Progress
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
 
-        {/* Reviews */}
-        {course.reviews?.length > 0 && (
-          <div className="glass rounded-3xl p-6 animate-fadeInUp delay-400">
-            <h2 className="text-lg font-bold mb-5" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>Student Reviews</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {course.reviews.map((review, i) => (
-                <div key={i} className="p-4 rounded-2xl" style={{ background: 'rgba(48, 54, 79, 0.3)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-sm" style={{ fontFamily: 'Syne', color: 'var(--cream)' }}>{review.studentName}</span>
-                    <div className="flex">
-                      {[...Array(5)].map((_, s) => (
-                        <span key={s} style={{ color: s < review.rating ? '#D4A843' : 'rgba(172, 186, 196, 0.3)', fontSize: '13px' }}>★</span>
+            {/* Reviews */}
+            <Grid item xs={12} md={5}>
+              <Card className="anim-fadeInUp delay-2" sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3.5 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2 }}>⭐ Reviews</Typography>
+
+                  {course.reviews?.length > 0 ? (
+                    <>
+                      <Box sx={{ textAlign: 'center', mb: 2.5 }}>
+                        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '3rem', color: GOLD, lineHeight: 1 }}>
+                          {course.rating?.toFixed(1)}
+                        </Typography>
+                        <Rating value={course.rating} readOnly precision={0.5}
+                          sx={{ mt: 0.5, '& .MuiRating-iconFilled': { color: GOLD }, '& .MuiRating-iconEmpty': { color: 'rgba(212,168,67,0.2)' } }} />
+                        <Typography sx={{ color: STEEL, fontSize: '0.78rem', mt: 0.5 }}>
+                          {course.reviews.length} review{course.reviews.length !== 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+
+                      {/* Rating distribution */}
+                      {ratingDist.map(({ star, count, pct }) => (
+                        <Box key={star} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.8 }}>
+                          <Typography sx={{ color: STEEL, fontSize: '0.75rem', width: 8, flexShrink: 0 }}>{star}</Typography>
+                          <StarRoundedIcon sx={{ fontSize: 13, color: GOLD, flexShrink: 0 }} />
+                          <LinearProgress variant="determinate" value={pct} sx={{ flex: 1, height: 6, borderRadius: 3,
+                            background: 'rgba(139,155,180,0.1)', '& .MuiLinearProgress-bar': { background: GOLD } }} />
+                          <Typography sx={{ color: STEEL, fontSize: '0.72rem', width: 22, textAlign: 'right', flexShrink: 0 }}>{count}</Typography>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
-                  {review.review && <p className="text-sm" style={{ color: 'rgba(240, 240, 219, 0.8)' }}>{review.review}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+
+                      <Divider sx={{ my: 2.5, borderColor: 'rgba(139,155,180,0.08)' }} />
+
+                      <Box sx={{ maxHeight: 260, overflowY: 'auto',
+                        '&::-webkit-scrollbar': { width: 3 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.15)', borderRadius: 2 } }}>
+                        {[...course.reviews].reverse().map((r, i) => (
+                          <Box key={i} sx={{ mb: 2, pb: 2, borderBottom: i < course.reviews.length - 1 ? '1px solid rgba(139,155,180,0.07)' : 'none' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                              <Typography sx={{ color: CREAM, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.82rem' }}>
+                                {r.studentName}
+                              </Typography>
+                              <Rating value={r.rating} readOnly size="small"
+                                sx={{ '& .MuiRating-iconFilled': { color: GOLD }, '& .MuiRating-iconEmpty': { color: 'rgba(212,168,67,0.15)' } }} />
+                            </Box>
+                            {r.review && (
+                              <Typography sx={{ color: STEEL, fontSize: '0.78rem', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                "{r.review}"
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    </>
+                  ) : (
+                    <Box sx={{ textAlign: 'center', py: 4, opacity: 0.5 }}>
+                      <StarRoundedIcon sx={{ fontSize: 36, color: STEEL, mb: 1 }} />
+                      <Typography sx={{ color: STEEL, fontSize: '0.85rem' }}>No reviews yet</Typography>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
+    </Box>
   );
 }
