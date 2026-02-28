@@ -117,7 +117,7 @@ export default function CourseDetails() {
                 {isEnrolled ? (
                     <button
                         onClick={() => navigate(`/student/course/${courseId}/learn`)}
-                        className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(108,127,216,0.15)]"
+                        className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(108,127,216,0.15)] relative z-10"
                     >
                         <Play className="w-4 h-4 fill-current" />
                         Continue Learning
@@ -128,7 +128,7 @@ export default function CourseDetails() {
                             enrollCourse(courseId);
                             navigate(`/student/course/${courseId}/learn`);
                         }}
-                        className="w-full bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                        className="w-full bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer relative z-10"
                     >
                         <Bookmark className="w-4 h-4" />
                         Enroll Now
@@ -236,7 +236,7 @@ export default function CourseDetails() {
                                                     {/* Accordion Header */}
                                                     <button
                                                         onClick={() => toggleChapter(chapter.id)}
-                                                        className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                                                        className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
                                                         aria-expanded={isExpanded}
                                                     >
                                                         <div className="flex flex-col items-start gap-1">

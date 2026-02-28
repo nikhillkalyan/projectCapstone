@@ -1,25 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import StudentSidebar from '../../components/layout/StudentSidebar';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import Assessment from '../../components/shared/Assessment';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import LinearProgress from '@mui/material/LinearProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import Rating from '@mui/material/Rating';
-import TextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import Divider from '@mui/material/Divider';
-import CircularProgress from '@mui/material/CircularProgress';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
@@ -34,10 +18,6 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import BookmarkAddRoundedIcon from '@mui/icons-material/BookmarkAddRounded';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } from '../../theme';
-
-const SIDEBAR_W = 248;
-const CHAPTER_DRAWER_W = 280;
 
 function MarkdownRenderer({ text }) {
   const html = text
@@ -77,17 +57,20 @@ export default function CoursePlayer() {
   const chapterProgress = activeChapter ? progress[activeChapter.id] || {} : {};
   const allChaptersComplete = course?.chapters?.every(ch => progress[ch.id]?.completed);
 
+  const isInitialized = useRef(false);
+
   useEffect(() => {
-    if (course?.chapters?.length > 0) setActiveChapter(course.chapters[0]);
-  }, [courseId]);
+    if (!isInitialized.current && course?.chapters?.length > 0) {
+      setActiveChapter(course.chapters[0]);
+      isInitialized.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course?.chapters]);
 
   if (!course) return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <StudentSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography sx={{ color: STEEL }}>Course not found</Typography>
-      </Box>
-    </Box>
+    <div className="flex h-screen w-full bg-bg-base items-center justify-center font-dmsans text-text-primary">
+      <span className="text-text-secondary">Course not found</span>
+    </div>
   );
 
   const handleMarkComplete = () => {
@@ -123,312 +106,463 @@ export default function CoursePlayer() {
 
   // Chapter drawer content
   const ChapterList = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'rgba(8,12,20,0.95)' }}>
-      <Box sx={{ p: 2, borderBottom: '1px solid rgba(139,155,180,0.1)' }}>
-        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.88rem', mb: 1, lineHeight: 1.3,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {course.title}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <LinearProgress variant="determinate" value={overallProgress} sx={{ flex: 1, height: 5, borderRadius: 2 }} />
-          <Typography sx={{ color: ACCENT2, fontSize: '0.72rem', fontWeight: 600, flexShrink: 0 }}>{overallProgress}%</Typography>
-        </Box>
-      </Box>
+    <div className="flex flex-col h-full bg-bg-surface">
 
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 1,
-        '&::-webkit-scrollbar': { width: 3 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.15)', borderRadius: 2 } }}>
-        <Typography sx={{ color: STEEL, fontSize: '0.6rem', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', px: 1.5, py: 1 }}>
-          Chapters ({course.chapters?.length})
-        </Typography>
+      {/* Drawer Header */}
+      <div className="p-4 border-b border-border-subtle bg-bg-surface backdrop-blur-md sticky top-0 z-10 flex-shrink-0">
+        <h2 className="font-syne font-bold text-text-primary text-[0.85rem] mb-2 line-clamp-2 leading-snug">
+          {course.title}
+        </h2>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden relative">
+            <div
+              className="absolute top-0 left-0 h-full bg-primary-500 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${overallProgress}%` }}
+            />
+          </div>
+          <span className="text-primary-400 text-[0.7rem] font-bold flex-shrink-0">{overallProgress}%</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 hide-scrollbar">
+        <h3 className="text-text-secondary text-[0.65rem] font-bold tracking-widest uppercase px-2 pb-2">
+          Curriculum ({course.chapters?.length})
+        </h3>
 
         {course.chapters?.map((ch, idx) => {
           const chProg = progress[ch.id] || {};
           const isActive = activeChapter?.id === ch.id;
           return (
-            <ListItemButton key={ch.id}
-              selected={isActive}
-              onClick={() => { setActiveChapter(ch); setShowAssessment(false); setShowGrandTest(false); setGrandTestDone(false); }}
-              sx={{ borderRadius: 2.5, mb: 0.5, px: 1.5, py: 1.2, flexDirection: 'column', alignItems: 'flex-start', gap: 0.5,
-                '&.Mui-selected': { background: 'rgba(108,127,216,0.18)', border: '1px solid rgba(108,127,216,0.25)' } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                <Box sx={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: chProg.completed ? 'rgba(78,205,196,0.25)' : 'rgba(139,155,180,0.1)' }}>
+            <button
+              key={ch.id}
+              onClick={() => { setActiveChapter(ch); setShowAssessment(false); setShowGrandTest(false); setGrandTestDone(false); if (window.innerWidth < 768) setChapterDrawerOpen(false); }}
+              className={`w-full text-left rounded-xl mb-1 px-3 py-3 flex flex-col gap-1 transition-all group cursor-pointer ${isActive ? 'bg-primary-500/10 border border-primary-500/20' : 'bg-transparent border border-transparent hover:bg-white/[0.03]'}`}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${chProg.completed ? 'bg-teal-500/20 text-teal-400' : 'bg-bg-elevated border border-border-subtle text-text-secondary group-hover:text-primary-400 group-hover:border-primary-500/50'}`}>
                   {chProg.completed
-                    ? <CheckCircleRoundedIcon sx={{ fontSize: 13, color: TEAL }} />
-                    : <Typography sx={{ color: STEEL, fontSize: '0.6rem', fontWeight: 700, fontFamily: '"Syne",sans-serif' }}>{idx + 1}</Typography>}
-                </Box>
-                <Typography sx={{ color: isActive ? CREAM : STEEL, fontSize: '0.78rem', fontWeight: isActive ? 600 : 400, flex: 1, lineHeight: 1.35,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    ? <CheckCircleRoundedIcon sx={{ fontSize: 16 }} color="inherit" />
+                    : <span className="font-syne font-bold text-[0.65rem]">{idx + 1}</span>}
+                </div>
+                <span className={`text-[0.85rem] flex-1 line-clamp-2 leading-snug ${isActive ? 'text-text-primary font-bold' : 'text-text-secondary font-medium group-hover:text-text-primary transition-colors'}`}>
                   {ch.title}
-                </Typography>
+                </span>
                 {ch.type === 'video'
-                  ? <PlayArrowRoundedIcon sx={{ fontSize: 13, color: STEEL, flexShrink: 0 }} />
-                  : <ArticleRoundedIcon sx={{ fontSize: 13, color: STEEL, flexShrink: 0 }} />}
-              </Box>
+                  ? <PlayArrowRoundedIcon sx={{ fontSize: 16 }} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />
+                  : <ArticleRoundedIcon sx={{ fontSize: 16 }} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />}
+              </div>
               {chProg.assessmentScore !== undefined && (
-                <Typography sx={{ color: TEAL, fontSize: '0.68rem', ml: 3.5, fontWeight: 600 }}>
+                <span className="text-teal-400 text-[0.65rem] ml-10 font-bold block mt-1">
                   Quiz: {chProg.assessmentScore}%
-                </Typography>
+                </span>
               )}
-            </ListItemButton>
+            </button>
           );
         })}
 
         {/* Grand test */}
         {allChaptersComplete && (
-          <Box sx={{ m: 1, p: 2, borderRadius: 2.5, background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.25)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.2 }}>
-              <EmojiEventsRoundedIcon sx={{ color: GOLD, fontSize: 16 }} />
-              <Typography sx={{ color: GOLD, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.8rem' }}>Grand Test</Typography>
-            </Box>
+          <div className="mt-4 p-4 rounded-2xl bg-warning/10 border border-warning/20 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <EmojiEventsRoundedIcon sx={{ color: '#D4A843', fontSize: 18 }} />
+              <span className="font-syne font-bold text-warning text-[0.85rem]">Grand Test</span>
+            </div>
             {completed ? (
               <>
-                <Typography sx={{ color: TEAL, fontSize: '0.75rem', mb: 1 }}>✓ Passed with {completed.score}%</Typography>
+                <span className="text-teal-400 text-[0.75rem] font-bold">✓ Passed with {completed.score}%</span>
                 <Button variant="contained" fullWidth size="small" onClick={() => navigate(`/student/certificate/${courseId}`)}
-                  sx={{ background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontSize: '0.75rem', py: 0.8 }}>
+                  sx={{ background: 'linear-gradient(135deg, #D4A843 0%, #E2D9BE 100%)', color: '#09090b', fontWeight: 700, borderRadius: 2 }}>
                   View Certificate
                 </Button>
               </>
             ) : (
               <Button variant="contained" fullWidth size="small"
-                onClick={() => { setShowGrandTest(true); setShowAssessment(false); setGrandTestDone(false); }}
-                sx={{ background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontSize: '0.75rem', py: 0.8 }}>
+                onClick={() => { setShowGrandTest(true); setShowAssessment(false); setGrandTestDone(false); if (window.innerWidth < 768) setChapterDrawerOpen(false); }}
+                sx={{ background: 'linear-gradient(135deg, #D4A843 0%, #E2D9BE 100%)', color: '#09090b', fontWeight: 700, borderRadius: 2 }}>
                 Take Grand Test
               </Button>
             )}
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <StudentSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', pt: { xs: '56px', md: 0 } }}>
-        {/* Top bar */}
-        <Box sx={{
-          px: { xs: 1.5, md: 2.5 }, py: 1.5, borderBottom: '1px solid rgba(139,155,180,0.1)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1,
-          background: 'rgba(8,12,20,0.9)', backdropFilter: 'blur(12px)', zIndex: 10, flexShrink: 0,
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Toggle chapters">
-              <IconButton size="small" onClick={() => setChapterDrawerOpen(p => !p)}
-                sx={{ color: chapterDrawerOpen ? ACCENT2 : STEEL, background: 'rgba(139,155,180,0.08)', borderRadius: 1.5 }}>
-                <MenuBookRoundedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Button size="small" startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate('/student/explore')}
-              sx={{ color: STEEL, fontSize: '0.78rem', display: { xs: 'none', sm: 'flex' } }}>
-              Back
-            </Button>
-            <Box sx={{ width: 1, height: 18, background: 'rgba(139,155,180,0.15)', display: { xs: 'none', sm: 'block' } }} />
-            <Typography sx={{ color: CREAM, fontSize: '0.83rem', fontWeight: 600, fontFamily: '"Syne",sans-serif',
-              display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden', maxWidth: { xs: 160, md: 320 } }}>
-              {activeChapter?.title}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex h-screen w-full bg-bg-base overflow-hidden font-dmsans text-text-primary">
+
+      {/* Left: Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen min-w-0 relative">
+
+        {/* Top bar (Theatre Mode header) */}
+        <header className="h-[72px] flex-shrink-0 flex items-center justify-between px-4 lg:px-8 bg-bg-base border-b border-border-subtle z-20">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button
+              className="text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 group p-2 rounded-xl border border-transparent hover:border-border-subtle hover:bg-white/5 cursor-pointer active:scale-95"
+              onClick={() => navigate(`/student/course/${courseId}`)}
+            >
+              <ArrowBackRoundedIcon fontSize="small" className="group-hover:-translate-x-1 transition-transform" />
+              <span className="hidden sm:inline font-syne font-bold text-sm">Course Details</span>
+            </button>
+            <div className="hidden sm:block w-[1px] h-6 bg-border-subtle mx-2" />
+            <h1 className="text-text-primary font-syne font-bold text-[0.95rem] md:text-[1.1rem] line-clamp-1 max-w-[200px] sm:max-w-[300px] md:max-w-[400px] tracking-tight">
+              {activeChapter?.title || "Loading chapter..."}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
             {!isEnrolled ? (
-              <Button variant="contained" color="primary" size="small" startIcon={<BookmarkAddRoundedIcon />}
-                onClick={() => enrollCourse(courseId)} sx={{ fontSize: '0.78rem' }}>
+              <button
+                onClick={() => enrollCourse(courseId)}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-primary-500/50 hover:bg-white/5 text-primary-400 font-bold text-xs transition-all hover:scale-[1.05] active:scale-95 cursor-pointer"
+              >
+                <BookmarkAddRoundedIcon fontSize="small" />
                 Enroll Free
-              </Button>
+              </button>
             ) : (
-              <Chip label="✓ Enrolled" size="small"
-                sx={{ background: 'rgba(78,205,196,0.15)', color: TEAL, border: '1px solid rgba(78,205,196,0.3)', fontSize: '0.7rem' }} />
+              <div className="hidden md:flex items-center">
+                <div className="px-3 py-1 bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold text-[0.7rem] rounded-full flex items-center gap-1.5">
+                  ✓ Enrolled
+                </div>
+              </div>
             )}
-            <IconButton size="small" onClick={() => toggleFavorite(courseId)}
-              sx={{ background: isFav ? 'rgba(231,76,111,0.15)' : 'rgba(139,155,180,0.08)', borderRadius: 1.5, border: `1px solid ${isFav ? 'rgba(231,76,111,0.3)' : 'rgba(139,155,180,0.12)'}` }}>
-              {isFav ? <FavoriteRoundedIcon sx={{ color: DANGER, fontSize: 17 }} /> : <FavoriteBorderRoundedIcon sx={{ color: STEEL, fontSize: 17 }} />}
-            </IconButton>
-          </Box>
-        </Box>
 
-        <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {/* Chapter sidebar - desktop */}
-          <Box sx={{
-            width: chapterDrawerOpen ? CHAPTER_DRAWER_W : 0, flexShrink: 0,
-            borderRight: '1px solid rgba(139,155,180,0.1)', overflow: 'hidden',
-            transition: 'width 0.3s cubic-bezier(.22,.68,0,1.2)',
-            display: { xs: 'none', md: 'block' },
-          }}>
-            {ChapterList}
-          </Box>
+            <button
+              onClick={() => toggleFavorite(courseId)}
+              title={isFav ? "Remove from Favorites" : "Add to Favorites"}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border ${isFav ? 'bg-danger/10 border-danger/30 text-danger' : 'bg-transparent border-border-subtle hover:bg-white/5 text-text-secondary hover:text-text-primary'}`}
+            >
+              {isFav ? <FavoriteRoundedIcon sx={{ fontSize: 18 }} color="inherit" /> : <FavoriteBorderRoundedIcon sx={{ fontSize: 18 }} color="inherit" />}
+            </button>
 
-          {/* Mobile chapter drawer */}
-          <Drawer variant="temporary" open={chapterDrawerOpen} onClose={() => setChapterDrawerOpen(false)}
-            sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: CHAPTER_DRAWER_W, background: 'rgba(8,12,20,0.98)', top: 'auto', height: 'calc(100% - 100px)' } }}>
-            {ChapterList}
-          </Drawer>
+            {/* Mobile Sidebar Toggle */}
+            <button
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border border-border-subtle bg-bg-surface text-text-secondary"
+              onClick={() => setChapterDrawerOpen(p => !p)}
+            >
+              <MenuBookRoundedIcon fontSize="small" color="inherit" />
+            </button>
+          </div>
+        </header>
 
-          {/* Main content */}
-          <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 },
-            '&::-webkit-scrollbar': { width: 5 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.12)', borderRadius: 2 } }}>
+        {/* Main scrollable area */}
+        <main className="flex-1 overflow-y-auto hide-scrollbar bg-gradient-to-b from-bg-base to-bg-surface">
+          <div className="max-w-[1000px] mx-auto w-full p-4 lg:p-8 xl:p-10 pb-24">
 
-            {showAssessment && activeChapter?.assessment ? (
-              <Box sx={{ maxWidth: 640, mx: 'auto' }}>
-                <Box sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.12)', borderRadius: 4, p: { xs: 2.5, md: 4 } }} className="anim-scaleIn">
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>Chapter Assessment</Typography>
-                    <IconButton onClick={() => setShowAssessment(false)} size="small" sx={{ color: STEEL }}><CloseRoundedIcon /></IconButton>
-                  </Box>
-                  <Assessment assessment={activeChapter.assessment} onComplete={handleAssessmentComplete} onClose={() => setShowAssessment(false)} />
-                </Box>
-              </Box>
-            ) : showGrandTest ? (
-              <Box sx={{ maxWidth: 640, mx: 'auto' }}>
-                <Box sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(212,168,67,0.2)', borderRadius: 4, p: { xs: 2.5, md: 4 } }} className="anim-scaleIn">
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <EmojiEventsRoundedIcon sx={{ color: GOLD, fontSize: 24 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>Grand Assessment</Typography>
-                    </Box>
-                    <IconButton onClick={() => setShowGrandTest(false)} size="small" sx={{ color: STEEL }}><CloseRoundedIcon /></IconButton>
-                  </Box>
-                  <Typography sx={{ color: STEEL, fontSize: '0.83rem', mb: 3 }}>Passing score: {course.grandAssessment.passingScore}%</Typography>
-                  <Assessment assessment={course.grandAssessment} onComplete={handleGrandTestComplete} onClose={() => setShowGrandTest(false)} />
-                </Box>
-              </Box>
-            ) : grandTestDone && grandScore !== null ? (
-              <Box sx={{ maxWidth: 480, mx: 'auto', textAlign: 'center', py: 6 }} className="anim-scaleIn">
-                <Typography className="anim-float" sx={{ fontSize: '5rem', mb: 3 }}>
-                  {grandScore >= (course.grandAssessment.passingScore || 70) ? '🏆' : '📚'}
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, mb: 1.5 }}>
-                  {grandScore >= (course.grandAssessment.passingScore || 70) ? 'Congratulations!' : 'Almost There!'}
-                </Typography>
-                <Typography className="gradient-text-teal" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '3.5rem', mb: 2 }}>
-                  {grandScore}%
-                </Typography>
-                <Typography sx={{ color: STEEL, mb: 4, fontSize: '0.95rem' }}>
-                  {grandScore >= 70 ? 'You passed the grand assessment!' : `You need ${course.grandAssessment.passingScore}% to pass. Try again!`}
-                </Typography>
-                {grandScore >= 70 ? (
-                  <Button variant="contained" size="large" startIcon={<WorkspacePremiumRoundedIcon />}
-                    onClick={() => navigate(`/student/certificate/${courseId}`)}
-                    sx={{ px: 4, py: 1.5, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700 }}>
-                    Get Certificate
-                  </Button>
-                ) : (
-                  <Button variant="contained" color="primary" size="large"
-                    onClick={() => { setGrandTestDone(false); setShowGrandTest(true); }} sx={{ px: 4, py: 1.5 }}>
-                    Retake Test
-                  </Button>
-                )}
-              </Box>
-            ) : activeChapter ? (
-              <Box sx={{ maxWidth: 860 }}>
-                {/* Chapter header */}
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                    <Chip label={activeChapter.type === 'video' ? 'Video' : 'Reading'} size="small"
-                      icon={activeChapter.type === 'video' ? <PlayArrowRoundedIcon sx={{ fontSize: '14px !important' }} /> : <ArticleRoundedIcon sx={{ fontSize: '14px !important' }} />}
-                      sx={{ background: activeChapter.type === 'video' ? 'rgba(108,127,216,0.18)' : 'rgba(212,168,67,0.18)', color: activeChapter.type === 'video' ? ACCENT2 : GOLD, border: `1px solid ${activeChapter.type === 'video' ? 'rgba(108,127,216,0.3)' : 'rgba(212,168,67,0.3)'}` }} />
-                    <Typography sx={{ color: STEEL, fontSize: '0.8rem' }}>{activeChapter.duration}</Typography>
-                  </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: CREAM, lineHeight: 1.3 }}>{activeChapter.title}</Typography>
-                </Box>
+            <AnimatePresence mode="wait">
+              {showAssessment && activeChapter?.assessment ? (
+                <motion.div
+                  key="assessment"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="max-w-[640px] mx-auto"
+                >
+                  <div className="bg-bg-surface/80 backdrop-blur-md border border-border-subtle rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-syne font-bold text-xl text-text-primary">Chapter Assessment</h2>
+                      <button
+                        onClick={() => setShowAssessment(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-text-secondary transition-colors"
+                      >
+                        <CloseRoundedIcon sx={{ fontSize: 20 }} />
+                      </button>
+                    </div>
+                    <Assessment assessment={activeChapter.assessment} onComplete={handleAssessmentComplete} onClose={() => setShowAssessment(false)} />
+                  </div>
+                </motion.div>
+              ) : showGrandTest ? (
+                <motion.div
+                  key="grand-test"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="max-w-[640px] mx-auto"
+                >
+                  <div className="bg-bg-surface/80 backdrop-blur-md border border-warning/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-warning/5 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <EmojiEventsRoundedIcon sx={{ color: '#D4A843', fontSize: 28 }} />
+                        <h2 className="font-syne font-bold text-xl text-text-primary">Grand Assessment</h2>
+                      </div>
+                      <button
+                        onClick={() => setShowGrandTest(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-text-secondary transition-colors"
+                      >
+                        <CloseRoundedIcon sx={{ fontSize: 20 }} />
+                      </button>
+                    </div>
+                    <p className="text-text-secondary text-sm font-medium mb-8">Passing score: {course.grandAssessment.passingScore}%</p>
+                    <Assessment assessment={course.grandAssessment} onComplete={handleGrandTestComplete} onClose={() => setShowGrandTest(false)} />
+                  </div>
+                </motion.div>
+              ) : grandTestDone && grandScore !== null ? (
+                <motion.div
+                  key="grand-test-result"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="max-w-[480px] mx-auto text-center py-10"
+                >
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="text-[6rem] leading-none mb-6 drop-shadow-2xl"
+                  >
+                    {grandScore >= (course.grandAssessment.passingScore || 70) ? '🏆' : '📚'}
+                  </motion.div>
+                  <h2 className="font-syne font-bold text-3xl md:text-4xl text-text-primary mb-2">
+                    {grandScore >= (course.grandAssessment.passingScore || 70) ? 'Congratulations!' : 'Almost There!'}
+                  </h2>
+                  <div className={`font-syne font-bold text-[5rem] tracking-tighter ${grandScore >= 70 ? 'text-teal-400 drop-shadow-[0_0_20px_rgba(78,205,196,0.3)]' : 'text-primary-400'}`}>
+                    {grandScore}%
+                  </div>
+                  <p className="text-text-secondary mb-8 text-lg">
+                    {grandScore >= 70 ? 'You passed the grand assessment!' : `You need ${course.grandAssessment.passingScore}% to pass. Try again!`}
+                  </p>
 
-                {/* Video */}
-                {activeChapter.type === 'video' && activeChapter.content.videoUrl && (
-                  <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, aspectRatio: '16/9', background: '#000' }}>
-                    <iframe src={activeChapter.content.videoUrl} title={activeChapter.title}
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen />
-                  </Box>
-                )}
+                  {grandScore >= 70 ? (
+                    <button
+                      onClick={() => navigate(`/student/certificate/${courseId}`)}
+                      className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-xl shadow-warning/20 font-bold text-[1.1rem] transition-transform hover:scale-105"
+                    >
+                      <WorkspacePremiumRoundedIcon />
+                      Get Certificate
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setGrandTestDone(false); setShowGrandTest(true); }}
+                      className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-primary-500 hover:bg-primary-600 text-white shadow-xl shadow-primary-500/20 font-bold text-[1.1rem] transition-transform hover:scale-105"
+                    >
+                      Retake Test
+                    </button>
+                  )}
+                </motion.div>
+              ) : activeChapter ? (
+                <div className="max-w-[860px] mx-auto">
+                  {/* Chapter header */}
+                  <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.75rem] font-bold tracking-wide uppercase border ${activeChapter.type === 'video'
+                          ? 'bg-primary-500/10 text-primary-400 border-primary-500/20'
+                          : 'bg-warning/10 text-warning border-warning/20'
+                          }`}
+                      >
+                        {activeChapter.type === 'video' ? <PlayArrowRoundedIcon sx={{ fontSize: 16 }} /> : <ArticleRoundedIcon sx={{ fontSize: 16 }} />}
+                        {activeChapter.type === 'video' ? 'Video' : 'Reading'}
+                      </span>
+                      <span className="text-text-secondary text-[0.85rem] font-medium flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-border-strong"></div>
+                        {activeChapter.duration}
+                      </span>
+                    </div>
+                    <h2 className="font-syne font-bold text-[1.8rem] md:text-[2.2rem] text-text-primary leading-tight tracking-tight">
+                      {activeChapter.title}
+                    </h2>
+                  </div>
 
-                {/* Text content */}
-                {activeChapter.content.textContent && (
-                  <Box sx={{ background: 'rgba(22,27,39,0.7)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3, p: { xs: 2.5, md: 4 }, mb: 3 }}>
-                    <MarkdownRenderer text={activeChapter.content.textContent} />
-                  </Box>
-                )}
-
-                {/* Actions */}
-                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {!chapterProgress.completed && isEnrolled && (
-                    <Button variant="outlined" color="primary" startIcon={<DoneAllRoundedIcon />}
-                      onClick={handleMarkComplete} sx={{ py: 1.2, px: 2.5, fontSize: '0.85rem' }}>
-                      Mark Complete
-                    </Button>
+                  {/* Video */}
+                  {activeChapter.type === 'video' && activeChapter.content.videoUrl && (
+                    <div className="w-full rounded-2xl md:rounded-3xl overflow-hidden mb-8 aspect-video bg-black shadow-2xl border border-white/5 relative group">
+                      <iframe src={activeChapter.content.videoUrl} title={activeChapter.title}
+                        className="w-full h-full absolute inset-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen />
+                    </div>
                   )}
 
-                  {activeChapter.assessment && isEnrolled && !chapterProgress.assessmentCompleted && (
-                    <Button variant="contained" color="primary" startIcon={<QuizRoundedIcon />}
-                      onClick={() => setShowAssessment(true)} sx={{ py: 1.2, px: 2.5, fontSize: '0.85rem' }}>
-                      Take Chapter Quiz
-                    </Button>
+                  {/* Text content */}
+                  {activeChapter.content.textContent && (
+                    <div className="bg-bg-surface/50 border border-border-subtle rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 mb-8 backdrop-blur-sm">
+                      <div className="prose prose-invert max-w-none font-dmsans prose-headings:font-syne prose-headings:font-bold prose-h1:text-[1.8rem] prose-h2:text-[1.4rem] prose-h3:text-[1.2rem] prose-p:text-text-secondary prose-p:leading-relaxed prose-a:text-primary-400 hover:prose-a:text-primary-300 prose-strong:text-text-primary prose-code:text-primary-300 prose-code:bg-primary-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-ul:text-text-secondary prose-li:marker:text-primary-500">
+                        <MarkdownRenderer text={activeChapter.content.textContent} />
+                      </div>
+                    </div>
                   )}
 
-                  {chapterProgress.assessmentCompleted && (
-                    <Chip icon={<CheckCircleRoundedIcon sx={{ color: `${TEAL} !important`, fontSize: '14px !important' }} />}
-                      label={`Quiz: ${chapterProgress.assessmentScore}%`}
-                      sx={{ background: 'rgba(78,205,196,0.12)', color: TEAL, border: '1px solid rgba(78,205,196,0.3)', fontWeight: 600 }} />
-                  )}
+                  {/* Actions & Navigation Controls */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between p-4 rounded-2xl bg-bg-surface border border-border-subtle mt-10">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {!chapterProgress.completed && isEnrolled && (
+                        <button
+                          onClick={handleMarkComplete}
+                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-primary-500/50 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                        >
+                          <DoneAllRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:scale-110" />
+                          Mark Complete
+                        </button>
+                      )}
 
-                  <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
-                    {nextChapter && (
-                      <Button variant="outlined" color="primary" endIcon={<ArrowForwardRoundedIcon />}
-                        onClick={() => { setActiveChapter(nextChapter); setShowAssessment(false); }} sx={{ py: 1.2, px: 2.5, fontSize: '0.85rem' }}>
-                        Next Chapter
-                      </Button>
-                    )}
-                    {allChaptersComplete && !completed && !nextChapter && (
-                      <Button variant="contained" startIcon={<EmojiEventsRoundedIcon />}
-                        onClick={() => { setShowGrandTest(true); }}
-                        sx={{ py: 1.2, px: 2.5, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700, fontSize: '0.85rem' }}>
-                        Take Grand Test
-                      </Button>
-                    )}
-                  </Box>
-                </Box>
-              </Box>
-            ) : (
-              // Course overview
-              <Box sx={{ maxWidth: 760 }}>
-                <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, position: 'relative', height: 240 }}>
-                  <Box component="img" src={course.thumbnail} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,12,20,0.9), transparent)', display: 'flex', alignItems: 'flex-end', p: 3 }}>
-                    <Box>
-                      <Typography variant="h4" sx={{ color: '#fff', fontWeight: 800 }}>{course.title}</Typography>
-                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>{course.instructorName}</Typography>
-                    </Box>
-                  </Box>
-                </Box>
-                <Box sx={{ background: 'rgba(22,27,39,0.7)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3, p: 3 }}>
-                  <Typography sx={{ color: CREAM, lineHeight: 1.8 }}>{course.longDescription}</Typography>
-                </Box>
-              </Box>
-            )}
-          </Box>
-        </Box>
-      </Box>
+                      {activeChapter.assessment && isEnrolled && !chapterProgress.assessmentCompleted && (
+                        <button
+                          onClick={() => setShowAssessment(true)}
+                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group shadow-lg shadow-primary-500/20 focus:ring-2 focus:ring-primary-400 focus:outline-none"
+                        >
+                          <QuizRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:-rotate-6 group-hover:scale-110" />
+                          Take Chapter Quiz
+                        </button>
+                      )}
 
-      {/* Rating Dialog */}
-      <Dialog open={showRating} onClose={() => setShowRating(false)} maxWidth="sm" fullWidth
-        PaperProps={{ sx: { background: 'rgba(22,27,39,0.97)', border: '1px solid rgba(139,155,180,0.15)', borderRadius: 4, p: 1 } }}>
-        <DialogContent sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: CREAM, mb: 0.8 }}>Rate This Course</Typography>
-          <Typography sx={{ color: STEEL, mb: 3.5, fontSize: '0.9rem' }}>How was your learning experience?</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <Rating size="large" value={ratingGiven} onChange={(_, v) => setRatingGiven(v || 0)}
-              sx={{ fontSize: '2.5rem', '& .MuiRating-iconFilled': { color: GOLD }, '& .MuiRating-iconHover': { color: GOLD } }} />
-          </Box>
-          <TextField multiline rows={3} fullWidth placeholder="Write your review (optional)..."
-            value={review} onChange={e => setReview(e.target.value)} sx={{ mb: 3 }} />
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button variant="outlined" color="primary" fullWidth onClick={() => setShowRating(false)} sx={{ py: 1.3 }}>Skip</Button>
-            <Button variant="contained" fullWidth disabled={!ratingGiven} onClick={() => handleRateSubmit(ratingGiven)}
-              sx={{ py: 1.3, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700, '&:disabled': { opacity: 0.4 } }}>
-              Submit Review
-            </Button>
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </Box>
+                      {chapterProgress.assessmentCompleted && (
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold text-[0.85rem] cursor-default">
+                          <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />
+                          Quiz Passed ({chapterProgress.assessmentScore}%)
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 sm:ml-auto">
+                      {nextChapter && (
+                        <button
+                          onClick={() => { setActiveChapter(nextChapter); setShowAssessment(false); }}
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-bg-base font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-white focus:outline-none"
+                        >
+                          Next Chapter
+                          <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:translate-x-1" />
+                        </button>
+                      )}
+                      {allChaptersComplete && !completed && !nextChapter && (
+                        <button
+                          onClick={() => setShowGrandTest(true)}
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-lg shadow-warning/20 font-bold text-[0.85rem] transition-transform hover:scale-[1.02] cursor-pointer active:scale-95 group focus:ring-2 focus:ring-warning focus:outline-none"
+                        >
+                          <EmojiEventsRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:scale-110" />
+                          Take Grand Test
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Course overview (Not Started state)
+                <div className="max-w-[800px] mx-auto">
+                  <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden relative mb-8 shadow-2xl border border-white/5 group">
+                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/60 to-transparent flex flex-col justify-end p-6 md:p-10">
+                      <h2 className="font-syne font-bold text-[2rem] md:text-[2.5rem] text-text-primary leading-tight mb-2 tracking-tight">
+                        {course.title}
+                      </h2>
+                      <div className="flex items-center gap-3 text-text-secondary font-medium">
+                        <span>Taught by <strong className="text-text-primary">{course.instructorName}</strong></span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-border-strong"></div>
+                        <span>{course.chapters?.length || 0} Modules</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-bg-surface/50 border border-border-subtle rounded-3xl p-8 md:p-10 backdrop-blur-sm">
+                    <h3 className="font-syne font-bold text-lg mb-4 text-text-primary">About this course</h3>
+                    <p className="font-dmsans text-text-secondary text-[0.95rem] leading-relaxed">
+                      {course.longDescription || course.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </main>
+      </div >
+
+      {/* Right: Curriculum Sidebar */}
+      {/* Desktop sidebar */}
+      <AnimatePresence initial={false}>
+        {chapterDrawerOpen && (
+          <motion.aside
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 340, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="hidden md:block flex-shrink-0 h-screen border-l border-border-subtle bg-bg-surface z-30 overflow-hidden relative"
+          >
+            <div className="w-[340px] h-full absolute top-0 left-0 right-0 bottom-0">
+              {ChapterList}
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {chapterDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setChapterDrawerOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 w-[85%] max-w-[340px] h-screen bg-bg-surface border-l border-border-subtle z-50 md:hidden shadow-2xl overflow-hidden"
+            >
+              {ChapterList}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Rating Dialog Overlay using Framer Motion */}
+      <AnimatePresence>
+        {showRating && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowRating(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+            >
+              <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Rate This Course</h3>
+              <p className="text-text-secondary font-medium mb-6">How was your learning experience?</p>
+
+              <div className="flex justify-center mb-6">
+                <Rating
+                  size="large"
+                  value={ratingGiven}
+                  onChange={(_, v) => setRatingGiven(v || 0)}
+                  sx={{
+                    fontSize: '3rem',
+                    '& .MuiRating-iconFilled': { color: '#D4A843' },
+                    '& .MuiRating-iconHover': { color: '#D4A843' },
+                    '& .MuiRating-iconEmpty': { color: 'rgba(255,255,255,0.1)' }
+                  }}
+                />
+              </div>
+
+              <textarea
+                rows={3}
+                placeholder="Write your review (optional)..."
+                value={review}
+                onChange={e => setReview(e.target.value)}
+                className="w-full bg-bg-base border border-border-subtle rounded-xl p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 mb-6 resize-none transition-all"
+              />
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setShowRating(false)}
+                  className="flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors"
+                >
+                  Skip
+                </button>
+                <button
+                  disabled={!ratingGiven}
+                  onClick={() => handleRateSubmit(ratingGiven)}
+                  className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] disabled:opacity-50 disabled:cursor-not-allowed text-[#09090b] font-bold shadow-lg shadow-warning/10 hover:shadow-warning/20 transition-all font-syne"
+                >
+                  Submit Review
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div >
   );
 }

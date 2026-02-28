@@ -217,7 +217,7 @@ export default function CourseCard({
             {enrolled ? (
               <button
                 onClick={handleCardClick}
-                className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] text-white font-semibold flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all hover:scale-[1.02]"
+                className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] text-white font-semibold flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-current" />
                 {progress > 0 ? 'Continue' : 'Start Learning'}
@@ -225,7 +225,7 @@ export default function CourseCard({
             ) : (
               <button
                 onClick={handleEnroll}
-                className="flex-1 bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-medium flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all"
+                className="flex-1 bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-medium flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
               >
                 <Bookmark className="w-4 h-4" />
                 Enroll Free
@@ -234,7 +234,7 @@ export default function CourseCard({
 
             <button
               onClick={handleFavorite}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-[1.05] ${favorited
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-[1.05] active:scale-95 cursor-pointer ${favorited
                 ? 'bg-rose-500/15 border border-rose-500/30 text-rose-500'
                 : 'bg-white/[0.03] border border-border-subtle text-text-secondary hover:text-white'
                 }`}
@@ -249,7 +249,7 @@ export default function CourseCard({
           <div className="flex gap-2.5 mt-2">
             <button
               onClick={(e) => { e.stopPropagation(); navigate(`/student/certificate/${course.id}`); }}
-              className="flex-1 bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 text-teal-400 font-medium flex flex-row items-center justify-center gap-1.5 rounded-xl py-2 text-[0.75rem] transition-all"
+              className="flex-1 bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 text-teal-400 font-medium flex flex-row items-center justify-center gap-1.5 rounded-xl py-2 text-[0.75rem] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
             >
               <Award className="w-3.5 h-3.5" />
               View Certificate
