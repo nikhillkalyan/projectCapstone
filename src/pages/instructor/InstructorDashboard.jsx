@@ -25,6 +25,7 @@ const catColors = {
 import CourseCard from '../../components/shared/CourseCard';
 import StatCard from '../../components/shared/StatCard';
 import SectionShell from '../../components/shared/SectionShell';
+import EmptyState from '../../components/shared/EmptyState';
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
@@ -151,15 +152,20 @@ export default function InstructorDashboard() {
 
       {/* Empty state */}
       {myCourses.length === 0 && (
-        <Box className="anim-fadeInUp delay-2" sx={{ textAlign: 'center', py: 12 }}>
-          <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 2.5 }}>🎓</Typography>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: CREAM, mb: 1.5 }}>Create Your First Course</Typography>
-          <Typography sx={{ color: STEEL, mb: 4, fontSize: '0.95rem' }}>Share your expertise with thousands of students</Typography>
-          <Button variant="contained" color="primary" size="large" startIcon={<Plus />}
-            onClick={() => navigate('/instructor/create-course')} sx={{ px: 5, py: 1.5 }}>
-            Create Course
-          </Button>
-        </Box>
+        <EmptyState
+          icon={BookOpen}
+          title="Create Your First Course"
+          description="Share your expertise with thousands of students and build your teaching portfolio."
+          action={
+            <button
+              onClick={() => navigate('/instructor/create-course')}
+              className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] transition-all hover:scale-[1.02] flex items-center justify-center gap-2 mt-2"
+            >
+              <Plus className="w-5 h-5 fill-current" />
+              Create Course
+            </button>
+          }
+        />
       )}
     </InstructorLayout>
   );

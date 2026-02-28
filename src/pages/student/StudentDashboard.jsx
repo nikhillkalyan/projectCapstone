@@ -19,6 +19,7 @@ const SIDEBAR_W = 248;
 
 import StatCard from '../../components/shared/StatCard';
 import SectionShell from '../../components/shared/SectionShell';
+import EmptyState from '../../components/shared/EmptyState';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -132,47 +133,39 @@ export default function StudentDashboard() {
           iconColor="text-amber-400"
           delay={4}
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {user.completedCourses.map(({ courseId, score, completedAt }) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {user.completedCourses.map(({ courseId, score }) => {
               const course = db.courses.find(c => c.id === courseId);
               if (!course) return null;
               return (
-                <Card key={courseId} sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3 }}>
-                  <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box component="img" src={course.thumbnail} alt="" sx={{ width: 60, height: 42, borderRadius: 2, objectFit: 'cover', flexShrink: 0 }} />
-                      <Box>
-                        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600, color: CREAM, fontSize: '0.88rem' }}>{course.title}</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.4 }}>
-                          <Chip label="Completed" size="small" sx={{ background: 'rgba(78,205,196,0.15)', color: TEAL, border: '1px solid rgba(78,205,196,0.3)', fontSize: '0.65rem', height: 20 }} />
-                          <Typography sx={{ color: TEAL, fontSize: '0.78rem', fontWeight: 700 }}>Score: {score}%</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                    <Button variant="contained" size="small" startIcon={<Award />}
-                      onClick={() => navigate(`/student/certificate/${courseId}`)}
-                      sx={{ background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700, fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
-                      View Certificate
-                    </Button>
-                  </CardContent>
-                </Card>
+                <CourseCard
+                  key={courseId}
+                  course={course}
+                  enrolled={true}
+                  completed={true}
+                  score={score}
+                />
               );
             })}
-          </Box>
+          </div>
         </SectionShell>
       )}
 
       {/* Empty state */}
       {enrolledCourses.length === 0 && (
-        <Box className="anim-fadeInUp delay-2" sx={{ textAlign: 'center', py: 10 }}>
-          <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 2.5 }}>🎯</Typography>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: CREAM, mb: 1.5 }}>Start Your Learning Journey</Typography>
-          <Typography sx={{ color: STEEL, mb: 4, fontSize: '0.95rem' }}>Explore courses tailored to your interests</Typography>
-          <Button variant="contained" color="secondary" size="large" onClick={() => navigate('/student/explore')}
-            sx={{ px: 5, py: 1.5, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY }}>
-            Explore Courses →
-          </Button>
-        </Box>
+        <EmptyState
+          icon={Compass}
+          title="Start Your Learning Journey"
+          description="Explore courses tailored to your interests to begin building your skills."
+          action={
+            <button
+              onClick={() => navigate('/student/explore')}
+              className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+            >
+              Explore Courses →
+            </button>
+          }
+        />
       )}
     </StudentLayout>
   );
