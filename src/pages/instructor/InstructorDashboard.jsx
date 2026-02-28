@@ -11,14 +11,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Rating from '@mui/material/Rating';
-import LinearProgress from '@mui/material/LinearProgress';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-import RateReviewRoundedIcon from '@mui/icons-material/RateReviewRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
+import { Star, Eye, BarChart2, BookOpen, Plus, Users, MessageSquare } from 'lucide-react';
 import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
 
 const SIDEBAR_W = 248;
@@ -29,28 +22,9 @@ const catColors = {
   DataScience: { bg: 'rgba(212,168,67,0.18)', color: GOLD, border: 'rgba(212,168,67,0.3)' },
   Cybersecurity: { bg: 'rgba(231,76,111,0.18)', color: DANGER, border: 'rgba(231,76,111,0.3)' },
 };
+import CourseCard from '../../components/shared/CourseCard';
 
-function StatCard({ icon: Icon, label, value, color, delay = 1 }) {
-  return (
-    <Card className={`anim-fadeInUp delay-${delay}`}
-      sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3.5 }}>
-      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography sx={{ color: STEEL, fontSize: '0.8rem' }}>{label}</Typography>
-          <Box sx={{
-            width: 38, height: 38, borderRadius: 2, background: `${color}20`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <Icon sx={{ color, fontSize: 20 }} />
-          </Box>
-        </Box>
-        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '2rem', color: CREAM, lineHeight: 1 }}>
-          {value}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
+import StatCard from '../../components/shared/StatCard';
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
@@ -64,10 +38,10 @@ export default function InstructorDashboard() {
   const allReviews = myCourses.flatMap(c => (c.reviews || []).map(r => ({ ...r, courseTitle: c.title })));
 
   const stats = [
-    { icon: LibraryBooksRoundedIcon, label: 'Total Courses', value: myCourses.length, color: ACCENT2, delay: 1 },
-    { icon: PeopleRoundedIcon, label: 'Total Students', value: totalStudents, color: TEAL, delay: 2 },
-    { icon: StarRoundedIcon, label: 'Avg Rating', value: avgRating, color: GOLD, delay: 3 },
-    { icon: RateReviewRoundedIcon, label: 'Total Reviews', value: allReviews.length, color: DANGER, delay: 4 },
+    { icon: BookOpen, label: 'Total Courses', value: myCourses.length, color: ACCENT2, delay: 1 },
+    { icon: Users, label: 'Total Students', value: totalStudents, color: TEAL, delay: 2 },
+    { icon: Star, label: 'Avg Rating', value: avgRating, color: GOLD, delay: 3 },
+    { icon: MessageSquare, label: 'Total Reviews', value: allReviews.length, color: DANGER, delay: 4 },
   ];
 
   return (
@@ -86,7 +60,7 @@ export default function InstructorDashboard() {
             Welcome back, {user?.name?.split(' ')[0]}! Here's your overview.
           </Typography>
         </Box>
-        <Button variant="contained" color="primary" startIcon={<AddRoundedIcon />}
+        <Button variant="contained" color="primary" startIcon={<Plus />}
           onClick={() => navigate('/instructor/create-course')}
           sx={{ px: 3, py: 1.3, whiteSpace: 'nowrap', flexShrink: 0 }}>
           Create Course
@@ -94,84 +68,52 @@ export default function InstructorDashboard() {
       </Box>
 
       {/* Stats */}
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {stats.map(s => (
-          <Grid item xs={6} lg={3} key={s.label}>
-            <StatCard {...s} />
-          </Grid>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((s, idx) => (
+          <StatCard key={s.label} {...s} delay={idx + 1} />
         ))}
-      </Grid>
+      </div>
 
       {/* Courses grid */}
       {myCourses.length > 0 && (
-        <Box className="anim-fadeInUp delay-2" sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>📚 Your Courses</Typography>
-            <Button size="small" onClick={() => navigate('/instructor/courses')} sx={{ color: ACCENT2, fontSize: '0.8rem' }}>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-400" />
+              Your Courses
+            </h2>
+            <button
+              onClick={() => navigate('/instructor/courses')}
+              className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
+            >
               View All →
-            </Button>
-          </Box>
-          <Grid container spacing={2.5}>
-            {myCourses.slice(0, 3).map((course, i) => {
-              const cc = catColors[course.category] || catColors.AIML;
-              return (
-                <Grid item xs={12} md={4} key={course.id}>
-                  <Card className={`anim-fadeInUp delay-${i + 1}`}
-                    sx={{
-                      background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3.5,
-                      transition: 'all 0.3s ease', cursor: 'pointer',
-                      '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(0,0,0,0.4)' }
-                    }}
-                    onClick={() => navigate(`/instructor/course/${course.id}`)}>
-                    <Box sx={{ height: 130, overflow: 'hidden', position: 'relative' }}>
-                      <Box component="img" src={course.thumbnail} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,12,20,0.85), transparent)' }} />
-                      <Chip label={course.category} size="small"
-                        sx={{
-                          position: 'absolute', top: 10, left: 10, background: cc.bg, color: cc.color,
-                          border: `1px solid ${cc.border}`, fontSize: '0.65rem', fontFamily: '"Syne",sans-serif', fontWeight: 700
-                        }} />
-                    </Box>
-                    <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
-                      <Typography sx={{
-                        fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.88rem',
-                        mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
-                      }}>
-                        {course.title}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <PeopleRoundedIcon sx={{ fontSize: 14, color: STEEL }} />
-                          <Typography sx={{ color: STEEL, fontSize: '0.78rem' }}>{course.enrolledCount || 0} students</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <StarRoundedIcon sx={{ fontSize: 14, color: GOLD }} />
-                          <Typography sx={{ color: CREAM, fontSize: '0.78rem', fontWeight: 600 }}>
-                            {course.rating?.toFixed(1) || '—'}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button variant="outlined" color="primary" size="small" fullWidth
-                          startIcon={<VisibilityRoundedIcon />}
-                          onClick={e => { e.stopPropagation(); navigate(`/instructor/course/${course.id}`); }}
-                          sx={{ fontSize: '0.73rem', py: 0.7 }}>
-                          Manage
-                        </Button>
-                        <Button variant="outlined" color="primary" size="small" fullWidth
-                          startIcon={<BarChartRoundedIcon />}
-                          onClick={e => { e.stopPropagation(); navigate(`/instructor/students/${course.id}`); }}
-                          sx={{ fontSize: '0.73rem', py: 0.7 }}>
-                          Students
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {myCourses.slice(0, 3).map((course, i) => (
+              <div key={course.id} className="relative group flex flex-col">
+                <CourseCard course={course} />
+                {/* Injection of Instructor Admin Buttons Over the Card */}
+                <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/course/${course.id}`); }}
+                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-primary-500 hover:border-primary-400 transition-colors"
+                    title="Manage Course"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/instructor/students/${course.id}`); }}
+                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-teal-500 hover:border-teal-400 transition-colors"
+                    title="View Students"
+                  >
+                    <BarChart2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Recent Reviews */}
@@ -208,7 +150,7 @@ export default function InstructorDashboard() {
           <Typography className="anim-float" sx={{ fontSize: '4rem', mb: 2.5 }}>🎓</Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, color: CREAM, mb: 1.5 }}>Create Your First Course</Typography>
           <Typography sx={{ color: STEEL, mb: 4, fontSize: '0.95rem' }}>Share your expertise with thousands of students</Typography>
-          <Button variant="contained" color="primary" size="large" startIcon={<AddRoundedIcon />}
+          <Button variant="contained" color="primary" size="large" startIcon={<Plus />}
             onClick={() => navigate('/instructor/create-course')} sx={{ px: 5, py: 1.5 }}>
             Create Course
           </Button>

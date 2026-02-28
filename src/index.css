@@ -1,8 +1,51 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary-400: #8FA4E8;
+  --color-primary-500: #6C7FD8;
+  --color-primary-600: #5A6BC4;
+  --color-primary-900: rgba(108, 127, 216, 0.18);
+
+  --color-bg-base: #09090b;
+  --color-bg-surface: #0E0E11;
+  --color-bg-elevated: #161B27;
+
+  --color-text-primary: #F0EED8;
+  --color-text-secondary: #8B9BB4;
+
+  --color-border-subtle: rgba(139, 155, 180, 0.15);
+
+  --color-success: #4ECDC4;
+  --color-warning: #D4A843;
+  --color-error: #E74C6F;
+
+  --font-syne: "Syne", sans-serif;
+  --font-dmsans: "DM Sans", sans-serif;
+}
 
 @layer base {
   body {
-    @apply bg-[#09090b] text-neutral-50;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-dmsans);
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-primary-400) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

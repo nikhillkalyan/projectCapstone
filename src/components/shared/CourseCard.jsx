@@ -1,37 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import Skeleton from '@mui/material/Skeleton';
-import Tooltip from '@mui/material/Tooltip';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
-import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
-import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
-import BookmarkAddRoundedIcon from '@mui/icons-material/BookmarkAddRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
+
+// Modern Lucide Icons replacing MUI System
+import {
+  Star, Users, Clock, Play, Heart, Bookmark, CheckCircle2
+} from 'lucide-react';
 
 const categoryConfig = {
-  AIML: { bg: 'rgba(108,127,216,0.2)', color: ACCENT2, border: 'rgba(108,127,216,0.35)', glow: 'rgba(108,127,216,0.3)' },
-  Cloud: { bg: 'rgba(78,205,196,0.2)', color: TEAL, border: 'rgba(78,205,196,0.35)', glow: 'rgba(78,205,196,0.3)' },
-  DataScience: { bg: 'rgba(212,168,67,0.2)', color: GOLD, border: 'rgba(212,168,67,0.35)', glow: 'rgba(212,168,67,0.3)' },
-  Cybersecurity: { bg: 'rgba(231,76,111,0.2)', color: DANGER, border: 'rgba(231,76,111,0.35)', glow: 'rgba(231,76,111,0.3)' },
+  AIML: { badgeStyles: 'bg-primary-900 text-primary-400 border-primary-500/30' },
+  Cloud: { badgeStyles: 'bg-teal-500/10 text-teal-400 border-teal-500/30' },
+  DataScience: { badgeStyles: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
+  Cybersecurity: { badgeStyles: 'bg-rose-500/10 text-rose-400 border-rose-500/30' },
 };
 
 export default function CourseCard({ course, enrolled = false, favorited = false, size = 'normal' }) {
-  const [hovered, setHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -39,173 +25,180 @@ export default function CourseCard({ course, enrolled = false, favorited = false
 
   const cfg = categoryConfig[course.category] || categoryConfig.AIML;
   const progress = enrolled ? getCourseProgress(course.id) : 0;
-  const imgHeight = size === 'small' ? 150 : 185;
+  const imgHeight = size === 'small' ? 'h-36' : 'h-48';
 
   const handleCardClick = () => {
     if (user?.role === 'student') navigate(`/student/course/${course.id}`);
   };
-  const handleEnroll = (e) => { e.stopPropagation(); enrollCourse(course.id); };
-  const handleFavorite = (e) => { e.stopPropagation(); toggleFavorite(course.id); };
+
+  const handleEnroll = (e) => {
+    e.stopPropagation();
+    enrollCourse(course.id);
+  };
+
+  const handleFavorite = (e) => {
+    e.stopPropagation();
+    toggleFavorite(course.id);
+  };
 
   return (
-    <Card
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <motion.div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
-      sx={{
-        position: 'relative', cursor: 'pointer', overflow: 'hidden',
-        border: '1px solid rgba(139,155,180,0.1)',
-        background: 'rgba(16,20,32,0.95)',
-        transform: hovered ? 'scale(1.035) translateY(-6px)' : 'scale(1) translateY(0)',
-        transition: 'all 0.35s cubic-bezier(.22,.68,0,1.2)',
-        boxShadow: hovered
-          ? `0 24px 60px ${cfg.glow}, 0 0 0 1px rgba(255,255,255,0.04)`
-          : '0 4px 20px rgba(0,0,0,0.35)',
-        zIndex: hovered ? 10 : 1,
-        borderRadius: 4,
-      }}
+      className={`relative group bg-bg-surface border border-border-subtle rounded-2xl overflow-hidden cursor-pointer flex flex-col`}
+      // Only applying hover motion, not mount animations as requested
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ ease: [0.22, 1, 0.36, 1], duration: 0.3 }}
     >
-      {/* Thumbnail */}
-      <Box sx={{ position: 'relative', height: imgHeight, overflow: 'hidden' }}>
-        {!imgLoaded && <Skeleton variant="rectangular" height={imgHeight} sx={{ background: 'rgba(30,37,53,0.6)' }} />}
-        <CardMedia
-          component="img"
-          image={course.thumbnail}
+      {/* Outer Glow Effect on Hover */}
+      <div className={`absolute -inset-1 bg-gradient-to-br from-primary-500/0 via-primary-500/0 to-primary-500/0 opacity-0 group-hover:from-primary-500/20 group-hover:to-transparent group-hover:opacity-100 transition-all duration-500 blur-xl pointer-events-none rounded-[2rem]`} />
+
+      {/* Thumbnail Header */}
+      <div className={`relative ${imgHeight} w-full overflow-hidden bg-bg-base shrink-0`}>
+        {/* Loading Skeleton built with Tailwind */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 bg-white/5 animate-pulse" />
+        )}
+
+        <img
+          src={course.thumbnail}
           alt={course.title}
           onLoad={() => setImgLoaded(true)}
-          sx={{
-            height: imgHeight, objectFit: 'cover',
-            opacity: imgLoaded ? 1 : 0,
-            transform: hovered ? 'scale(1.08)' : 'scale(1)',
-            transition: 'transform 0.5s ease, opacity 0.3s ease',
-          }}
+          className={`w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${imgLoaded ? 'opacity-100' : 'opacity-0'
+            } ${isHovered ? 'scale-110' : 'scale-100'}`}
         />
 
-        {/* Gradient overlay */}
-        <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,12,20,0.92) 0%, rgba(8,12,20,0.2) 50%, transparent 100%)' }} />
+        {/* Gradient Overlay for Text Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/40 to-transparent opacity-90" />
 
-        {/* Category + level chips */}
-        <Box sx={{ position: 'absolute', top: 10, left: 10 }}>
-          <Chip label={course.category} size="small"
-            sx={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.65rem' }} />
-        </Box>
-        <Box sx={{ position: 'absolute', top: 10, right: 10 }}>
-          <Chip label={course.level} size="small"
-            sx={{ background: 'rgba(0,0,0,0.55)', color: SAND, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', fontFamily: '"Syne",sans-serif', fontSize: '0.65rem' }} />
-        </Box>
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          <span className={`px-2.5 py-0.5 rounded-full text-[0.65rem] font-syne font-bold border backdrop-blur-sm tracking-wide ${cfg.badgeStyles}`}>
+            {course.category}
+          </span>
+        </div>
+        <div className="absolute top-3 right-3">
+          <span className="px-2.5 py-0.5 rounded-full text-[0.65rem] font-syne font-bold border border-white/10 bg-black/50 text-[#E2D9BE] backdrop-blur-sm tracking-wide">
+            {course.level}
+          </span>
+        </div>
 
-        {/* Play button on hover */}
-        <Box sx={{
-          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: hovered ? 1 : 0, transition: 'opacity 0.3s ease',
-        }}>
-          <Box sx={{
-            width: 52, height: 52, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `rgba(108,127,216,0.88)`, backdropFilter: 'blur(8px)',
-            boxShadow: `0 0 24px rgba(108,127,216,0.5)`,
-            transform: hovered ? 'scale(1)' : 'scale(0.7)',
-            transition: 'transform 0.3s cubic-bezier(.22,.68,0,1.2)',
-          }}>
-            <PlayArrowRoundedIcon sx={{ color: '#fff', fontSize: 26, ml: '3px' }} />
-          </Box>
-        </Box>
+        {/* Play Button Overlay (Framer Motion handled visibility) */}
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+              <div className="w-14 h-14 rounded-full bg-primary-500/90 backdrop-blur-md shadow-[0_0_30px_rgba(108,127,216,0.5)] flex items-center justify-center text-white pl-1">
+                <Play className="fill-current w-6 h-6" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Progress bar */}
+        {/* Progress Bar overlay */}
         {enrolled && progress > 0 && (
-          <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-            <LinearProgress variant="determinate" value={progress} sx={{ height: 3, borderRadius: 0, '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${ACCENT} 0%, ${TEAL} 100%)` } }} />
-          </Box>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-border-subtle overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary-500 to-teal-400"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         )}
-      </Box>
+      </div>
 
-      {/* Card body */}
-      <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
-        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.88rem', color: CREAM, mb: 0.7, lineHeight: 1.3,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      {/* Card Body */}
+      <div className="p-5 flex-1 flex flex-col relative z-10 bg-bg-surface">
+        <h3 className="font-syne font-bold text-[0.95rem] text-text-primary mb-1.5 leading-snug line-clamp-2">
           {course.title}
-        </Typography>
-        <Typography sx={{ color: STEEL, fontSize: '0.77rem', mb: 1.8, lineHeight: 1.45,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        </h3>
+        <p className="font-dmsans text-text-secondary text-[0.8rem] mb-4 leading-relaxed line-clamp-2">
           {course.description}
-        </Typography>
+        </p>
 
-        {/* Meta row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.8, mb: 1.5, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-            <StarRoundedIcon sx={{ fontSize: 13, color: GOLD }} />
-            <Typography sx={{ color: CREAM, fontSize: '0.75rem', fontWeight: 600 }}>{course.rating?.toFixed(1)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-            <PeopleRoundedIcon sx={{ fontSize: 13, color: STEEL }} />
-            <Typography sx={{ color: STEEL, fontSize: '0.75rem' }}>{course.enrolledCount?.toLocaleString()}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-            <AccessTimeRoundedIcon sx={{ fontSize: 13, color: STEEL }} />
-            <Typography sx={{ color: STEEL, fontSize: '0.75rem' }}>{course.duration}</Typography>
-          </Box>
-        </Box>
+        {/* Meta Grid */}
+        <div className="flex items-center gap-4 mb-4 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[#D4A843]">
+            <Star className="w-4 h-4 fill-current" />
+            <span className="text-[0.8rem] font-medium text-text-primary">{course.rating?.toFixed(1)}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-text-secondary">
+            <Users className="w-4 h-4" />
+            <span className="text-[0.8rem]">{course.enrolledCount?.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-text-secondary">
+            <Clock className="w-4 h-4" />
+            <span className="text-[0.8rem]">{course.duration}</span>
+          </div>
+        </div>
 
-        <Typography sx={{ color: STEEL, fontSize: '0.75rem', mb: 1.5 }}>
-          By <Box component="span" sx={{ color: ACCENT2 }}>{course.instructorName}</Box>
-        </Typography>
+        <p className="text-[0.8rem] text-text-secondary mb-4">
+          By <span className="text-primary-400 font-medium">{course.instructorName}</span>
+        </p>
 
-        {/* Tags */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.6, mb: 1.8 }}>
+        {/* Micro Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-5 mt-auto">
           {course.tags?.slice(0, 3).map(tag => (
-            <Chip key={tag} label={tag} size="small"
-              sx={{ background: 'rgba(139,155,180,0.08)', color: STEEL, border: '1px solid rgba(139,155,180,0.12)', fontSize: '0.62rem', height: 20 }} />
+            <span key={tag} className="px-2 py-1 bg-white/[0.03] border border-border-subtle rounded text-[0.65rem] text-text-secondary">
+              {tag}
+            </span>
           ))}
-        </Box>
+        </div>
 
-        {/* Progress text */}
+        {/* Progress Text Block */}
         {enrolled && (
-          <Box sx={{ mb: 1.5 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography sx={{ color: STEEL, fontSize: '0.73rem' }}>Progress</Typography>
-              <Typography sx={{ color: ACCENT2, fontSize: '0.73rem', fontWeight: 600 }}>{progress}%</Typography>
-            </Box>
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-text-secondary text-[0.75rem]">Progress</span>
+              <span className="text-primary-400 text-[0.75rem] font-bold">{progress}%</span>
+            </div>
             {progress === 100 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CheckCircleRoundedIcon sx={{ fontSize: 13, color: TEAL }} />
-                <Typography sx={{ color: TEAL, fontSize: '0.72rem', fontWeight: 600 }}>Completed</Typography>
-              </Box>
+              <div className="flex items-center gap-1.5 text-[#4ECDC4] mt-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="text-[0.75rem] font-bold">Completed</span>
+              </div>
             )}
-          </Box>
+          </div>
         )}
 
-        {/* Actions */}
+        {/* Actions Footer */}
         {user?.role === 'student' && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2.5 mt-auto pt-2">
             {enrolled ? (
-              <Button variant="contained" color="primary" size="small"
-                startIcon={<PlayArrowRoundedIcon />} onClick={handleCardClick}
-                fullWidth sx={{ py: 1, fontSize: '0.78rem', borderRadius: 2.5 }}>
+              <button
+                onClick={handleCardClick}
+                className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] text-white font-semibold flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all hover:scale-[1.02]"
+              >
+                <Play className="w-4 h-4 fill-current" />
                 {progress > 0 ? 'Continue' : 'Start Learning'}
-              </Button>
+              </button>
             ) : (
-              <Button variant="contained" color="primary" size="small"
-                startIcon={<BookmarkAddRoundedIcon />} onClick={handleEnroll}
-                fullWidth sx={{ py: 1, fontSize: '0.78rem', borderRadius: 2.5 }}>
+              <button
+                onClick={handleEnroll}
+                className="flex-1 bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-medium flex flex-row items-center justify-center gap-2 rounded-xl py-2 text-[0.8rem] transition-all"
+              >
+                <Bookmark className="w-4 h-4" />
                 Enroll Free
-              </Button>
+              </button>
             )}
-            <Tooltip title={favorited ? 'Remove from favorites' : 'Add to favorites'}>
-              <IconButton onClick={handleFavorite} size="small"
-                sx={{
-                  borderRadius: 2, flexShrink: 0, width: 36,
-                  background: favorited ? 'rgba(231,76,111,0.15)' : 'rgba(139,155,180,0.08)',
-                  border: `1px solid ${favorited ? 'rgba(231,76,111,0.35)' : 'rgba(139,155,180,0.15)'}`,
-                  transition: 'all 0.2s ease',
-                  '&:hover': { transform: 'scale(1.1)' },
-                }}>
-                {favorited
-                  ? <FavoriteRoundedIcon sx={{ fontSize: 16, color: DANGER }} />
-                  : <FavoriteBorderRoundedIcon sx={{ fontSize: 16, color: STEEL }} />}
-              </IconButton>
-            </Tooltip>
-          </Box>
+
+            <button
+              onClick={handleFavorite}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-[1.05] ${favorited
+                  ? 'bg-rose-500/15 border border-rose-500/30 text-rose-500'
+                  : 'bg-white/[0.03] border border-border-subtle text-text-secondary hover:text-white'
+                }`}
+            >
+              <Heart className={`w-4 h-4 ${favorited ? 'fill-current' : ''}`} />
+            </button>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   );
 }

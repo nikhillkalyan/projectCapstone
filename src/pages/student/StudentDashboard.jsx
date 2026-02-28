@@ -12,34 +12,12 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
-import LinearProgress from '@mui/material/LinearProgress';
-import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded';
-import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
-import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
+import { Star, Play, Award, Compass, BookOpen, Heart, Trophy, TrendingUp } from 'lucide-react';
 import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } from '../../theme';
 
 const SIDEBAR_W = 248;
 
-function StatCard({ icon: Icon, label, value, color, delay }) {
-  return (
-    <Card className={`anim-fadeInUp delay-${delay}`} sx={{ background: `rgba(22,27,39,0.85)`, border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3.5, overflow: 'visible', position: 'relative' }}>
-      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography sx={{ color: STEEL, fontSize: '0.8rem' }}>{label}</Typography>
-          <Box sx={{ width: 38, height: 38, borderRadius: 2, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon sx={{ color, fontSize: 20 }} />
-          </Box>
-        </Box>
-        <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '2rem', color: CREAM, lineHeight: 1 }}>
-          {value}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
+import StatCard from '../../components/shared/StatCard';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -60,10 +38,10 @@ export default function StudentDashboard() {
     ? Math.round(enrolledCourses.reduce((sum, c) => sum + getCourseProgress(c.id), 0) / enrolledCourses.length) : 0;
 
   const stats = [
-    { icon: LibraryBooksRoundedIcon, label: 'Enrolled', value: enrolledCourses.length, color: ACCENT2, delay: 1 },
-    { icon: FavoriteRoundedIcon, label: 'Favorites', value: favCourses.length, color: DANGER, delay: 2 },
-    { icon: EmojiEventsRoundedIcon, label: 'Completed', value: completedCount, color: TEAL, delay: 3 },
-    { icon: TrendingUpRoundedIcon, label: 'Avg. Progress', value: `${totalProgress}%`, color: GOLD, delay: 4 },
+    { icon: BookOpen, label: 'Enrolled', value: enrolledCourses.length, color: ACCENT2, delay: 1 },
+    { icon: Heart, label: 'Favorites', value: favCourses.length, color: DANGER, delay: 2 },
+    { icon: Trophy, label: 'Completed', value: completedCount, color: TEAL, delay: 3 },
+    { icon: TrendingUp, label: 'Avg. Progress', value: `${totalProgress}%`, color: GOLD, delay: 4 },
   ];
 
   const dateStr = new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -83,7 +61,7 @@ export default function StudentDashboard() {
               : 'Ready to start learning today?'}
           </Typography>
         </Box>
-        <Button variant="contained" color="secondary" startIcon={<ExploreRoundedIcon />}
+        <Button variant="contained" color="secondary" startIcon={<Compass />}
           onClick={() => navigate('/student/explore')} className="anim-pulse-glow"
           sx={{ px: 3, py: 1.3, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY, whiteSpace: 'nowrap', flexShrink: 0 }}>
           Explore Courses
@@ -91,46 +69,56 @@ export default function StudentDashboard() {
       </Box>
 
       {/* Stats */}
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        {stats.map(s => (
-          <Grid item xs={6} lg={3} key={s.label}>
-            <StatCard {...s} />
-          </Grid>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((s, idx) => (
+          <StatCard key={s.label} {...s} delay={idx + 1} />
         ))}
-      </Grid>
+      </div>
 
       {/* In Progress */}
       {inProgressCourses.length > 0 && (
-        <Box className="anim-fadeInUp delay-2" sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>📚 Continue Learning</Typography>
-            <Button size="small" onClick={() => navigate('/student/enrolled')} sx={{ color: ACCENT2, fontSize: '0.8rem' }}>View All →</Button>
-          </Box>
-          <Grid container spacing={2.5}>
-            {inProgressCourses.slice(0, 3).map(course => (
-              <Grid item xs={12} sm={6} lg={4} key={course.id}>
-                <CourseCard course={course} enrolled favorited={user?.favoriteCourses?.includes(course.id)} />
-              </Grid>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
+              <Play className="w-5 h-5 text-teal-400 fill-current" />
+              Continue Learning
+            </h2>
+            <button
+              onClick={() => navigate('/student/enrolled')}
+              className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
+            >
+              View All →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {inProgressCourses.map(course => (
+              <CourseCard key={course.id} course={course} enrolled={true} favorited={user?.favoriteCourses?.includes(course.id)} />
             ))}
-          </Grid>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Recommended */}
       {recommended.length > 0 && (
-        <Box className="anim-fadeInUp delay-3" sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>⭐ Recommended for You</Typography>
-            <Button size="small" onClick={() => navigate('/student/explore')} sx={{ color: ACCENT2, fontSize: '0.8rem' }}>See All →</Button>
-          </Box>
-          <Grid container spacing={2.5}>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-400 fill-current" />
+              Recommended for You
+            </h2>
+            <button
+              onClick={() => navigate('/student/explore')}
+              className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
+            >
+              See All →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {recommended.map(course => (
-              <Grid item xs={12} sm={6} lg={4} key={course.id}>
-                <CourseCard course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited={user?.favoriteCourses?.includes(course.id)} />
-              </Grid>
+              <CourseCard key={course.id} course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited={user?.favoriteCourses?.includes(course.id)} />
             ))}
-          </Grid>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Completed */}
@@ -154,7 +142,7 @@ export default function StudentDashboard() {
                         </Box>
                       </Box>
                     </Box>
-                    <Button variant="contained" size="small" startIcon={<WorkspacePremiumRoundedIcon />}
+                    <Button variant="contained" size="small" startIcon={<Award />}
                       onClick={() => navigate(`/student/certificate/${courseId}`)}
                       sx={{ background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700, fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
                       View Certificate
