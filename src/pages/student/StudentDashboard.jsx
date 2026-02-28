@@ -18,6 +18,7 @@ import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } 
 const SIDEBAR_W = 248;
 
 import StatCard from '../../components/shared/StatCard';
+import SectionShell from '../../components/shared/SectionShell';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -77,54 +78,60 @@ export default function StudentDashboard() {
 
       {/* In Progress */}
       {inProgressCourses.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
-              <Play className="w-5 h-5 text-teal-400 fill-current" />
-              Continue Learning
-            </h2>
+        <SectionShell
+          title="Continue Learning"
+          icon={Play}
+          iconColor="text-teal-400 fill-current"
+          delay={2}
+          action={
             <button
               onClick={() => navigate('/student/enrolled')}
               className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
             >
               View All →
             </button>
-          </div>
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {inProgressCourses.map(course => (
               <CourseCard key={course.id} course={course} enrolled={true} favorited={user?.favoriteCourses?.includes(course.id)} />
             ))}
           </div>
-        </div>
+        </SectionShell>
       )}
 
       {/* Recommended */}
       {recommended.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-400 fill-current" />
-              Recommended for You
-            </h2>
+        <SectionShell
+          title="Recommended for You"
+          icon={Star}
+          iconColor="text-amber-400 fill-current"
+          delay={3}
+          action={
             <button
               onClick={() => navigate('/student/explore')}
               className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
             >
               See All →
             </button>
-          </div>
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {recommended.map(course => (
               <CourseCard key={course.id} course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited={user?.favoriteCourses?.includes(course.id)} />
             ))}
           </div>
-        </div>
+        </SectionShell>
       )}
 
       {/* Completed */}
       {user?.completedCourses?.length > 0 && (
-        <Box className="anim-fadeInUp delay-4" sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>🏆 Completed Courses</Typography>
+        <SectionShell
+          title="Completed Courses"
+          icon={Trophy}
+          iconColor="text-amber-400"
+          delay={4}
+        >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {user.completedCourses.map(({ courseId, score, completedAt }) => {
               const course = db.courses.find(c => c.id === courseId);
@@ -152,7 +159,7 @@ export default function StudentDashboard() {
               );
             })}
           </Box>
-        </Box>
+        </SectionShell>
       )}
 
       {/* Empty state */}

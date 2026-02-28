@@ -23,8 +23,8 @@ const catColors = {
   Cybersecurity: { bg: 'rgba(231,76,111,0.18)', color: DANGER, border: 'rgba(231,76,111,0.3)' },
 };
 import CourseCard from '../../components/shared/CourseCard';
-
 import StatCard from '../../components/shared/StatCard';
+import SectionShell from '../../components/shared/SectionShell';
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
@@ -76,19 +76,20 @@ export default function InstructorDashboard() {
 
       {/* Courses grid */}
       {myCourses.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-400" />
-              Your Courses
-            </h2>
+        <SectionShell
+          title="Your Courses"
+          icon={BookOpen}
+          iconColor="text-indigo-400"
+          delay={2}
+          action={
             <button
               onClick={() => navigate('/instructor/courses')}
               className="text-primary-400 font-medium text-sm hover:text-primary-500 transition-colors"
             >
               View All →
             </button>
-          </div>
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {myCourses.slice(0, 3).map((course, i) => (
               <div key={course.id} className="relative group flex flex-col">
@@ -113,13 +114,17 @@ export default function InstructorDashboard() {
               </div>
             ))}
           </div>
-        </div>
+        </SectionShell>
       )}
 
       {/* Recent Reviews */}
       {allReviews.length > 0 && (
-        <Box className="anim-fadeInUp delay-3" sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>⭐ Recent Reviews</Typography>
+        <SectionShell
+          title="Recent Reviews"
+          icon={Star}
+          iconColor="text-amber-400 fill-current"
+          delay={3}
+        >
           <Grid container spacing={2}>
             {allReviews.slice(-6).reverse().map((r, i) => (
               <Grid item xs={12} md={6} key={i}>
@@ -141,7 +146,7 @@ export default function InstructorDashboard() {
               </Grid>
             ))}
           </Grid>
-        </Box>
+        </SectionShell>
       )}
 
       {/* Empty state */}
