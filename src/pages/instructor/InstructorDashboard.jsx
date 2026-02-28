@@ -4,13 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import Rating from '@mui/material/Rating';
+import Typography from '@mui/material/Typography';
 import { Star, Eye, BarChart2, BookOpen, Plus, Users, MessageSquare } from 'lucide-react';
 import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
 
@@ -26,6 +21,7 @@ import CourseCard from '../../components/shared/CourseCard';
 import StatCard from '../../components/shared/StatCard';
 import SectionShell from '../../components/shared/SectionShell';
 import EmptyState from '../../components/shared/EmptyState';
+import ReviewCard from '../../components/shared/ReviewCard';
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
@@ -126,27 +122,11 @@ export default function InstructorDashboard() {
           iconColor="text-amber-400 fill-current"
           delay={3}
         >
-          <Grid container spacing={2}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {allReviews.slice(-6).reverse().map((r, i) => (
-              <Grid item xs={12} md={6} key={i}>
-                <Card sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 3 }}>
-                  <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography sx={{ color: CREAM, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.85rem' }}>
-                        {r.studentName}
-                      </Typography>
-                      <Rating value={r.rating} readOnly size="small"
-                        sx={{ '& .MuiRating-iconFilled': { color: GOLD }, '& .MuiRating-iconEmpty': { color: 'rgba(212,168,67,0.2)' } }} />
-                    </Box>
-                    <Typography sx={{ color: STEEL, fontSize: '0.78rem', mb: 1, fontStyle: 'italic' }}>
-                      "{r.review || 'Great course!'}"
-                    </Typography>
-                    <Typography sx={{ color: ACCENT2, fontSize: '0.7rem' }}>{r.courseTitle}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <ReviewCard key={i} review={r} index={i} />
             ))}
-          </Grid>
+          </div>
         </SectionShell>
       )}
 

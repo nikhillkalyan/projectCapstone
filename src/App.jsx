@@ -11,6 +11,7 @@ import InstructorSignup from './pages/auth/InstructorSignup';
 
 import StudentDashboard from './pages/student/StudentDashboard';
 import ExploreCourses from './pages/student/ExploreCourses';
+import CourseDetails from './pages/student/CourseDetails';
 import CoursePlayer from './pages/student/CoursePlayer';
 import StudentProfile from './pages/student/StudentProfile';
 import EnrolledCourses from './pages/student/EnrolledCourses';
@@ -47,7 +48,8 @@ function App() {
 
             <Route path="/student" element={<PrivateRoute role="student"><StudentDashboard /></PrivateRoute>} />
             <Route path="/student/explore" element={<PrivateRoute role="student"><ExploreCourses /></PrivateRoute>} />
-            <Route path="/student/course/:courseId" element={<PrivateRoute role="student"><CoursePlayer /></PrivateRoute>} />
+            <Route path="/student/course/:courseId" element={<PrivateRoute role="student"><CourseDetails /></PrivateRoute>} />
+            <Route path="/student/course/:courseId/learn" element={<PrivateRoute role="student"><CoursePlayer /></PrivateRoute>} />
             <Route path="/student/enrolled" element={<PrivateRoute role="student"><EnrolledCourses /></PrivateRoute>} />
             <Route path="/student/favorites" element={<PrivateRoute role="student"><FavoriteCourses /></PrivateRoute>} />
             <Route path="/student/certificate/:courseId" element={<PrivateRoute role="student"><Certificate /></PrivateRoute>} />

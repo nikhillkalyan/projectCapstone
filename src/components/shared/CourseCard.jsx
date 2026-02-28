@@ -38,7 +38,13 @@ export default function CourseCard({
   const borderColor = completed ? 'border-teal-500/15' : 'border-border-subtle';
 
   const handleCardClick = () => {
-    if (user?.role === 'student') navigate(`/student/course/${course.id}`);
+    if (user?.role === 'student') {
+      if (enrolled) {
+        navigate(`/student/course/${course.id}/learn`);
+      } else {
+        navigate(`/student/course/${course.id}`);
+      }
+    }
   };
 
   const handleEnroll = (e) => {
@@ -229,8 +235,8 @@ export default function CourseCard({
             <button
               onClick={handleFavorite}
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-[1.05] ${favorited
-                  ? 'bg-rose-500/15 border border-rose-500/30 text-rose-500'
-                  : 'bg-white/[0.03] border border-border-subtle text-text-secondary hover:text-white'
+                ? 'bg-rose-500/15 border border-rose-500/30 text-rose-500'
+                : 'bg-white/[0.03] border border-border-subtle text-text-secondary hover:text-white'
                 }`}
             >
               <Heart className={`w-4 h-4 ${favorited ? 'fill-current' : ''}`} />
