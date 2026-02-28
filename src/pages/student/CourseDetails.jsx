@@ -1,15 +1,24 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { BookOpen, Star, Info, List, Clock, BarChart2, Award, Bookmark, Play } from 'lucide-react';
+import { BookOpen, Star, Info, List, Clock, BarChart2, Award, Bookmark, Play, Users, Calendar, ChevronDown, Video } from 'lucide-react';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import SectionShell from '../../components/shared/SectionShell';
+import ReviewCard from '../../components/shared/ReviewCard';
 
 export default function CourseDetails() {
     const { courseId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const { db, enrollCourse } = useApp();
+
+    const [expandedChapter, setExpandedChapter] = useState(null);
+
+    const toggleChapter = (chapterId) => {
+        setExpandedChapter(expandedChapter === chapterId ? null : chapterId);
+    };
 
     const course = db.courses.find(c => c.id === courseId);
     const isEnrolled = user?.enrolledCourses?.includes(courseId);
@@ -26,9 +35,60 @@ export default function CourseDetails() {
     }
 
     // Temporary Placeholders
-    const renderHeroPlaceholder = () => (
-        <div className="w-full bg-bg-surface border border-border-subtle rounded-2xl h-[340px] flex items-center justify-center mb-10 overflow-hidden relative group">
-            <span className="text-text-secondary font-syne z-10">Hero Section Placeholder</span>
+    const renderHero = () => (
+        <div className="w-full mb-12 flex flex-col gap-6">
+
+            {/* Title */}
+            <h1 className="text-4xl lg:text-5xl font-syne font-bold text-text-primary leading-[1.1] tracking-tight">
+                {course.title}
+            </h1>
+
+            {/* Short Description */}
+            <p className="text-lg text-text-secondary max-w-3xl leading-relaxed font-dmsans">
+                {course.description}
+            </p>
+
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-3">
+                <span className="px-3 py-1 rounded-full text-[0.75rem] font-syne font-bold border border-primary-500/30 bg-primary-500/10 text-primary-400 tracking-wide">
+                    {course.category}
+                </span>
+                <span className="px-3 py-1 rounded-full text-[0.75rem] font-syne font-bold border border-white/10 bg-white/5 text-text-secondary tracking-wide">
+                    {course.level} Level
+                </span>
+            </div>
+
+            {/* Metadata Row */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
+
+                {/* Rating */}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map(star => (
+                            <Star
+                                key={star}
+                                className={`w-4 h-4 ${star <= Math.round(course.rating || 0) ? 'fill-primary-500 text-primary-500' : 'fill-transparent text-border-subtle'}`}
+                            />
+                        ))}
+                    </div>
+                    <span className="text-sm font-medium text-text-primary ml-1">{course.rating?.toFixed(1) || "New"}</span>
+                    <span className="text-sm text-text-secondary">
+                        ({(course.enrolledCount > 1000 ? Math.floor(course.enrolledCount / 10) : 42).toLocaleString()} reviews)
+                    </span>
+                </div>
+
+                {/* Enrollment */}
+                <div className="flex items-center gap-2 text-text-secondary text-sm">
+                    <Users className="w-4 h-4" />
+                    <span>{(course.enrolledCount || 0).toLocaleString()} students enrolled</span>
+                </div>
+
+                {/* Last Updated */}
+                <div className="flex items-center gap-2 text-text-secondary text-sm">
+                    <Calendar className="w-4 h-4" />
+                    <span>Last updated {course.lastUpdated || "Recently"}</span>
+                </div>
+            </div>
         </div>
     );
 
@@ -134,7 +194,7 @@ export default function CourseDetails() {
                     <div className="lg:col-span-2 flex flex-col w-full">
 
                         {/* HERO SECTION (Unconstrained Height) */}
-                        {renderHeroPlaceholder()}
+                        {renderHero()}
 
                         {/* VERTICAL RHYTHM SECTIONS */}
                         <div className="space-y-12 pb-16">
@@ -162,8 +222,92 @@ export default function CourseDetails() {
                                 delay={0.2}
                                 disableAnimation={true}
                             >
-                                <div className="w-full h-64 border border-border-subtle rounded-2xl flex items-center justify-center bg-bg-surface/50">
-                                    <span className="text-text-secondary font-syne">Curriculum Accordion Placeholder</span>
+                                <div className="w-full flex flex-col border border-border-subtle rounded-2xl overflow-hidden bg-bg-surface/30">
+                                    {course.chapters?.length > 0 ? (
+                                        course.chapters.map((chapter, index) => {
+                                            const isExpanded = expandedChapter === chapter.id;
+                                            const isLast = index === course.chapters.length - 1;
+
+                                            return (
+                                                <div
+                                                    key={chapter.id}
+                                                    className={`w-full flex flex-col ${!isLast ? 'border-b border-border-subtle' : ''}`}
+                                                >
+                                                    {/* Accordion Header */}
+                                                    <button
+                                                        onClick={() => toggleChapter(chapter.id)}
+                                                        className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                                                        aria-expanded={isExpanded}
+                                                    >
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            <h4 className="font-syne font-bold text-text-primary text-[1.05rem] text-left">
+                                                                {chapter.title}
+                                                            </h4>
+                                                            <div className="flex items-center gap-3 text-text-secondary text-[0.8rem] font-medium">
+                                                                <span>{chapter.lessons?.length || 0} lessons</span>
+                                                                <span className="w-1 h-1 rounded-full bg-border-subtle" />
+                                                                <span>{chapter.lessons?.reduce((acc, curr) => acc + (parseInt(curr.duration) || 0), 0)} min</span>
+                                                            </div>
+                                                        </div>
+                                                        <motion.div
+                                                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                                                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                            className="w-8 h-8 rounded-full flex items-center justify-center bg-bg-elevated border border-border-subtle text-text-secondary group-hover:text-primary-400 group-hover:border-primary-500/50 transition-colors"
+                                                        >
+                                                            <ChevronDown className="w-4 h-4" />
+                                                        </motion.div>
+                                                    </button>
+
+                                                    {/* Accordion Content */}
+                                                    <AnimatePresence>
+                                                        {isExpanded && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="flex flex-col px-5 pb-5 pt-1 space-y-2">
+                                                                    {chapter.lessons?.map((lesson, lessonIndex) => (
+                                                                        <div
+                                                                            key={lesson.id}
+                                                                            className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] transition-colors group cursor-default"
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="w-8 h-8 rounded-lg bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-primary-400 transition-colors">
+                                                                                    <Video className="w-4 h-4 fill-current/10" />
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[0.9rem] font-medium text-text-primary">
+                                                                                        {lessonIndex + 1}. {lesson.title}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-3">
+                                                                                {lesson.isPreview && (
+                                                                                    <span className="px-2 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-white/5 text-text-secondary border border-border-subtle">
+                                                                                        Preview
+                                                                                    </span>
+                                                                                )}
+                                                                                <span className="text-[0.8rem] text-text-secondary font-medium">
+                                                                                    {lesson.duration}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="p-8 text-center text-text-secondary font-dmsans">
+                                            Curriculum is currently being updated.
+                                        </div>
+                                    )}
                                 </div>
                             </SectionShell>
 
@@ -175,9 +319,30 @@ export default function CourseDetails() {
                                 delay={0.3}
                                 disableAnimation={true}
                             >
-                                <div className="w-full h-48 border border-border-subtle rounded-2xl flex items-center justify-center bg-bg-surface/50">
-                                    <span className="text-text-secondary font-syne">Review Grid Placeholder</span>
-                                </div>
+                                {course.reviews && course.reviews.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {course.reviews.slice(0, 4).map((review, i) => (
+                                            <ReviewCard
+                                                key={review.id || i}
+                                                review={{
+                                                    ...review,
+                                                    courseTitle: course.title // Injecting for ReviewCard prop requirement 
+                                                }}
+                                                index={i}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="w-full flex flex-col items-center justify-center py-12 px-4 border border-border-subtle rounded-2xl bg-bg-surface/30">
+                                        <div className="w-12 h-12 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-secondary mb-4">
+                                            <Star className="w-5 h-5 opacity-50" />
+                                        </div>
+                                        <h3 className="font-syne font-bold text-text-primary text-lg mb-1">No reviews yet</h3>
+                                        <p className="font-dmsans text-text-secondary text-sm text-center max-w-sm">
+                                            Be the first student to enroll and leave a review for this course!
+                                        </p>
+                                    </div>
+                                )}
                             </SectionShell>
 
                         </div>
