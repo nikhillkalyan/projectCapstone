@@ -1,163 +1,349 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import StudentSidebar from '../../components/layout/StudentSidebar';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Avatar from '@mui/material/Avatar';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
-import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
+import StudentLayout from '../../components/layout/v2/StudentLayout';
+import SectionShell from '../../components/shared/SectionShell';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard, UserCircle, Save, Bell, Shield,
+  BookOpen, CheckCircle2, TrendingUp, Camera, Edit2
+} from 'lucide-react';
 
-const SIDEBAR_W = 248;
 const interestList = [
-  { key: 'AIML', label: 'AI & ML', icon: '🤖', color: ACCENT2, bg: 'rgba(108,127,216,0.15)', border: 'rgba(108,127,216,0.4)' },
-  { key: 'Cloud', label: 'Cloud', icon: '☁️', color: TEAL, bg: 'rgba(78,205,196,0.15)', border: 'rgba(78,205,196,0.4)' },
-  { key: 'DataScience', label: 'Data Science', icon: '📊', color: GOLD, bg: 'rgba(212,168,67,0.15)', border: 'rgba(212,168,67,0.4)' },
-  { key: 'Cybersecurity', label: 'Security', icon: '🔒', color: DANGER, bg: 'rgba(231,76,111,0.15)', border: 'rgba(231,76,111,0.4)' },
+  { key: 'AIML', label: 'AI & ML', icon: '🤖' },
+  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️' },
+  { key: 'DataScience', label: 'Data Science', icon: '📊' },
+  { key: 'Cybersecurity', label: 'Security', icon: '🔒' },
+  { key: 'WebDev', label: 'Web Development', icon: '💻' },
+  { key: 'Mobile', label: 'Mobile Apps', icon: '📱' },
 ];
+
 const years = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Post Graduate'];
+
+// Custom Toggle Component
+const CustomToggle = ({ checked, onChange, label, description }) => (
+  <div className="flex items-center justify-between py-1">
+    <div>
+      <p className="text-text-primary font-medium text-sm">{label}</p>
+      {description && <p className="text-text-secondary text-xs mt-0.5">{description}</p>}
+    </div>
+    <button
+      type="button"
+      onClick={onChange}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-1 focus:ring-offset-[#09090b] ${checked ? 'bg-primary-500' : 'bg-bg-surface border border-border-subtle'
+        }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${checked ? 'translate-x-6' : 'translate-x-1'
+          }`}
+      />
+    </button>
+  </div>
+);
+
+// Custom Input Field Wrapper
+const InputField = ({ label, type = "text", value, onChange, placeholder, disabled = false, multiline = false }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
+      {label}
+    </label>
+    {multiline ? (
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        rows={4}
+        className="w-full bg-bg-surface/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+      />
+    ) : (
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full h-11 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+      />
+    )}
+  </div>
+);
 
 export default function StudentProfile() {
   const { user, updateUser } = useAuth();
   const { db, getCourseProgress } = useApp();
-  const [form, setForm] = useState({ name: user?.name || '', college: user?.college || '', year: user?.year || '', bio: user?.bio || '', interests: user?.interests || [] });
+
+  // Form State
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    college: user?.college || '',
+    year: user?.year || '',
+    bio: user?.bio || '',
+    interests: user?.interests || [],
+    emailNotifs: true,
+    learningReminders: false,
+    darkMode: true
+  });
   const [saved, setSaved] = useState(false);
 
   const toggleInterest = (key) => {
-    setForm(p => ({ ...p, interests: p.interests.includes(key) ? p.interests.filter(i => i !== key) : [...p.interests, key] }));
+    setForm(p => ({
+      ...p,
+      interests: p.interests.includes(key) ? p.interests.filter(i => i !== key) : [...p.interests, key]
+    }));
   };
 
   const handleSave = () => {
-    updateUser(form);
+    updateUser({
+      name: form.name,
+      college: form.college,
+      year: form.year,
+      bio: form.bio,
+      interests: form.interests
+    });
     setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
+  // Derived Stats
   const enrolled = db.courses.filter(c => user?.enrolledCourses?.includes(c.id));
   const completed = user?.completedCourses || [];
   const avgProgress = enrolled.length > 0 ? Math.round(enrolled.reduce((s, c) => s + getCourseProgress(c.id), 0) / enrolled.length) : 0;
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'S';
 
-  const stats = [
-    { icon: LibraryBooksRoundedIcon, label: 'Enrolled', value: enrolled.length, color: ACCENT2 },
-    { icon: EmojiEventsRoundedIcon, label: 'Completed', value: completed.length, color: TEAL },
-    { icon: TrendingUpRoundedIcon, label: 'Avg. Progress', value: `${avgProgress}%`, color: GOLD },
-  ];
-
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <StudentSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
-        <Box sx={{ maxWidth: 760, mx: 'auto' }}>
-          <Typography variant="h4" className="anim-fadeInUp" sx={{ fontWeight: 800, color: CREAM, mb: 4, fontSize: { xs: '1.6rem', md: '2rem' } }}>My Profile</Typography>
+    <StudentLayout>
+      <div className="max-w-4xl mx-auto w-full pb-24">
 
-          {/* Stats */}
-          <Grid container spacing={2} sx={{ mb: 4 }} className="anim-fadeInUp delay-1">
-            {stats.map(({ icon: Icon, label, value, color }) => (
-              <Grid item xs={4} key={label}>
-                <Card sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2.5, '&:last-child': { pb: 2.5 } }}>
-                    <Box sx={{ width: 40, height: 40, borderRadius: 2, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.2 }}>
-                      <Icon sx={{ color, fontSize: 20 }} />
-                    </Box>
-                    <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.6rem', color: CREAM, lineHeight: 1 }}>{value}</Typography>
-                    <Typography sx={{ color: STEEL, fontSize: '0.75rem', mt: 0.5 }}>{label}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+        {/* 1. Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 text-center sm:text-left"
+        >
+          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">Account Settings</h1>
+          <p className="text-text-secondary font-dmsans">Manage your profile, preferences, and security.</p>
+        </motion.div>
 
-          {/* Profile form */}
-          <Card className="anim-fadeInUp delay-2" sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)' }}>
-            <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
-              {/* Avatar + info */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 4 }}>
-                <Avatar sx={{
-                  width: 72, height: 72, borderRadius: 3, fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.6rem',
-                  background: `linear-gradient(135deg, ${ACCENT} 0%, #8FA4E8 100%)`, color: '#fff',
-                }}>
+        <div className="space-y-12">
+
+          {/* Overall Profile Card */}
+          <div className="bg-bg-surface border border-border-subtle rounded-3xl p-6 sm:p-10 relative overflow-hidden">
+            {/* 2. Avatar Block */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 border-b border-border-subtle/50 pb-10">
+              <div className="relative group cursor-pointer">
+                <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-tr from-primary-600 to-cyan-400 flex items-center justify-center text-3xl font-syne font-bold text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
                   {initials}
-                </Avatar>
-                <Box>
-                  <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '1.1rem' }}>{user?.name}</Typography>
-                  <Typography sx={{ color: STEEL, fontSize: '0.82rem' }}>{user?.email}</Typography>
-                  <Typography sx={{ color: ACCENT2, fontSize: '0.78rem', mt: 0.4 }}>{user?.college} • {user?.year}</Typography>
-                </Box>
-              </Box>
+                </div>
+                <div className="absolute inset-0 rounded-[2rem] bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Camera className="w-8 h-8 text-white/90" />
+                </div>
+                {/* Status Dot */}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#09090b] flex items-center justify-center">
+                  <div className="w-4 h-4 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(78,205,196,0.5)]" />
+                </div>
+              </div>
 
-              <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="Full Name" fullWidth value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField label="College" fullWidth value={form.college} onChange={e => setForm(p => ({ ...p, college: e.target.value }))} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: STEEL }}>Year</InputLabel>
-                    <Select value={form.year} label="Year" onChange={e => setForm(p => ({ ...p, year: e.target.value }))}
-                      sx={{ color: CREAM, borderRadius: 2.5, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-                      {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
+              <div className="flex-1 text-center sm:text-left mt-2 sm:mt-0">
+                <h2 className="text-2xl font-syne font-bold text-text-primary mb-1">{user?.name}</h2>
+                <p className="text-text-secondary text-sm mb-4">{user?.email}</p>
 
-              <TextField label="About You" multiline rows={3} fullWidth value={form.bio}
-                onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                placeholder="Tell us about your learning goals..." sx={{ mb: 3 }} />
+                {/* Quick Stats */}
+                <div className="flex items-center justify-center sm:justify-start gap-6 pt-2">
+                  <div className="flex flex-col">
+                    <span className="text-xl font-bold font-syne text-primary-400">{enrolled.length}</span>
+                    <span className="text-xs text-text-secondary uppercase tracking-wider font-semibold">Enrolled</span>
+                  </div>
+                  <div className="h-8 w-px bg-border-subtle" />
+                  <div className="flex flex-col">
+                    <span className="text-xl font-bold font-syne text-teal-400">{completed.length}</span>
+                    <span className="text-xs text-text-secondary uppercase tracking-wider font-semibold">Completed</span>
+                  </div>
+                  <div className="h-8 w-px bg-border-subtle" />
+                  <div className="flex flex-col">
+                    <span className="text-xl font-bold font-syne text-indigo-400">{avgProgress}%</span>
+                    <span className="text-xs text-text-secondary uppercase tracking-wider font-semibold">Avg Score</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-              {/* Interests */}
-              <Typography sx={{ color: STEEL, fontSize: '0.83rem', fontWeight: 600, mb: 1.8 }}>Interests</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 4 }}>
+            {/* 3. Account Information Form */}
+            <div className="pt-10">
+              <div className="flex items-center gap-3 mb-6">
+                <UserCircle className="w-5 h-5 text-text-secondary" />
+                <h3 className="text-lg font-syne font-bold text-text-primary">Personal Information</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <InputField
+                  label="Full Name"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                />
+                <InputField
+                  label="Email Address"
+                  type="email"
+                  value={user?.email || ''}
+                  disabled={true}
+                />
+                <InputField
+                  label="University / College"
+                  value={form.college}
+                  onChange={e => setForm({ ...form, college: e.target.value })}
+                />
+
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
+                    Academic Year
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={form.year}
+                      onChange={e => setForm({ ...form, year: e.target.value })}
+                      className="w-full h-11 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-bg-base">Select your year</option>
+                      {years.map(y => <option key={y} value={y} className="bg-bg-base">{y}</option>)}
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                      <svg className="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <InputField
+                    label="Short Bio"
+                    multiline={true}
+                    placeholder="Tell other students and instructors a bit about yourself..."
+                    value={form.bio}
+                    onChange={e => setForm({ ...form, bio: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Interests / Skills */}
+            <div className="pt-10">
+              <div className="flex items-center gap-3 mb-6">
+                <BookOpen className="w-5 h-5 text-text-secondary" />
+                <h3 className="text-lg font-syne font-bold text-text-primary">Learning Interests</h3>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
                 {interestList.map(int => {
-                  const sel = form.interests.includes(int.key);
+                  const isSelected = form.interests.includes(int.key);
                   return (
-                    <Box key={int.key} onClick={() => toggleInterest(int.key)}
-                      sx={{
-                        display: 'flex', alignItems: 'center', gap: 1, px: 2.2, py: 1.1, borderRadius: 2.5, cursor: 'pointer',
-                        background: sel ? int.bg : 'rgba(22,27,39,0.6)',
-                        border: `1.5px solid ${sel ? int.border : 'rgba(139,155,180,0.12)'}`,
-                        transition: 'all 0.22s ease',
-                        '&:hover': { borderColor: int.border, transform: 'translateY(-2px)' },
-                      }}>
-                      {sel && <CheckCircleRoundedIcon sx={{ fontSize: 14, color: int.color }} />}
-                      <Typography sx={{ fontSize: '1rem' }}>{int.icon}</Typography>
-                      <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600, color: sel ? int.color : CREAM, fontSize: '0.82rem' }}>
-                        {int.label}
-                      </Typography>
-                    </Box>
+                    <button
+                      key={int.key}
+                      onClick={() => toggleInterest(int.key)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer hover:-translate-y-0.5 ${isSelected
+                          ? 'bg-primary-500/10 border-primary-500/50 text-white shadow-[0_4px_12px_rgba(108,127,216,0.15)]'
+                          : 'bg-white/[0.02] border-border-subtle border-transparent text-text-secondary hover:text-text-primary hover:border-border-muted'
+                        }`}
+                    >
+                      <span>{int.icon}</span>
+                      {int.label}
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-primary-400 ml-1" />}
+                    </button>
                   );
                 })}
-              </Box>
+              </div>
+            </div>
+          </div>
 
-              <Button variant="contained" color="primary" startIcon={<SaveRoundedIcon />} onClick={handleSave} sx={{ px: 4, py: 1.3 }}>
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
+          {/* 4. Preferences & Security */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Preferences */}
+            <div className="bg-bg-surface border border-border-subtle rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Bell className="w-5 h-5 text-text-secondary" />
+                <h3 className="text-lg font-syne font-bold text-text-primary">Preferences</h3>
+              </div>
+              <div className="space-y-6">
+                <CustomToggle
+                  label="Email Notifications"
+                  description="Receive updates on course announcements and grades."
+                  checked={form.emailNotifs}
+                  onChange={() => setForm({ ...form, emailNotifs: !form.emailNotifs })}
+                />
+                <div className="h-px w-full bg-border-subtle/50" />
+                <CustomToggle
+                  label="Learning Reminders"
+                  description="Get weekly push notifications to keep your streak alive."
+                  checked={form.learningReminders}
+                  onChange={() => setForm({ ...form, learningReminders: !form.learningReminders })}
+                />
+                <div className="h-px w-full bg-border-subtle/50" />
+                <CustomToggle
+                  label="Force Dark Mode"
+                  description="Override system settings and always use dark mode."
+                  checked={form.darkMode}
+                  onChange={() => setForm({ ...form, darkMode: !form.darkMode })}
+                />
+              </div>
+            </div>
 
-      <Snackbar open={saved} autoHideDuration={2500} onClose={() => setSaved(false)} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-        <Alert severity="success" sx={{ borderRadius: 2.5 }}>Profile saved successfully!</Alert>
-      </Snackbar>
-    </Box>
+            {/* Security */}
+            <div className="bg-bg-surface border border-border-subtle rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="w-5 h-5 text-text-secondary" />
+                <h3 className="text-lg font-syne font-bold text-text-primary">Security</h3>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <p className="text-text-primary font-medium text-sm mb-1">Password</p>
+                  <p className="text-text-secondary text-xs mb-3">Last changed 3 months ago</p>
+                  <button className="text-sm font-medium text-text-primary bg-white/[0.03] border border-border-subtle hover:bg-white/[0.08] px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                    Update Password
+                  </button>
+                </div>
+                <div className="h-px w-full bg-border-subtle/50" />
+                <div>
+                  <p className="text-text-primary font-medium text-sm mb-1">Two-Factor Authentication</p>
+                  <p className="text-text-secondary text-xs mb-3">Add an extra layer of security to your account.</p>
+                  <button className="text-sm font-medium text-primary-400 bg-primary-500/10 border border-primary-500/20 hover:bg-primary-500/20 px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                    Enable 2FA
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Save Action Area */}
+          <div className="flex items-center justify-end pt-4 border-t border-border-subtle/50">
+            <button
+              onClick={handleSave}
+              className="bg-gradient-to-r from-primary-500 to-primary-600 hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] text-white font-semibold flex items-center justify-center gap-2 rounded-xl px-8 py-3 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+            >
+              <Save className="w-5 h-5" />
+              Save Changes
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {saved && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-8 right-8 z-50 bg-[#0E0E11] border border-border-strong shadow-2xl rounded-2xl p-4 flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-teal-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Profile Updated</p>
+              <p className="text-xs text-text-secondary">Your changes have been saved.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </StudentLayout>
   );
 }
