@@ -1,22 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Avatar from '@mui/material/Avatar';
-import Fade from '@mui/material/Fade';
-import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import { Send, Copy, CheckCircle2, Bot } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, NAVY, NAVY2, NAVY3 } from '../../theme';
 
 export default function ChatWindow({ otherId, otherName, courseId, courseTitle }) {
   const { user } = useAuth();
   const { sendMessage, getMessages } = useApp();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [copiedId, setCopiedId] = useState(null);
   const bottomRef = useRef(null);
+
+  // Auto-resize textarea
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     setMessages(getMessages(otherId, courseId));
@@ -32,10 +30,35 @@ export default function ChatWindow({ otherId, otherName, courseId, courseTitle }
     const msg = sendMessage(otherId, courseId, input.trim());
     setMessages(prev => [...prev, msg]);
     setInput('');
+
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleInput = (e) => {
+    setInput(e.target.value);
+    // Auto-resize logic
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+
+  const copyToClipboard = async (text, id) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   const formatTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -48,130 +71,139 @@ export default function ChatWindow({ otherId, otherName, courseId, courseTitle }
   };
 
   const initials = otherName?.charAt(0)?.toUpperCase() || '?';
-  const isInstructor = user?.role === 'student';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'rgba(13,17,23,0.4)' }}>
-      {/* Header */}
-      <Box sx={{
-        px: 3, py: 2.2, borderBottom: '1px solid rgba(139,155,180,0.1)',
-        display: 'flex', alignItems: 'center', gap: 2,
-        background: 'rgba(8,12,20,0.6)', backdropFilter: 'blur(12px)',
-      }}>
-        <Avatar sx={{
-          width: 42, height: 42, borderRadius: 2.5, fontFamily: '"Syne",sans-serif', fontWeight: 700,
-          background: isInstructor
-            ? `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`
-            : `linear-gradient(135deg, ${ACCENT} 0%, ${TEAL} 100%)`,
-          color: isInstructor ? NAVY : '#fff',
-          fontSize: '1rem',
-        }}>
+    <div className="flex flex-col h-full bg-bg-base relative overflow-hidden">
+
+      {/* Header Sticky */}
+      <div className="flex-none px-6 py-4 border-b border-border-subtle/50 bg-bg-surface/80 backdrop-blur-md z-10 hidden md:flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-syne font-bold shadow-sm">
           {initials}
-        </Avatar>
-        <Box>
-          <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.95rem' }}>
-            {otherName}
-          </Typography>
-          <Typography sx={{ color: STEEL, fontSize: '0.75rem' }}>{courseTitle}</Typography>
-        </Box>
-        <Box sx={{ ml: 'auto', width: 8, height: 8, borderRadius: '50%', background: TEAL, boxShadow: `0 0 8px ${TEAL}` }} />
-      </Box>
+        </div>
+        <div>
+          <h2 className="font-syne font-bold text-text-primary text-base">{otherName}</h2>
+          <p className="text-text-secondary text-xs">{courseTitle}</p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(78,205,196,0.6)] animate-pulse" />
+          <span className="text-xs text-text-secondary font-medium">Online</span>
+        </div>
+      </div>
 
-      {/* Messages */}
-      <Box sx={{
-        flex: 1, overflowY: 'auto', px: 3, py: 2.5,
-        display: 'flex', flexDirection: 'column', gap: 1.5,
-        '&::-webkit-scrollbar': { width: 4 },
-        '&::-webkit-scrollbar-thumb': { background: 'rgba(139,155,180,0.15)', borderRadius: 2 },
-      }}>
+      {/* Scrollable Messages Area */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth custom-scrollbar">
+
         {messages.length === 0 ? (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
-            <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 44, color: STEEL, mb: 1.5 }} />
-            <Typography sx={{ color: STEEL, fontSize: '0.88rem' }}>No messages yet. Start the conversation!</Typography>
-          </Box>
+          <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
+            <Bot className="w-16 h-16 text-text-secondary mb-4" />
+            <h3 className="font-syne text-lg text-text-primary font-bold mb-1">Start a Conversation</h3>
+            <p className="text-sm text-text-secondary max-w-sm">
+              Ask questions, discuss course material, or get help with assignments directly from your instructor.
+            </p>
+          </div>
         ) : (
-          messages.map((msg, idx) => {
-            const isMine = msg.fromId === user?.id;
-            const prevMsg = messages[idx - 1];
-            const showDate = !prevMsg || formatDate(msg.timestamp) !== formatDate(prevMsg.timestamp);
+          <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
+            {messages.map((msg, idx) => {
+              const isMine = msg.fromId === user?.id;
+              const prevMsg = messages[idx - 1];
+              const showDate = !prevMsg || formatDate(msg.timestamp) !== formatDate(prevMsg.timestamp);
 
-            return (
-              <Fade in key={msg.id} timeout={300}>
-                <Box>
+              return (
+                <div key={msg.id} className="flex flex-col w-full">
                   {showDate && (
-                    <Box sx={{ textAlign: 'center', my: 1.5 }}>
-                      <Typography sx={{ color: STEEL, fontSize: '0.72rem', background: 'rgba(30,37,53,0.6)', px: 2, py: 0.5, borderRadius: 10, display: 'inline-block' }}>
+                    <div className="flex justify-center my-4">
+                      <span className="text-[0.65rem] uppercase tracking-wider font-bold text-text-secondary bg-bg-surface/50 px-3 py-1 rounded-full">
                         {formatDate(msg.timestamp)}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   )}
-                  <Box sx={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 1 }}>
-                    {!isMine && (
-                      <Avatar sx={{
-                        width: 28, height: 28, borderRadius: 1.5, fontSize: '0.72rem', fontWeight: 700,
-                        background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, flexShrink: 0,
-                      }}>
-                        {initials}
-                      </Avatar>
-                    )}
-                    <Box sx={{
-                      maxWidth: { xs: '85%', sm: '65%' },
-                      px: 2, py: 1.2, borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: isMine
-                        ? `linear-gradient(135deg, ${ACCENT} 0%, #5A6BC4 100%)`
-                        : 'rgba(30,37,53,0.85)',
-                      border: isMine ? 'none' : '1px solid rgba(139,155,180,0.13)',
-                      boxShadow: isMine ? `0 4px 16px rgba(108,127,216,0.25)` : 'none',
-                    }}>
-                      <Typography sx={{ color: CREAM, fontSize: '0.88rem', lineHeight: 1.55 }}>
-                        {msg.message}
-                      </Typography>
-                      <Typography sx={{ color: 'rgba(240,238,216,0.5)', fontSize: '0.67rem', mt: 0.5, textAlign: 'right' }}>
-                        {formatTime(msg.timestamp)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Fade>
-            );
-          })
-        )}
-        <div ref={bottomRef} />
-      </Box>
 
-      {/* Input */}
-      <Box sx={{
-        px: 2.5, py: 2, borderTop: '1px solid rgba(139,155,180,0.1)',
-        background: 'rgba(8,12,20,0.5)', backdropFilter: 'blur(12px)',
-      }}>
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
-          <TextField
-            fullWidth multiline maxRows={4}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message... (Enter to send)"
-            variant="outlined"
-            size="small"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 3, background: 'rgba(22,27,39,0.7)',
-                '& textarea': { color: CREAM, fontSize: '0.88rem', lineHeight: 1.5 },
-              },
-            }}
-          />
-          <IconButton onClick={handleSend} disabled={!input.trim()}
-            sx={{
-              width: 44, height: 44, borderRadius: 2.5, flexShrink: 0,
-              background: input.trim() ? `linear-gradient(135deg, ${ACCENT} 0%, #5A6BC4 100%)` : 'rgba(30,37,53,0.6)',
-              transition: 'all 0.2s ease',
-              '&:hover': { transform: 'scale(1.08)', boxShadow: `0 4px 16px rgba(108,127,216,0.4)` },
-              '&:disabled': { opacity: 0.4 },
-            }}>
-            <SendRoundedIcon sx={{ color: '#fff', fontSize: 18 }} />
-          </IconButton>
-        </Box>
-      </Box>
-    </Box>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className={`flex w-full group ${isMine ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex items-end gap-3 max-w-[85%] sm:max-w-[75%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+
+                      {/* Avatar (Only for Instructor) */}
+                      {!isMine && (
+                        <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-syne font-bold text-xs shadow-sm mb-1 hidden sm:flex">
+                          {initials}
+                        </div>
+                      )}
+
+                      {/* Message Bubble */}
+                      <div className={`relative px-5 py-3.5 group-hover:shadow-md transition-shadow ${isMine
+                        ? 'bg-primary-500/10 border border-primary-500/20 text-text-primary rounded-2xl rounded-br-sm'
+                        : 'bg-bg-surface border border-border-subtle text-text-primary rounded-2xl rounded-bl-sm'
+                        }`}>
+
+                        <div className="text-[0.9rem] leading-relaxed whitespace-pre-wrap font-dmsans">
+                          {msg.message}
+                        </div>
+
+                        <div className={`flex items-center gap-2 mt-1.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
+                          <span className="text-[0.65rem] text-text-secondary/60 font-medium select-none">
+                            {formatTime(msg.timestamp)}
+                          </span>
+                        </div>
+
+                        {/* Hover Action Dock (Copy) - Only for Instructor messages */}
+                        {!isMine && (
+                          <div className="absolute -right-12 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 hidden sm:flex">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(msg.message, msg.id); }}
+                              className="p-1.5 rounded-md hover:bg-bg-surface border border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary transition-all bg-bg-base shadow-sm"
+                              title="Copy message"
+                            >
+                              {copiedId === msg.id ? <CheckCircle2 className="w-4 h-4 text-teal-500" /> : <Copy className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })}
+            <div ref={bottomRef} className="h-4" />
+          </div>
+        )}
+      </div>
+
+      {/* Sticky Input Dock */}
+      <div className="flex-none p-4 sm:p-6 bg-gradient-to-t from-bg-base via-bg-base/95 to-transparent relative z-10 w-full pt-12 mt-auto">
+        <div className="max-w-3xl mx-auto w-full relative">
+          <div className="relative flex items-end gap-3 bg-bg-surface/60 backdrop-blur-xl border border-border-subtle rounded-3xl p-2 pl-4 focus-within:ring-1 focus-within:ring-primary-500/50 focus-within:border-primary-500/50 transition-all shadow-lg">
+
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              placeholder="Message..."
+              rows={1}
+              className="flex-1 max-h-32 bg-transparent text-text-primary text-[0.95rem] placeholder-text-secondary outline-none resize-none py-3 custom-scrollbar"
+            />
+
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center transition-all bg-primary-500 text-white shadow-md hover:shadow-primary-500/25 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed mb-0.5 mr-0.5"
+            >
+              <Send className="w-4 h-4 ml-0.5" />
+            </button>
+          </div>
+          <div className="text-center mt-2.5">
+            <p className="text-[0.65rem] text-text-secondary/50 font-medium select-none">
+              Press Enter to send, Shift + Enter for new line.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
   );
 }
