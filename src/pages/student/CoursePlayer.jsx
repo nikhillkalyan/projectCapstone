@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
+import { Star } from 'lucide-react';
 import Assessment from '../../components/shared/Assessment';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
@@ -170,17 +171,20 @@ export default function CoursePlayer() {
             {completed ? (
               <>
                 <span className="text-teal-400 text-[0.75rem] font-bold">✓ Passed with {completed.score}%</span>
-                <Button variant="contained" fullWidth size="small" onClick={() => navigate(`/student/certificate/${courseId}`)}
-                  sx={{ background: 'linear-gradient(135deg, #D4A843 0%, #E2D9BE 100%)', color: '#09090b', fontWeight: 700, borderRadius: 2 }}>
+                <button
+                  onClick={() => navigate(`/student/certificate/${courseId}`)}
+                  className="cursor-pointer w-full py-2 px-4 bg-gradient-to-br from-[#D4A843] to-[#E2D9BE] text-[#09090b] font-syne font-bold text-sm rounded-lg hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                >
                   View Certificate
-                </Button>
+                </button>
               </>
             ) : (
-              <Button variant="contained" fullWidth size="small"
+              <button
                 onClick={() => { setShowGrandTest(true); setShowAssessment(false); setGrandTestDone(false); if (window.innerWidth < 768) setChapterDrawerOpen(false); }}
-                sx={{ background: 'linear-gradient(135deg, #D4A843 0%, #E2D9BE 100%)', color: '#09090b', fontWeight: 700, borderRadius: 2 }}>
+                className="cursor-pointer w-full py-2 px-4 bg-gradient-to-br from-[#D4A843] to-[#E2D9BE] text-[#09090b] font-syne font-bold text-sm rounded-lg hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+              >
                 Take Grand Test
-              </Button>
+              </button>
             )}
           </div>
         )}
@@ -522,18 +526,17 @@ export default function CoursePlayer() {
               <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Rate This Course</h3>
               <p className="text-text-secondary font-medium mb-6">How was your learning experience?</p>
 
-              <div className="flex justify-center mb-6">
-                <Rating
-                  size="large"
-                  value={ratingGiven}
-                  onChange={(_, v) => setRatingGiven(v || 0)}
-                  sx={{
-                    fontSize: '3rem',
-                    '& .MuiRating-iconFilled': { color: '#D4A843' },
-                    '& .MuiRating-iconHover': { color: '#D4A843' },
-                    '& .MuiRating-iconEmpty': { color: 'rgba(255,255,255,0.1)' }
-                  }}
-                />
+              <div className="flex justify-center gap-2 mb-6 cursor-pointer">
+                {[1, 2, 3, 4, 5].map((starIndex) => (
+                  <Star
+                    key={starIndex}
+                    onClick={() => setRatingGiven(starIndex)}
+                    className={`w-12 h-12 transition-all hover:scale-110 ${ratingGiven >= starIndex
+                      ? 'fill-[#D4A843] text-[#D4A843]'
+                      : 'fill-white/5 text-white/10'
+                      }`}
+                  />
+                ))}
               </div>
 
               <textarea
@@ -547,14 +550,14 @@ export default function CoursePlayer() {
               <div className="flex gap-3 w-full">
                 <button
                   onClick={() => setShowRating(false)}
-                  className="flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors"
+                  className="cursor-pointer flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors"
                 >
                   Skip
                 </button>
                 <button
                   disabled={!ratingGiven}
                   onClick={() => handleRateSubmit(ratingGiven)}
-                  className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] disabled:opacity-50 disabled:cursor-not-allowed text-[#09090b] font-bold shadow-lg shadow-warning/10 hover:shadow-warning/20 transition-all font-syne"
+                  className="cursor-pointer disabled:cursor-not-allowed flex-[2] py-3 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] disabled:opacity-50 text-[#09090b] font-bold shadow-lg shadow-warning/10 hover:shadow-warning/20 transition-all font-syne"
                 >
                   Submit Review
                 </button>

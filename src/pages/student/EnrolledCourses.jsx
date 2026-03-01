@@ -43,6 +43,15 @@ export function EnrolledCourses() {
   const notStarted = enrolled.filter(c => getCourseProgress(c.id) === 0);
   const completed = user?.completedCourses?.map(cc => db.courses.find(c => c.id === cc.courseId)).filter(Boolean) || [];
 
+  console.info("DEBUG EnrolledCourses:", {
+    user: user?.name,
+    enrolledIds: user?.enrolledCourses,
+    enrolledObjectsCount: enrolled.length,
+    inProgressCount: inProgress.length,
+    notStartedCount: notStarted.length,
+    completedCount: completed.length
+  });
+
   return (
     <StudentLayout>
       <div className="max-w-[1600px] mx-auto w-full pb-20">

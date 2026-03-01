@@ -7,7 +7,7 @@ import { useApp } from '../../context/AppContext';
 
 // Modern Lucide Icons
 import {
-  Star, Users, Clock, Play, Heart, Bookmark, CheckCircle2, Award
+  Star, Users, Clock, Play, Heart, Bookmark, CheckCircle2, Award, MessageSquare
 } from 'lucide-react';
 
 const categoryConfig = {
@@ -31,7 +31,14 @@ export default function CourseCard({
 
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { enrollCourse, toggleFavorite, getCourseProgress } = useApp();
+  const { enrollCourse, toggleFavorite, getCourseProgress, rateCourse } = useApp();
+
+  // Review Modal State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+
+  const hasReviewed = course.reviews?.some(r => r.studentId === user?.id);
 
   const cfg = categoryConfig[course.category] || categoryConfig.AIML;
   const progress = enrolled ? getCourseProgress(course.id) : 0;
@@ -270,13 +277,24 @@ export default function CourseCard({
 
         {/* Actions Footer For Completed (No pop-out needed, just standard) */}
         {user?.role === 'student' && completed && (
-          <div className="flex gap-2.5 mt-auto pt-4">
+          <div className="flex gap-2.5 mt-auto pt-4 flex-wrap sm:flex-nowrap">
             <button
               onClick={(e) => { e.stopPropagation(); navigate(`/student/certificate/${course.id}`); }}
               className="flex-1 bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 text-teal-400 font-medium flex flex-row items-center justify-center gap-1.5 rounded-xl py-2 text-[0.75rem] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
             >
               <Award className="w-3.5 h-3.5" />
-              View Certificate
+              Certificate
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowReviewModal(true); setReviewRating(0); setReviewText(''); }}
+              disabled={hasReviewed}
+              className={`flex-1 flex flex-row items-center justify-center gap-1.5 rounded-xl py-2 text-[0.75rem] transition-all border font-medium cursor-pointer ${hasReviewed
+                  ? 'bg-white/5 border-border-subtle text-text-tertiary disabled:cursor-not-allowed'
+                  : 'bg-white/[0.03] border-border-subtle hover:border-amber-500/50 hover:bg-amber-500/10 text-white hover:text-amber-400 hover:scale-[1.02] active:scale-95'
+                }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              {hasReviewed ? 'Reviewed' : 'Write Review'}
             </button>
           </div>
         )}
@@ -313,6 +331,73 @@ export default function CourseCard({
           >
             {renderCardInner(true)}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Review Modal portal structure */}
+      <AnimatePresence>
+        {showReviewModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={(e) => { e.stopPropagation(); setShowReviewModal(false); }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-default"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center cursor-default"
+              onClick={e => e.stopPropagation()} // Stop bubbling to card
+            >
+              <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Review Course</h3>
+              <p className="text-text-secondary font-medium mb-6 line-clamp-1">"{course.title}"</p>
+
+              <div className="flex justify-center gap-2 mb-6 cursor-pointer">
+                {[1, 2, 3, 4, 5].map((starIndex) => (
+                  <Star
+                    key={starIndex}
+                    onClick={(e) => { e.stopPropagation(); setReviewRating(starIndex); }}
+                    className={`w-12 h-12 transition-all hover:scale-110 ${reviewRating >= starIndex
+                        ? 'fill-[#D4A843] text-[#D4A843]'
+                        : 'fill-white/5 text-white/10'
+                      }`}
+                  />
+                ))}
+              </div>
+
+              <textarea
+                rows={3}
+                placeholder="What did you think of the course? (optional)"
+                value={reviewText}
+                onClick={e => e.stopPropagation()}
+                onChange={e => setReviewText(e.target.value)}
+                className="w-full bg-bg-base border border-border-subtle rounded-xl p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 mb-6 resize-none transition-all cursor-text"
+              />
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowReviewModal(false); }}
+                  className="flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!reviewRating}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    rateCourse(course.id, reviewRating, reviewText);
+                    setShowReviewModal(false);
+                  }}
+                  className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-amber-500 to-[#E2D9BE] disabled:opacity-50 disabled:cursor-not-allowed text-[#09090b] font-bold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all font-syne cursor-pointer"
+                >
+                  Submit Review
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

@@ -5,7 +5,7 @@ import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import { Download, Explore, Share2, Award, ArrowLeft, Star, ShieldCheck } from 'lucide-react';
+import { Download, Share2, Award, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 export default function Certificate() {
   const { courseId } = useParams();
