@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
@@ -7,9 +7,19 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
   // Local hover state for desktop auto-expand
   const [isHovered, setIsHovered] = useState(false);
 
+  // Track window width for real-time responsiveness without reloading
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // The 'logical' width that AppShell reserves is always 80px on desktop
   // But the 'visual' width of the Sidebar overlay changes on hover
   const desktopWidth = isHovered ? 280 : 80;
+  const isMobile = windowWidth < 1024;
 
   return (
     <>
@@ -39,8 +49,8 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
         onMouseLeave={() => setIsHovered(false)}
         initial={false}
         animate={{
-          width: isMobileOpen ? 280 : (window.innerWidth < 1024 ? -280 : desktopWidth),
-          x: isMobileOpen ? 0 : (window.innerWidth < 1024 ? (isMobileOpen ? 0 : -280) : 0)
+          width: isMobileOpen ? 280 : (isMobile ? -280 : desktopWidth),
+          x: isMobileOpen ? 0 : (isMobile ? (isMobileOpen ? 0 : -280) : 0)
         }}
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
         className="fixed top-0 left-0 flex flex-col h-screen bg-[#0E0E11] border-r border-neutral-800 shadow-2xl z-50 overflow-hidden lg:overflow-visible"
