@@ -20,6 +20,7 @@ export default function ChatWindow({ otherId, otherName, courseId, courseTitle }
 
   useEffect(() => {
     setMessages(getMessages(otherId, courseId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otherId, courseId]);
 
   useEffect(() => {

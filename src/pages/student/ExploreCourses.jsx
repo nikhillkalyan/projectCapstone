@@ -1,33 +1,74 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import StudentSidebar from '../../components/layout/StudentSidebar';
+import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Chip from '@mui/material/Chip';
-import Paper from '@mui/material/Paper';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY2 } from '../../theme';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronDown, Filter, X } from 'lucide-react';
 
-const SIDEBAR_W = 248;
 const categories = ['All', 'AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
 const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 const sortOptions = ['Most Popular', 'Highest Rated', 'Newest'];
 
-const catColors = {
-  AIML: { bg: 'rgba(108,127,216,0.15)', color: ACCENT2, border: 'rgba(108,127,216,0.3)' },
-  Cloud: { bg: 'rgba(78,205,196,0.15)', color: TEAL, border: 'rgba(78,205,196,0.3)' },
-  DataScience: { bg: 'rgba(212,168,67,0.15)', color: GOLD, border: 'rgba(212,168,67,0.3)' },
-  Cybersecurity: { bg: 'rgba(231,76,111,0.15)', color: DANGER, border: 'rgba(231,76,111,0.3)' },
+const catStyles = {
+  AIML: 'bg-primary-900/30 text-primary-400 border-primary-500/30',
+  Cloud: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
+  DataScience: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  Cybersecurity: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+};
+
+const CustomSelect = ({ label, value, options, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [ref]);
+
+  return (
+    <div ref={ref} className="relative w-full">
+      <label className="block text-[0.7rem] font-bold text-text-secondary uppercase tracking-widest mb-1.5 px-1 font-syne">
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 sm:py-2.5 bg-bg-surface/50 border border-border-subtle rounded-xl text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 hover:bg-white/[0.03] transition-all cursor-pointer"
+      >
+        <span className="truncate">{value === 'All' && label !== 'Sort' ? (label === 'Category' ? 'All Categories' : `All ${label}s`) : value}</span>
+        <ChevronDown className={`w-4 h-4 text-text-secondary transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 w-full mt-2 bg-bg-surface border border-border-subtle rounded-xl shadow-xl shadow-black/50 overflow-hidden py-1 backdrop-blur-xl"
+          >
+            {options.map(opt => (
+              <button
+                key={opt}
+                onClick={() => { onChange(opt); setIsOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 sm:py-2 text-sm transition-colors hover:bg-white/[0.05] cursor-pointer ${value === opt ? 'text-primary-400 font-bold bg-primary-500/10' : 'text-text-primary'}`}
+              >
+                {opt === 'All' && label !== 'Sort' ? (label === 'Category' ? 'All Categories' : `All ${label}s`) : opt}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };
 
 export default function ExploreCourses() {
@@ -38,6 +79,7 @@ export default function ExploreCourses() {
   const [level, setLevel] = useState('All');
   const [sort, setSort] = useState('Most Popular');
 
+  // Filter Logic
   const filtered = useMemo(() => {
     let courses = [...db.courses];
     if (search) {
@@ -51,8 +93,11 @@ export default function ExploreCourses() {
     }
     if (category !== 'All') courses = courses.filter(c => c.category === category);
     if (level !== 'All') courses = courses.filter(c => c.level === level);
+
     if (sort === 'Most Popular') courses.sort((a, b) => b.enrolledCount - a.enrolledCount);
-    else if (sort === 'Highest Rated') courses.sort((a, b) => b.rating - a.rating);
+    else if (sort === 'Highest Rated') courses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    else if (sort === 'Newest') courses.reverse();
+
     return courses;
   }, [db.courses, search, category, level, sort]);
 
@@ -62,126 +107,188 @@ export default function ExploreCourses() {
 
   const activeFilters = (category !== 'All' || level !== 'All');
 
-  return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <StudentSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
-        {/* Header */}
-        <Box className="anim-fadeInUp" sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>Explore Courses</Typography>
-          <Typography sx={{ color: STEEL, fontSize: '0.9rem' }}>
-            {filtered.length} course{filtered.length !== 1 ? 's' : ''} found{search && ` for "${search}"`}
-          </Typography>
-        </Box>
+  // Motion variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
 
-        {/* Search + Filters */}
-        <Paper className="anim-fadeInUp delay-1" elevation={0} sx={{
-          background: 'rgba(22,27,39,0.8)', border: '1px solid rgba(139,155,180,0.1)',
-          borderRadius: 3.5, p: { xs: 2, sm: 3 }, mb: 4,
-        }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={5}>
-              <TextField fullWidth placeholder="Search courses, topics, instructors..."
-                value={search} onChange={e => setSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ color: STEEL, fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: search && (
-                    <InputAdornment position="end">
-                      <Chip label="Clear" size="small" onClick={() => setSearch('')}
-                        sx={{ background: 'rgba(139,155,180,0.1)', color: STEEL, cursor: 'pointer', fontSize: '0.7rem', height: 22 }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4} md={2.5}>
-              <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: STEEL, fontSize: '0.85rem' }}>Category</InputLabel>
-                <Select value={category} label="Category" onChange={e => setCategory(e.target.value)}
-                  sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-                  {categories.map(c => <MenuItem key={c} value={c}>{c === 'All' ? 'All Categories' : c}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4} md={2.5}>
-              <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: STEEL, fontSize: '0.85rem' }}>Level</InputLabel>
-                <Select value={level} label="Level" onChange={e => setLevel(e.target.value)}
-                  sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-                  {levels.map(l => <MenuItem key={l} value={l}>{l === 'All' ? 'All Levels' : l}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4} md={2}>
-              <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: STEEL, fontSize: '0.85rem' }}>Sort</InputLabel>
-                <Select value={sort} label="Sort" onChange={e => setSort(e.target.value)}
-                  sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-                  {sortOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+  };
+
+  return (
+    <StudentLayout>
+      <div className="max-w-[1600px] mx-auto w-full pb-20">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">Explore Courses</h1>
+          <p className="text-text-secondary font-dmsans">
+            {filtered.length} course{filtered.length !== 1 ? 's' : ''} found{search && ` for "${search}"`}
+          </p>
+        </motion.div>
+
+        {/* Glassmorphic Filter Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative z-30 mb-10 w-full rounded-2xl bg-[#09090b]/60 backdrop-blur-xl border border-border-subtle p-4 md:p-6 shadow-2xl overflow-visible"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            {/* Search Bar - Larger */}
+            <div className="md:col-span-5 relative w-full">
+              <label className="block text-[0.7rem] font-bold text-text-secondary uppercase tracking-widest mb-1.5 px-1 font-syne">
+                Search
+              </label>
+              <div className="relative flex items-center w-full group">
+                <Search className="absolute left-4 w-5 h-5 text-text-secondary group-focus-within:text-primary-400 transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Search courses, topics, instructors..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-11 pr-10 py-3 sm:py-2.5 bg-bg-surface/50 border border-border-subtle rounded-xl text-text-primary text-sm focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all placeholder:text-text-secondary/50"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 p-1 rounded-full hover:bg-white/10 text-text-secondary hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Dropdowns */}
+            <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <CustomSelect label="Category" value={category} options={categories} onChange={setCategory} />
+              <CustomSelect label="Level" value={level} options={levels} onChange={setLevel} />
+              <CustomSelect label="Sort" value={sort} options={sortOptions} onChange={setSort} />
+            </div>
+          </div>
 
           {/* Active filter chips */}
-          {activeFilters && (
-            <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-              <FilterListRoundedIcon sx={{ color: STEEL, fontSize: 16 }} />
-              {category !== 'All' && (
-                <Chip label={category} size="small" onDelete={() => setCategory('All')}
-                  sx={{ background: catColors[category]?.bg, color: catColors[category]?.color, border: `1px solid ${catColors[category]?.border}`, fontSize: '0.7rem' }} />
-              )}
-              {level !== 'All' && (
-                <Chip label={level} size="small" onDelete={() => setLevel('All')}
-                  sx={{ background: 'rgba(212,168,67,0.15)', color: GOLD, border: '1px solid rgba(212,168,67,0.3)', fontSize: '0.7rem' }} />
-              )}
-              <Chip label="Clear all" size="small" variant="outlined" onClick={() => { setCategory('All'); setLevel('All'); setSearch(''); }}
-                sx={{ color: STEEL, borderColor: 'rgba(139,155,180,0.2)', fontSize: '0.7rem' }} />
-            </Box>
+          <AnimatePresence>
+            {activeFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="flex items-center gap-2 flex-wrap overflow-hidden"
+              >
+                <Filter className="w-4 h-4 text-text-secondary mr-1" />
+                {category !== 'All' && (
+                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-syne font-bold ${catStyles[category] || catStyles.AIML}`}>
+                    {category}
+                    <button onClick={() => setCategory('All')} className="hover:text-white hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                {level !== 'All' && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 text-amber-500 border-amber-500/30 text-xs font-syne font-bold">
+                    {level}
+                    <button onClick={() => setLevel('All')} className="hover:text-white hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <button
+                  onClick={() => { setCategory('All'); setLevel('All'); setSearch(''); }}
+                  className="text-xs text-text-secondary hover:text-white border border-border-subtle hover:bg-white/5 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+                >
+                  Clear all
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Recommended Section (Only if no active search/filters) */}
+        <AnimatePresence>
+          {!search && category === 'All' && recommended.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              className="mb-12"
+            >
+              <h2 className="text-xl font-syne font-bold text-text-primary mb-6 flex items-center gap-2">
+                <span className="text-amber-400">⚡</span> Based on Your Interests
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {recommended.map(course => (
+                  <CourseCard
+                    key={`rec-${course.id}`}
+                    course={course}
+                    enrolled={user?.enrolledCourses?.includes(course.id)}
+                    favorited={user?.favoriteCourses?.includes(course.id)}
+                  />
+                ))}
+              </div>
+            </motion.div>
           )}
-        </Paper>
+        </AnimatePresence>
 
-        {/* Recommended */}
-        {!search && category === 'All' && recommended.length > 0 && (
-          <Box className="anim-fadeInUp delay-2" sx={{ mb: 4 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>⚡ Based on Your Interests</Typography>
-            <Grid container spacing={2.5}>
-              {recommended.slice(0, 3).map(course => (
-                <Grid item xs={12} sm={6} lg={4} key={course.id}>
-                  <CourseCard course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited={user?.favoriteCourses?.includes(course.id)} />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
-
-        {/* All courses */}
-        <Box className="anim-fadeInUp delay-3">
-          <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>
+        {/* All Courses Grid */}
+        <div className="w-full">
+          <h2 className="text-xl font-syne font-bold text-text-primary mb-6">
             {search ? 'Search Results' : category !== 'All' ? `${category} Courses` : 'All Courses'}
-          </Typography>
+          </h2>
 
           {filtered.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 10 }}>
-              <Typography sx={{ fontSize: '3rem', mb: 2 }}>🔍</Typography>
-              <Typography variant="h6" sx={{ color: CREAM, mb: 1 }}>No courses found</Typography>
-              <Typography sx={{ color: STEEL, fontSize: '0.9rem' }}>Try adjusting your search or filters</Typography>
-            </Box>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-20 bg-bg-surface/30 border border-border-subtle rounded-2xl"
+            >
+              <div className="text-5xl mb-4 opacity-50">🔍</div>
+              <h3 className="text-xl font-syne font-bold text-text-primary mb-2">No courses found</h3>
+              <p className="text-text-secondary">Try adjusting your search or filters to find what you're looking for.</p>
+              <button
+                onClick={() => { setSearch(''); setCategory('All'); setLevel('All'); }}
+                className="mt-6 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-border-subtle hover:border-text-secondary text-text-primary rounded-xl transition-all cursor-pointer font-medium active:scale-95"
+              >
+                Clear all filters
+              </button>
+            </motion.div>
           ) : (
-            <Grid container spacing={2.5}>
-              {filtered.map(course => (
-                <Grid item xs={12} sm={6} lg={4} key={course.id}>
-                  <CourseCard course={course} enrolled={user?.enrolledCourses?.includes(course.id)} favorited={user?.favoriteCourses?.includes(course.id)} />
-                </Grid>
-              ))}
-            </Grid>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              <AnimatePresence mode="popLayout">
+                {filtered.map(course => (
+                  <motion.div
+                    key={course.id}
+                    variants={itemVariants}
+                    layout
+                  >
+                    <CourseCard
+                      course={course}
+                      enrolled={user?.enrolledCourses?.includes(course.id)}
+                      favorited={user?.favoriteCourses?.includes(course.id)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </StudentLayout>
   );
 }

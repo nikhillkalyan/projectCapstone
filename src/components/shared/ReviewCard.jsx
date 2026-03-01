@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 
@@ -39,8 +40,8 @@ export default function ReviewCard({ review, index = 0 }) {
                         <Star
                             key={star}
                             className={`w-3.5 h-3.5 transition-colors ${star <= (review.rating || 5)
-                                    ? 'text-amber-400 fill-amber-400'
-                                    : 'text-border-strong fill-transparent'
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-border-strong fill-transparent'
                                 }`}
                         />
                     ))}

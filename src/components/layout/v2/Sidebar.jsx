@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react';
@@ -10,7 +11,7 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
       {/* Mobile Backdrop */}
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -23,7 +24,7 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
       {/* Main Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ 
+        animate={{
           width: sidebarWidth,
           x: isMobileOpen ? 0 : (window.innerWidth < 1024 ? -280 : 0)
         }}
@@ -38,9 +39,9 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
           </div>
           <AnimatePresence>
             {!isCollapsed && (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
                 className="ml-4 whitespace-nowrap overflow-hidden"
@@ -56,7 +57,7 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
         <div className="flex-1 py-6 px-4 overflow-y-auto hide-scrollbar flex flex-col gap-2">
           {navLinks.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.end} onClick={() => setIsMobileOpen(false)}
-              className={({ isActive }) => 
+              className={({ isActive }) =>
                 `flex items-center h-12 rounded-xl transition-all duration-200 group relative
                 ${isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'}`
               }
@@ -68,7 +69,7 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
                   </div>
                   <AnimatePresence>
                     {!isCollapsed && (
-                      <motion.span 
+                      <motion.span
                         initial={{ opacity: 0, width: 0 }}
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
@@ -89,7 +90,7 @@ export default function Sidebar({ navLinks, isCollapsed, setIsCollapsed, isMobil
         </div>
 
         {/* Desktop Collapse Toggle */}
-        <button 
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden lg:flex absolute -right-3.5 top-24 w-7 h-7 rounded-full bg-neutral-800 border-2 border-[#09090b] items-center justify-center text-neutral-400 hover:text-white transition-colors z-50 hover:scale-110 shadow-md"
         >

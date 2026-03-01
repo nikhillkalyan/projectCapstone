@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, useSpring, useTransform } from 'framer-motion';
 
+// eslint-disable-next-line no-unused-vars
 export default function StatCard({ icon: Icon, label, value, color, delay = 0 }) {
     // Extract number from value string if it contains percentages or text
     const numMatch = typeof value === 'string' ? value.match(/[\d.]+/) : null;
