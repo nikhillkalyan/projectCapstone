@@ -1,22 +1,12 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { Star, Eye, BarChart2, BookOpen, Plus, Users, MessageSquare } from 'lucide-react';
-import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
-
-const SIDEBAR_W = 248;
-
-const catColors = {
-  AIML: { bg: 'rgba(108,127,216,0.18)', color: ACCENT2, border: 'rgba(108,127,216,0.3)' },
-  Cloud: { bg: 'rgba(78,205,196,0.18)', color: TEAL, border: 'rgba(78,205,196,0.3)' },
-  DataScience: { bg: 'rgba(212,168,67,0.18)', color: GOLD, border: 'rgba(212,168,67,0.3)' },
-  Cybersecurity: { bg: 'rgba(231,76,111,0.18)', color: DANGER, border: 'rgba(231,76,111,0.3)' },
-};
 import CourseCard from '../../components/shared/CourseCard';
 import StatCard from '../../components/shared/StatCard';
 import SectionShell from '../../components/shared/SectionShell';
@@ -35,34 +25,37 @@ export default function InstructorDashboard() {
   const allReviews = myCourses.flatMap(c => (c.reviews || []).map(r => ({ ...r, courseTitle: c.title })));
 
   const stats = [
-    { icon: BookOpen, label: 'Total Courses', value: myCourses.length, color: ACCENT2, delay: 1 },
-    { icon: Users, label: 'Total Students', value: totalStudents, color: TEAL, delay: 2 },
-    { icon: Star, label: 'Avg Rating', value: avgRating, color: GOLD, delay: 3 },
-    { icon: MessageSquare, label: 'Total Reviews', value: allReviews.length, color: DANGER, delay: 4 },
+    { icon: BookOpen, label: 'Total Courses', value: myCourses.length, color: '#6C7FD8', delay: 1 },
+    { icon: Users, label: 'Total Students', value: totalStudents, color: '#4ECDC4', delay: 2 },
+    { icon: Star, label: 'Avg Rating', value: avgRating, color: '#D4A843', delay: 3 },
+    { icon: MessageSquare, label: 'Total Reviews', value: allReviews.length, color: '#E74C3C', delay: 4 },
   ];
 
   return (
     <InstructorLayout>
 
       {/* Header */}
-      <Box className="anim-fadeInUp" sx={{
-        display: 'flex', alignItems: { sm: 'center' }, justifyContent: 'space-between',
-        mb: 4, flexDirection: { xs: 'column', sm: 'row' }, gap: 2
-      }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"
+      >
+        <div>
+          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">
             Instructor Dashboard
-          </Typography>
-          <Typography sx={{ color: STEEL, mt: 0.5, fontSize: '0.9rem' }}>
+          </h1>
+          <p className="text-text-secondary font-dmsans">
             Welcome back, {user?.name?.split(' ')[0]}! Here's your overview.
-          </Typography>
-        </Box>
-        <Button variant="contained" color="primary" startIcon={<Plus />}
+          </p>
+        </div>
+        <button
           onClick={() => navigate('/instructor/create-course')}
-          sx={{ px: 3, py: 1.3, whiteSpace: 'nowrap', flexShrink: 0 }}>
+          className="bg-primary-500 hover:bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95 cursor-pointer max-w-fit"
+        >
+          <Plus className="w-5 h-5 flex-shrink-0" />
           Create Course
-        </Button>
-      </Box>
+        </button>
+      </motion.div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -88,7 +81,7 @@ export default function InstructorDashboard() {
           }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {myCourses.slice(0, 3).map((course, i) => (
+            {myCourses.slice(0, 3).map((course) => (
               <div key={course.id} className="relative group flex flex-col">
                 <CourseCard course={course} />
                 {/* Injection of Instructor Admin Buttons Over the Card */}

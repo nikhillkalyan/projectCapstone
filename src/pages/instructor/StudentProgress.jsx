@@ -2,31 +2,8 @@ import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import InstructorSidebar from '../../components/layout/InstructorSidebar';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import LinearProgress from '@mui/material/LinearProgress';
-import Avatar from '@mui/material/Avatar';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
-import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
-
-const SIDEBAR_W = 248;
+import InstructorLayout from '../../components/layout/v2/InstructorLayout';
+import { ArrowLeft, Users, Trophy, TrendingUp, CheckCircle, Clock } from 'lucide-react';
 
 export default function StudentProgress() {
   const { courseId } = useParams();
@@ -55,193 +32,228 @@ export default function StudentProgress() {
         return chProg.assessmentScore !== undefined ? chProg.assessmentScore : null;
       }) || [];
 
-      const avgChapterScore = chapterScores.filter(s => s !== null).length > 0
-        ? Math.round(chapterScores.filter(s => s !== null).reduce((a, b) => a + b, 0) / chapterScores.filter(s => s !== null).length)
-        : null;
-
-      return { student, overallPct, completedChapters, totalChapters, isCompleted, grandScore, chapterScores, avgChapterScore };
+      return { student, overallPct, completedChapters, totalChapters, isCompleted, grandScore, chapterScores };
     });
   }, [enrolledStudents, course, courseId]);
 
   const completedCount = studentRows.filter(r => r.isCompleted).length;
   const avgProgress = studentRows.length > 0
-    ? Math.round(studentRows.reduce((s, r) => s + r.overallPct, 0) / studentRows.length) : 0;
+    ? Math.round(studentRows.reduce((s, r) => s + r.overallPct, 0) / studentRows.length)
+    : 0;
 
   if (!course) return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <InstructorSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: { xs: 7, md: 0 } }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ color: CREAM, mb: 2 }}>Course not found</Typography>
-          <Button variant="outlined" color="primary" onClick={() => navigate('/instructor/courses')}>Back</Button>
-        </Box>
-      </Box>
-    </Box>
+    <InstructorLayout>
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+        <h2 className="text-2xl font-bold font-syne text-text-primary border-b border-border-subtle pb-4 mb-4">Course Not Found</h2>
+        <button
+          onClick={() => navigate('/instructor/courses')}
+          className="px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
+        >
+          Back to Courses
+        </button>
+      </div>
+    </InstructorLayout>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <InstructorSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
+    <InstructorLayout>
+      <div className="max-w-6xl mx-auto pb-12">
+        <button
+          onClick={() => navigate(`/instructor/course/${courseId}`)}
+          className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors mb-6 group w-fit"
+        >
+          <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+          <span className="font-medium text-sm">Back to Course</span>
+        </button>
 
-        <Button startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate(`/instructor/course/${courseId}`)}
-          sx={{ color: STEEL, mb: 3, '&:hover': { color: CREAM } }}>
-          Back to Course
-        </Button>
-
-        <Box className="anim-fadeInUp" sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+        <div className="animate-fade-in-up mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold font-syne text-text-primary">
             Student Progress
-          </Typography>
-          <Typography sx={{ color: ACCENT2, mt: 0.5, fontSize: '0.9rem' }}>{course.title}</Typography>
-        </Box>
+          </h1>
+          <p className="text-primary-400 mt-2 font-medium">{course.title}</p>
+        </div>
 
-        {/* Overview stats */}
-        <Grid container spacing={2.5} sx={{ mb: 4 }} className="anim-fadeInUp delay-1">
+        {/* Overview Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           {[
-            { icon: PeopleRoundedIcon,    label: 'Enrolled',    value: enrolledStudents.length, color: ACCENT2 },
-            { icon: EmojiEventsRoundedIcon,label: 'Completed',  value: completedCount,          color: TEAL    },
-            { icon: TrendingUpRoundedIcon, label: 'Avg Progress',value: `${avgProgress}%`,      color: GOLD    },
-          ].map(({ icon: Icon, label, value, color }) => (
-            <Grid item xs={4} key={label}>
-              <Card sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', textAlign: 'center' }}>
-                <CardContent sx={{ py: 2.5, '&:last-child': { pb: 2.5 } }}>
-                  <Box sx={{ width: 40, height: 40, borderRadius: 2, background: `${color}18`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1 }}>
-                    <Icon sx={{ color, fontSize: 20 }} />
-                  </Box>
-                  <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.8rem', color: CREAM, lineHeight: 1 }}>
-                    {value}
-                  </Typography>
-                  <Typography sx={{ color: STEEL, fontSize: '0.75rem', mt: 0.4 }}>{label}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+            { icon: Users, label: 'Enrolled', value: enrolledStudents.length, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
+            { icon: Trophy, label: 'Completed', value: completedCount, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+            { icon: TrendingUp, label: 'Avg Progress', value: `${avgProgress}%`, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+          ].map((stat, idx) => (
+            <div key={idx} className={`bg-bg-surface border border-border-subtle hover:border-border-strong transition-colors rounded-3xl p-6 shadow-xl flex flex-col items-center text-center`}>
+              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 border ${stat.border}`}>
+                <stat.icon size={24} />
+              </div>
+              <div className="text-3xl font-bold font-syne text-text-primary leading-none mb-2">
+                {stat.value}
+              </div>
+              <div className="text-sm font-medium text-text-muted uppercase tracking-wider">
+                {stat.label}
+              </div>
+            </div>
           ))}
-        </Grid>
+        </div>
 
-        {/* Student table */}
+        {/* Student Data */}
         {enrolledStudents.length === 0 ? (
-          <Box className="anim-fadeInUp delay-2" sx={{ textAlign: 'center', py: 10 }}>
-            <PeopleRoundedIcon sx={{ fontSize: 48, color: STEEL, mb: 2, opacity: 0.4 }} />
-            <Typography variant="h6" sx={{ color: CREAM, mb: 1 }}>No students enrolled yet</Typography>
-            <Typography sx={{ color: STEEL, fontSize: '0.9rem' }}>Students will appear here once they enroll</Typography>
-          </Box>
+          <div className="animate-fade-in-up flex flex-col items-center justify-center py-20 text-center bg-bg-surface border border-border-subtle rounded-3xl" style={{ animationDelay: '0.2s' }}>
+            <div className="w-20 h-20 rounded-full bg-bg-elevated flex items-center justify-center mb-6">
+              <Users className="w-10 h-10 text-text-muted" />
+            </div>
+            <h3 className="text-xl font-bold font-syne text-text-primary mb-2">No students enrolled yet</h3>
+            <p className="text-text-muted">Students will appear here once they enroll in your course.</p>
+          </div>
         ) : (
-          <Box className="anim-fadeInUp delay-2">
-            {/* Desktop table */}
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-              <TableContainer sx={{ borderRadius: 3, border: '1px solid rgba(139,155,180,0.1)', background: 'rgba(22,27,39,0.85)' }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Student</TableCell>
-                      <TableCell>Overall Progress</TableCell>
-                      {course.chapters?.map((ch, i) => (
-                        <TableCell key={ch.id} align="center" sx={{ whiteSpace: 'nowrap', maxWidth: 120 }}>
-                          <Typography sx={{ color: STEEL, fontSize: '0.68rem', fontFamily: '"Syne",sans-serif', fontWeight: 700,
-                            overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            Ch {i + 1}
-                          </Typography>
-                        </TableCell>
-                      ))}
-                      <TableCell align="center">Grand Test</TableCell>
-                      <TableCell align="center">Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {studentRows.map(({ student, overallPct, isCompleted, grandScore, chapterScores }) => (
-                      <TableRow key={student.id}>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Avatar sx={{ width: 34, height: 34, borderRadius: 2, fontSize: '0.8rem', fontFamily: '"Syne",sans-serif',
-                              background: `linear-gradient(135deg, ${ACCENT2} 0%, ${TEAL} 100%)`, color: '#fff' }}>
-                              {student.name?.charAt(0)}
-                            </Avatar>
-                            <Box>
-                              <Typography sx={{ color: CREAM, fontSize: '0.83rem', fontWeight: 500 }}>{student.name}</Typography>
-                              <Typography sx={{ color: STEEL, fontSize: '0.7rem' }}>{student.college || student.year || ''}</Typography>
-                            </Box>
-                          </Box>
-                        </TableCell>
-                        <TableCell sx={{ minWidth: 160 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <LinearProgress variant="determinate" value={overallPct}
-                              sx={{ flex: 1, height: 6, borderRadius: 3 }} />
-                            <Typography sx={{ color: ACCENT2, fontSize: '0.75rem', fontWeight: 700, width: 36, flexShrink: 0 }}>
-                              {overallPct}%
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        {chapterScores.map((score, i) => (
-                          <TableCell key={i} align="center">
-                            {score !== null
-                              ? <Chip label={`${score}%`} size="small"
-                                  sx={{ background: score >= 70 ? 'rgba(78,205,196,0.15)' : 'rgba(231,76,111,0.15)',
-                                    color: score >= 70 ? TEAL : DANGER, fontSize: '0.65rem', height: 20,
-                                    border: `1px solid ${score >= 70 ? 'rgba(78,205,196,0.3)' : 'rgba(231,76,111,0.3)'}` }} />
-                              : <Typography sx={{ color: 'rgba(139,155,180,0.3)', fontSize: '0.8rem' }}>—</Typography>}
-                          </TableCell>
-                        ))}
-                        <TableCell align="center">
-                          {grandScore !== undefined && grandScore !== null
-                            ? <Chip label={`${grandScore}%`} size="small"
-                                sx={{ background: grandScore >= 70 ? 'rgba(212,168,67,0.2)' : 'rgba(231,76,111,0.15)',
-                                  color: grandScore >= 70 ? GOLD : DANGER, fontSize: '0.65rem', height: 20, fontWeight: 700 }} />
-                            : <Typography sx={{ color: 'rgba(139,155,180,0.3)', fontSize: '0.8rem' }}>—</Typography>}
-                        </TableCell>
-                        <TableCell align="center">
-                          {isCompleted
-                            ? <Chip icon={<CheckCircleRoundedIcon sx={{ fontSize: '13px !important' }} />}
-                                label="Done" size="small"
-                                sx={{ background: 'rgba(78,205,196,0.15)', color: TEAL, border: '1px solid rgba(78,205,196,0.3)', fontSize: '0.65rem' }} />
-                            : <Chip icon={<HourglassTopRoundedIcon sx={{ fontSize: '13px !important' }} />}
-                                label="In Progress" size="small"
-                                sx={{ background: 'rgba(108,127,216,0.12)', color: ACCENT2, border: '1px solid rgba(108,127,216,0.2)', fontSize: '0.65rem' }} />}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
 
-            {/* Mobile cards */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
-              {studentRows.map(({ student, overallPct, isCompleted, grandScore }) => (
-                <Card key={student.id} sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)' }}>
-                  <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar sx={{ width: 36, height: 36, borderRadius: 2, fontFamily: '"Syne",sans-serif', fontWeight: 700,
-                          background: `linear-gradient(135deg, ${ACCENT2} 0%, ${TEAL} 100%)`, color: '#fff', fontSize: '0.85rem' }}>
-                          {student.name?.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography sx={{ color: CREAM, fontSize: '0.85rem', fontWeight: 600 }}>{student.name}</Typography>
-                          <Typography sx={{ color: STEEL, fontSize: '0.72rem' }}>{student.college || ''}</Typography>
-                        </Box>
-                      </Box>
-                      {isCompleted
-                        ? <Chip label="Done" size="small" sx={{ background: 'rgba(78,205,196,0.15)', color: TEAL, fontSize: '0.65rem' }} />
-                        : <Chip label="In Progress" size="small" sx={{ background: 'rgba(108,127,216,0.12)', color: ACCENT2, fontSize: '0.65rem' }} />}
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <LinearProgress variant="determinate" value={overallPct} sx={{ flex: 1, height: 6, borderRadius: 3 }} />
-                      <Typography sx={{ color: ACCENT2, fontSize: '0.75rem', fontWeight: 700, width: 36 }}>{overallPct}%</Typography>
-                    </Box>
-                    {grandScore !== undefined && grandScore !== null && (
-                      <Typography sx={{ color: GOLD, fontSize: '0.75rem', mt: 1, fontWeight: 600 }}>
-                        Grand Test: {grandScore}%
-                      </Typography>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block bg-bg-surface border border-border-subtle rounded-3xl overflow-hidden shadow-xl overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-bg-elevated border-b border-border-subtle text-sm font-bold text-text-muted">
+                    <th className="py-4 px-6 font-medium">Student</th>
+                    <th className="py-4 px-6 font-medium w-48">Overall Progress</th>
+                    {course.chapters?.map((ch, i) => (
+                      <th key={ch.id} className="py-4 px-4 text-center font-medium whitespace-nowrap">
+                        <span className="font-syne text-xs uppercase tracking-wider text-text-muted">Ch {i + 1}</span>
+                      </th>
+                    ))}
+                    <th className="py-4 px-6 text-center font-medium">Grand Test</th>
+                    <th className="py-4 px-6 text-center font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-subtle">
+                  {studentRows.map(({ student, overallPct, isCompleted, grandScore, chapterScores }) => (
+                    <tr key={student.id} className="hover:bg-bg-elevated transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white font-syne font-bold shrink-0 shadow-lg shadow-indigo-500/20">
+                            {student.name?.charAt(0) || 'S'}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-text-primary text-sm">{student.name}</div>
+                            <div className="text-xs text-text-muted mt-0.5">{student.college || student.year || 'No Details'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-2 rounded-full bg-bg-elevated overflow-hidden border border-border-subtle">
+                            <div
+                              className={`h-full rounded-full ${overallPct === 100 ? 'bg-teal-500' : 'bg-primary-500'}`}
+                              style={{ width: `${overallPct}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-bold text-primary-400 w-10">{overallPct}%</span>
+                        </div>
+                      </td>
+                      {chapterScores.map((score, i) => (
+                        <td key={i} className="py-4 px-4 text-center">
+                          {score !== null ? (
+                            <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-bold border ${score >= 70 ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+                              {score}%
+                            </span>
+                          ) : (
+                            <span className="text-text-muted/50">—</span>
+                          )}
+                        </td>
+                      ))}
+                      <td className="py-4 px-6 text-center">
+                        {grandScore !== undefined && grandScore !== null ? (
+                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg shadow-sm text-xs font-bold border ${grandScore >= 70 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+                            {grandScore}%
+                          </span>
+                        ) : (
+                          <span className="text-text-muted/50">—</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        {isCompleted ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 text-xs font-bold uppercase tracking-wider">
+                            <CheckCircle size={14} /> Done
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-500/10 text-primary-400 border border-primary-500/20 text-xs font-bold uppercase tracking-wider">
+                            <Clock size={14} /> Active
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="lg:hidden space-y-4">
+              {studentRows.map(({ student, overallPct, isCompleted, grandScore, chapterScores }) => (
+                <div key={student.id} className="bg-bg-surface border border-border-subtle rounded-3xl p-5 shadow-xl">
+                  <div className="flex items-start justify-between mb-4 pb-4 border-b border-border-subtle">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white font-syne font-bold text-lg shadow-lg shadow-indigo-500/20">
+                        {student.name?.charAt(0) || 'S'}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-text-primary">{student.name}</div>
+                        <div className="text-xs text-text-muted mt-0.5">{student.college || student.year || 'No Details'}</div>
+                      </div>
+                    </div>
+                    {isCompleted ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[10px] font-bold uppercase tracking-wider">
+                        Done
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-400 border border-primary-500/20 text-[10px] font-bold uppercase tracking-wider">
+                        Active
+                      </span>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs font-medium mb-1.5">
+                        <span className="text-text-muted">Progress</span>
+                        <span className="text-primary-400 font-bold">{overallPct}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-bg-elevated overflow-hidden border border-border-subtle">
+                        <div
+                          className={`h-full rounded-full ${overallPct === 100 ? 'bg-teal-500' : 'bg-primary-500'}`}
+                          style={{ width: `${overallPct}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {grandScore !== undefined && grandScore !== null && (
+                      <div className="p-3 rounded-xl bg-bg-elevated border border-border-subtle flex justify-between items-center">
+                        <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Grand Test Score</span>
+                        <span className={`font-bold text-sm ${grandScore >= 70 ? 'text-amber-400' : 'text-rose-400'}`}>
+                          {grandScore}%
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                      {chapterScores.map((score, i) => (
+                        <div key={i} className="flex flex-col items-center p-2 rounded-xl border border-border-subtle bg-bg-elevated/50">
+                          <span className="text-[10px] text-text-muted uppercase tracking-wider mb-1 font-medium">Ch {i + 1}</span>
+                          {score !== null ? (
+                            <span className={`text-xs font-bold ${score >= 70 ? 'text-teal-400' : 'text-rose-400'}`}>
+                              {score}%
+                            </span>
+                          ) : (
+                            <span className="text-xs text-text-muted/50">—</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ))}
-            </Box>
-          </Box>
+            </div>
+
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </InstructorLayout>
   );
 }

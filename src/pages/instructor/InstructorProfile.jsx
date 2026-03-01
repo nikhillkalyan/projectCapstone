@@ -1,43 +1,62 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import InstructorSidebar from '../../components/layout/InstructorSidebar';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Avatar from '@mui/material/Avatar';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
-import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-import { ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY } from '../../theme';
-
-const SIDEBAR_W = 248;
+import InstructorLayout from '../../components/layout/v2/InstructorLayout';
+import {
+  Camera,
+  Library,
+  Users,
+  Star,
+  CheckCircle2,
+  Save
+} from 'lucide-react';
 
 const specializationList = [
-  { key: 'AIML',         label: 'AI & Machine Learning', icon: '🤖', color: ACCENT2, bg: 'rgba(108,127,216,0.15)', border: 'rgba(108,127,216,0.4)' },
-  { key: 'Cloud',        label: 'Cloud Computing',       icon: '☁️', color: TEAL,    bg: 'rgba(78,205,196,0.15)',  border: 'rgba(78,205,196,0.4)'  },
-  { key: 'DataScience',  label: 'Data Science',          icon: '📊', color: GOLD,    bg: 'rgba(212,168,67,0.15)',  border: 'rgba(212,168,67,0.4)'  },
-  { key: 'Cybersecurity',label: 'Cybersecurity',         icon: '🔒', color: DANGER,  bg: 'rgba(231,76,111,0.15)', border: 'rgba(231,76,111,0.4)'  },
+  { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'DataScience', label: 'Data Science', icon: '📊', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
 ];
+
+// Custom Input Field Wrapper
+const InputField = ({ label, type = "text", value, onChange, placeholder, disabled = false, multiline = false }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
+      {label}
+    </label>
+    {multiline ? (
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        rows={4}
+        className="w-full bg-bg-surface/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+      />
+    ) : (
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full h-11 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+      />
+    )}
+  </div>
+);
 
 export default function InstructorProfile() {
   const { user, updateUser } = useAuth();
   const { db } = useApp();
+
+  // Form State
   const [form, setForm] = useState({
-    name:          user?.name          || '',
+    name: user?.name || '',
     qualification: user?.qualification || '',
-    experience:    user?.experience    || '',
-    bio:           user?.bio           || '',
-    specialization:user?.specialization|| '',
+    experience: user?.experience || '',
+    bio: user?.bio || '',
+    specialization: user?.specialization || '',
   });
   const [saved, setSaved] = useState(false);
 
@@ -52,135 +71,175 @@ export default function InstructorProfile() {
   const handleSave = () => {
     updateUser(form);
     setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
-  const stats = [
-    { icon: LibraryBooksRoundedIcon, label: 'Courses',  value: myCourses.length, color: ACCENT2 },
-    { icon: PeopleRoundedIcon,       label: 'Students', value: totalStudents,    color: TEAL    },
-    { icon: StarRoundedIcon,         label: 'Avg Rating',value: avgRating,       color: GOLD    },
-  ];
+  const currentSpec = specializationList.find(s => s.key === user?.specialization);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <InstructorSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
-        <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+    <InstructorLayout>
+      <div className="max-w-4xl mx-auto w-full pb-24">
 
-          <Typography variant="h4" className="anim-fadeInUp"
-            sx={{ fontWeight: 800, color: CREAM, mb: 4, fontSize: { xs: '1.6rem', md: '2rem' } }}>
-            My Profile
-          </Typography>
+        {/* 1. Header Section */}
+        <div className="animate-fade-in-up mb-10 text-center sm:text-left">
+          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">My Profile</h1>
+          <p className="text-text-secondary font-dmsans">Manage your academic and professional details.</p>
+        </div>
 
-          {/* Stats */}
-          <Grid container spacing={2} sx={{ mb: 4 }} className="anim-fadeInUp delay-1">
-            {stats.map(({ icon: Icon, label, value, color }) => (
-              <Grid item xs={4} key={label}>
-                <Card sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2.5, '&:last-child': { pb: 2.5 } }}>
-                    <Box sx={{ width: 40, height: 40, borderRadius: 2, background: `${color}18`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.2 }}>
-                      <Icon sx={{ color, fontSize: 20 }} />
-                    </Box>
-                    <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.6rem', color: CREAM, lineHeight: 1 }}>
-                      {value}
-                    </Typography>
-                    <Typography sx={{ color: STEEL, fontSize: '0.75rem', mt: 0.5 }}>{label}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+        {/* Top Stats Grid */}
+        <div className="animate-fade-in-up grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10" style={{ animationDelay: '0.1s' }}>
+          {[
+            { icon: Library, label: 'Courses Created', value: myCourses.length, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
+            { icon: Users, label: 'Total Students', value: totalStudents, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+            { icon: Star, label: 'Average Rating', value: avgRating, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+          ].map((stat, idx) => (
+            <div key={idx} className="bg-bg-surface border border-border-subtle rounded-3xl p-6 shadow-xl flex flex-col items-center text-center">
+              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 border ${stat.border}`}>
+                <stat.icon size={24} />
+              </div>
+              <div className="text-3xl font-bold font-syne text-text-primary leading-none mb-2">
+                {stat.value}
+              </div>
+              <div className="text-sm font-medium text-text-muted uppercase tracking-wider">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Form */}
-          <Card className="anim-fadeInUp delay-2"
-            sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 4 }}>
-            <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+        <div className="space-y-12">
 
-              {/* Avatar header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 4 }}>
-                <Avatar sx={{
-                  width: 72, height: 72, borderRadius: 3, fontFamily: '"Syne",sans-serif', fontWeight: 800,
-                  fontSize: '1.6rem', background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY,
-                }}>
+          {/* Overall Profile Card */}
+          <div className="bg-bg-surface border border-border-subtle rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-xl">
+            {/* 2. Avatar Block */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 border-b border-border-subtle/50 pb-10">
+              <div className="relative group cursor-pointer">
+                <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-tr from-amber-500 to-rose-400 flex items-center justify-center text-3xl font-syne font-bold text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
                   {initials}
-                </Avatar>
-                <Box>
-                  <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '1.1rem' }}>
-                    {user?.name}
-                  </Typography>
-                  <Typography sx={{ color: STEEL, fontSize: '0.82rem' }}>{user?.email}</Typography>
-                  {user?.specialization && (
-                    <Chip label={user.specialization} size="small" sx={{ mt: 0.8,
-                      background: specializationList.find(s => s.key === user.specialization)?.bg || 'rgba(108,127,216,0.15)',
-                      color: specializationList.find(s => s.key === user.specialization)?.color || ACCENT2,
-                      fontSize: '0.65rem', height: 20 }} />
-                  )}
-                </Box>
-              </Box>
+                </div>
+                <div className="absolute inset-0 rounded-[2rem] bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Camera className="w-8 h-8 text-white/90" />
+                </div>
+              </div>
 
-              <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-                <Grid item xs={12}>
-                  <TextField label="Full Name" fullWidth value={form.name}
-                    onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField label="Qualification" fullWidth value={form.qualification}
-                    onChange={e => setForm(p => ({ ...p, qualification: e.target.value }))}
-                    placeholder="PhD in Computer Science, IIT Delhi" />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField label="Experience" fullWidth value={form.experience}
-                    onChange={e => setForm(p => ({ ...p, experience: e.target.value }))}
-                    placeholder="8 years as Cloud Architect at AWS" />
-                </Grid>
-              </Grid>
+              <div className="flex-1 text-center sm:text-left mt-2 sm:mt-0">
+                <h2 className="text-2xl font-syne font-bold text-text-primary mb-1">{user?.name}</h2>
+                <p className="text-text-secondary text-sm mb-4">{user?.email}</p>
 
-              <TextField label="Bio" multiline rows={3} fullWidth value={form.bio}
-                onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                placeholder="Tell students about your expertise and teaching style..."
-                sx={{ mb: 3 }} />
+                {currentSpec && (
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${currentSpec.bg} ${currentSpec.color} ${currentSpec.border}`}>
+                    <span>{currentSpec.icon}</span>
+                    {currentSpec.label}
+                  </span>
+                )}
+              </div>
+            </div>
 
-              {/* Specialization */}
-              <Typography sx={{ color: STEEL, fontSize: '0.83rem', fontWeight: 600, mb: 1.8 }}>
+            {/* 3. Main Form Grid */}
+            <div className="pt-8">
+              <h3 className="text-lg font-syne font-bold text-text-primary flex items-center gap-2 mb-6">
+                Personal Details
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <InputField
+                  label="Full Name"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. Dr. Jane Doe"
+                />
+
+                {/* Disabled Email */}
+                <InputField
+                  label="Email Address"
+                  type="email"
+                  value={user?.email || ''}
+                  disabled={true}
+                  onChange={() => { }}
+                />
+
+                <InputField
+                  label="Qualification"
+                  value={form.qualification}
+                  onChange={e => setForm({ ...form, qualification: e.target.value })}
+                  placeholder="PhD in Computer Science, IIT Delhi"
+                />
+
+                <InputField
+                  label="Experience"
+                  value={form.experience}
+                  onChange={e => setForm({ ...form, experience: e.target.value })}
+                  placeholder="8 years as Cloud Architect at AWS"
+                />
+
+                <div className="md:col-span-2">
+                  <InputField
+                    label="Bio"
+                    value={form.bio}
+                    onChange={e => setForm({ ...form, bio: e.target.value })}
+                    placeholder="Tell students about your expertise and teaching style..."
+                    multiline={true}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Specializations Grid */}
+            <div className="pt-10">
+              <h3 className="text-lg font-syne font-bold text-text-primary flex items-center gap-2 mb-2">
                 Specialization
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 4 }}>
-                {specializationList.map(spec => {
-                  const sel = form.specialization === spec.key;
+              </h3>
+              <p className="text-text-secondary text-sm mb-6">Select your primary area of academic expertise.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {specializationList.map((spec) => {
+                  const isSelected = form.specialization === spec.key;
                   return (
-                    <Box key={spec.key} onClick={() => setForm(p => ({ ...p, specialization: spec.key }))}
-                      sx={{
-                        display: 'flex', alignItems: 'center', gap: 1, px: 2.2, py: 1.1,
-                        borderRadius: 2.5, cursor: 'pointer',
-                        background: sel ? spec.bg : 'rgba(22,27,39,0.6)',
-                        border: `1.5px solid ${sel ? spec.border : 'rgba(139,155,180,0.12)'}`,
-                        transition: 'all 0.22s ease',
-                        '&:hover': { borderColor: spec.border, transform: 'translateY(-2px)' },
-                      }}>
-                      {sel && <CheckCircleRoundedIcon sx={{ fontSize: 14, color: spec.color }} />}
-                      <Typography sx={{ fontSize: '1rem' }}>{spec.icon}</Typography>
-                      <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 600,
-                        color: sel ? spec.color : CREAM, fontSize: '0.82rem' }}>
+                    <button
+                      key={spec.key}
+                      onClick={() => setForm({ ...form, specialization: spec.key })}
+                      className={`flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all duration-200 ${isSelected
+                          ? `${spec.bg} ${spec.border} ring-1 ring-inset ${spec.color.replace('text-', 'ring-')}/50`
+                          : 'bg-bg-elevated border-border-subtle hover:border-border-strong text-text-secondary'
+                        }`}
+                    >
+                      <span className="text-3xl mb-2 block">{spec.icon}</span>
+                      <span className={`text-xs font-bold mt-1 ${isSelected ? spec.color : 'text-text-primary'}`}>
                         {spec.label}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </button>
                   );
                 })}
-              </Box>
+              </div>
+            </div>
 
-              <Button variant="contained" color="primary" startIcon={<SaveRoundedIcon />}
-                onClick={handleSave} sx={{ px: 4, py: 1.3 }}>
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
+            {/* Action Footer */}
+            <div className="mt-12 flex justify-end pt-6 border-t border-border-subtle/50 relative">
+              <button
+                onClick={handleSave}
+                className="group relative flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5 overflow-hidden"
+              >
+                <Save className={`w-4 h-4 transition-transform ${saved ? 'scale-0' : 'scale-100'}`} />
+                <span className={`transition-opacity ${saved ? 'opacity-0' : 'opacity-100'}`}>Save Changes</span>
 
-      <Snackbar open={saved} autoHideDuration={2500} onClose={() => setSaved(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-        <Alert severity="success" sx={{ borderRadius: 2.5 }}>Profile saved successfully!</Alert>
-      </Snackbar>
-    </Box>
+                {/* Save Success Overlay */}
+                <div
+                  className={`absolute inset-0 bg-teal-500 rounded-xl flex items-center justify-center gap-2 text-white font-bold transition-all duration-300 ${saved ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Saved!</span>
+                </div>
+              </button>
+            </div>
+
+          </div>
+
+          <div className="flex justify-center text-text-muted text-xs py-8">
+            <p>Your profile information is public to students enrolled in your courses.</p>
+          </div>
+
+        </div>
+      </div>
+    </InstructorLayout>
   );
 }
