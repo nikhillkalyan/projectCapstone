@@ -1,44 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import InstructorSidebar from '../../components/layout/InstructorSidebar';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Accordion from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import MuiAccordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Alert from '@mui/material/Alert';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
-import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
-import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import PublishRoundedIcon from '@mui/icons-material/PublishRounded';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } from '../../theme';
+import InstructorLayout from '../../components/layout/v2/InstructorLayout';
+import {
+  CheckCircle, AlertCircle, ArrowLeft, ArrowRight, UploadCloud,
+  Plus, Trash2, ChevronDown, MonitorPlay, FileText, HelpCircle
+} from 'lucide-react';
 
-const SIDEBAR_W = 248;
 const STEPS = ['Basic Info', 'Course Content', 'Grand Assessment'];
 const CATEGORIES = ['AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -66,106 +36,206 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
   };
 
   return (
-    <Box sx={{ p: 2.5, borderRadius: 3, background: 'rgba(13,17,23,0.5)', border: '1px solid rgba(139,155,180,0.1)', mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography sx={{ color: ACCENT2, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.82rem' }}>
-          Question {qi + 1}
-        </Typography>
+    <div className="p-5 md:p-6 bg-bg-elevated/50 border border-border-subtle rounded-2xl mb-4 relative group">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-primary-400 font-syne font-bold text-sm tracking-wide">
+          QUESTION {qi + 1}
+        </h3>
         {showDelete && (
-          <IconButton size="small" onClick={onDelete} sx={{ color: DANGER, background: 'rgba(231,76,111,0.1)', borderRadius: 1.5,
-            '&:hover': { background: 'rgba(231,76,111,0.2)' } }}>
-            <DeleteRoundedIcon fontSize="small" />
-          </IconButton>
+          <button
+            onClick={onDelete}
+            className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            title="Delete Question"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         )}
-      </Box>
-      <TextField fullWidth size="small" label="Question text *" value={q.question}
-        onChange={e => update('question', e.target.value)} sx={{ mb: 1.5 }} />
+      </div>
 
-      <Typography sx={{ color: STEEL, fontSize: '0.75rem', mb: 1, fontWeight: 500 }}>Options (click radio to set correct answer)</Typography>
-      {q.options.map((opt, oi) => (
-        <Box key={oi} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Box onClick={() => update('correct', oi)}
-            sx={{
-              width: 22, height: 22, borderRadius: '50%', flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: q.correct === oi ? TEAL : 'rgba(139,155,180,0.1)',
-              border: `2px solid ${q.correct === oi ? TEAL : 'rgba(139,155,180,0.25)'}`,
-              transition: 'all 0.2s ease',
-            }}>
-            {q.correct === oi && <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
-          </Box>
-          <TextField fullWidth size="small" placeholder={`Option ${oi + 1}`} value={opt}
-            onChange={e => updateOption(oi, e.target.value)}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, ...(q.correct === oi ? { '& fieldset': { borderColor: `${TEAL} !important` } } : {}) } }} />
-        </Box>
-      ))}
-    </Box>
+      <div className="mb-5">
+        <input
+          type="text"
+          value={q.question}
+          onChange={e => update('question', e.target.value)}
+          className="w-full bg-bg-surface border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+          placeholder="Enter your question here..."
+        />
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+          Options (Select the correct answer)
+        </p>
+
+        {q.options.map((opt, oi) => {
+          const isCorrect = q.correct === oi;
+          return (
+            <div key={oi} className="flex items-center gap-3">
+              <button
+                onClick={() => update('correct', oi)}
+                className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isCorrect
+                  ? 'bg-teal-500 border-2 border-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.3)]'
+                  : 'bg-transparent border-2 border-border-subtle hover:border-primary-500/50'
+                  }`}
+              >
+                {isCorrect && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+              </button>
+
+              <input
+                type="text"
+                value={opt}
+                onChange={e => updateOption(oi, e.target.value)}
+                className={`w-full bg-bg-surface border rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition-all ${isCorrect
+                  ? 'border-teal-500/50 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-teal-500/5'
+                  : 'border-border-subtle focus:border-primary-500 focus:ring-1 focus:ring-primary-500'
+                  }`}
+                placeholder={`Option ${oi + 1}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared Components ───
+function InputGroup({ label, required, children, helperText }) {
+  return (
+    <div className="flex flex-col gap-1.5 mb-5 w-full">
+      <label className="text-sm font-semibold text-text-primary">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      {children}
+      {helperText && <p className="text-xs text-text-muted mt-0.5">{helperText}</p>}
+    </div>
   );
 }
 
 // ─── Step 1: Basic Info ─────────────────────────────────────────────────────
 function Step1({ data, onChange }) {
   return (
-    <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM, mb: 2.5 }}>📋 Course Details</Typography>
-      <Grid container spacing={2.5}>
-        <Grid item xs={12}>
-          <TextField label="Course Title *" fullWidth value={data.title}
-            onChange={e => onChange({ ...data, title: e.target.value })}
-            placeholder="e.g. Complete Machine Learning Bootcamp 2024" />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField label="Short Description *" fullWidth multiline rows={2} value={data.description}
-            onChange={e => onChange({ ...data, description: e.target.value })}
-            placeholder="Brief overview shown on course cards" />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField label="Full Description" fullWidth multiline rows={4} value={data.longDescription}
-            onChange={e => onChange({ ...data, longDescription: e.target.value })}
-            placeholder="Detailed description for the course page" />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel sx={{ color: STEEL }}>Category *</InputLabel>
-            <Select value={data.category} label="Category *"
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 10 }}
+      className="max-w-3xl"
+    >
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
+          <FileText className="w-5 h-5 text-primary-400" />
+        </div>
+        <h2 className="text-xl font-bold font-syne text-text-primary">Course Details</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <div className="md:col-span-2">
+          <InputGroup label="Course Title" required>
+            <input
+              type="text"
+              value={data.title}
+              onChange={e => onChange({ ...data, title: e.target.value })}
+              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+              placeholder="e.g. Complete Machine Learning Bootcamp 2024"
+            />
+          </InputGroup>
+        </div>
+
+        <div className="md:col-span-2">
+          <InputGroup label="Short Description" required helperText="Brief overview shown on course cards">
+            <textarea
+              value={data.description}
+              onChange={e => onChange({ ...data, description: e.target.value })}
+              rows={2}
+              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all resize-none"
+              placeholder="Write a catchy 1-2 sentence hook..."
+            />
+          </InputGroup>
+        </div>
+
+        <div className="md:col-span-2">
+          <InputGroup label="Full Description" helperText="Detailed description for the course page">
+            <textarea
+              value={data.longDescription}
+              onChange={e => onChange({ ...data, longDescription: e.target.value })}
+              rows={5}
+              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+              placeholder="What will students learn in this course?"
+            />
+          </InputGroup>
+        </div>
+
+        <InputGroup label="Category" required>
+          <div className="relative">
+            <select
+              value={data.category}
               onChange={e => onChange({ ...data, category: e.target.value })}
-              sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-              {CATEGORIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel sx={{ color: STEEL }}>Level *</InputLabel>
-            <Select value={data.level} label="Level *"
+              className="w-full appearance-none bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all cursor-pointer font-medium"
+            >
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+          </div>
+        </InputGroup>
+
+        <InputGroup label="Level" required>
+          <div className="relative">
+            <select
+              value={data.level}
               onChange={e => onChange({ ...data, level: e.target.value })}
-              sx={{ borderRadius: 2.5, color: CREAM, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-              {LEVELS.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField label="Duration *" fullWidth value={data.duration}
+              className="w-full appearance-none bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all cursor-pointer font-medium"
+            >
+              {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+          </div>
+        </InputGroup>
+
+        <InputGroup label="Duration" required helperText="e.g. 24 hours">
+          <input
+            type="text"
+            value={data.duration}
             onChange={e => onChange({ ...data, duration: e.target.value })}
-            placeholder="e.g. 24 hours" />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField label="Thumbnail URL" fullWidth value={data.thumbnail}
+            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+            placeholder="e.g. 24 hours"
+          />
+        </InputGroup>
+
+        <InputGroup label="Thumbnail URL" helperText="16:9 aspect ratio recommended">
+          <input
+            type="text"
+            value={data.thumbnail}
             onChange={e => onChange({ ...data, thumbnail: e.target.value })}
-            placeholder="https://example.com/image.jpg" />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField label="Tags (comma-separated)" fullWidth value={data.tagsRaw}
-            onChange={e => onChange({ ...data, tagsRaw: e.target.value })}
-            placeholder="Python, TensorFlow, Deep Learning" helperText="Helps students discover your course" />
-        </Grid>
-      </Grid>
-    </Box>
+            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+            placeholder="https://example.com/image.jpg"
+          />
+        </InputGroup>
+
+        <div className="md:col-span-2">
+          <InputGroup label="Tags" helperText="Comma-separated tags to help students discover your course">
+            <input
+              type="text"
+              value={data.tagsRaw}
+              onChange={e => onChange({ ...data, tagsRaw: e.target.value })}
+              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+              placeholder="Python, TensorFlow, Deep Learning"
+            />
+          </InputGroup>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
 // ─── Step 2: Chapters ────────────────────────────────────────────────────────
 function Step2({ chapters, onChange }) {
-  const addChapter = () => onChange([...chapters, emptyChapter()]);
+  const [expandedId, setExpandedId] = useState(chapters[0]?.id || null);
+
+  const addChapter = () => {
+    const newCh = emptyChapter();
+    onChange([...chapters, newCh]);
+    setExpandedId(newCh.id);
+  };
 
   const updateChapter = (idx, updated) => {
     const next = [...chapters]; next[idx] = updated; onChange(next);
@@ -197,101 +267,206 @@ function Step2({ chapters, onChange }) {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>📖 Chapters ({chapters.length})</Typography>
-        <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
-          onClick={addChapter} sx={{ borderRadius: 2.5 }}>
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 10 }}
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
+            <MonitorPlay className="w-5 h-5 text-teal-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold font-syne text-text-primary">Curriculum</h2>
+            <p className="text-sm text-text-muted">{chapters.length} Chapter{chapters.length !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+        <button
+          onClick={addChapter}
+          className="flex items-center gap-2 px-4 py-2 bg-bg-elevated hover:bg-bg-elevated-hover border border-border-subtle hover:border-border-strong text-text-primary text-sm font-semibold rounded-lg transition-all active:scale-95"
+        >
+          <Plus className="w-4 h-4" />
           Add Chapter
-        </Button>
-      </Box>
+        </button>
+      </div>
 
-      {chapters.map((ch, ci) => (
-        <MuiAccordion key={ch.id} defaultExpanded={ci === 0}
-          sx={{ mb: 1.5, background: 'rgba(22,27,39,0.8)', border: '1px solid rgba(139,155,180,0.12)', borderRadius: '14px !important',
-            '&:before': { display: 'none' }, '&.Mui-expanded': { margin: '0 0 12px 0' } }}>
-          <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: STEEL }} />}
-            sx={{ px: 2.5, py: 1.5, '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
-            <Box sx={{ width: 28, height: 28, borderRadius: 1.5, background: 'rgba(108,127,216,0.18)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Typography sx={{ color: ACCENT2, fontFamily: '"Syne",sans-serif', fontWeight: 700, fontSize: '0.75rem' }}>
-                {ci + 1}
-              </Typography>
-            </Box>
-            <Typography sx={{ color: CREAM, fontWeight: 600, fontSize: '0.88rem', flex: 1 }}>
-              {ch.title || `Chapter ${ci + 1}`}
-            </Typography>
-            <Chip label={ch.type} size="small"
-              icon={ch.type === 'video' ? <PlayArrowRoundedIcon sx={{ fontSize: '12px !important' }} /> : <ArticleRoundedIcon sx={{ fontSize: '12px !important' }} />}
-              sx={{ background: ch.type === 'video' ? 'rgba(108,127,216,0.15)' : 'rgba(212,168,67,0.15)',
-                color: ch.type === 'video' ? ACCENT2 : GOLD, fontSize: '0.65rem', mr: 1 }} />
-            {chapters.length > 1 && (
-              <IconButton size="small" onClick={e => { e.stopPropagation(); deleteChapter(ci); }}
-                sx={{ color: DANGER, background: 'rgba(231,76,111,0.1)', borderRadius: 1.5, width: 28, height: 28,
-                  '&:hover': { background: 'rgba(231,76,111,0.2)' } }}>
-                <DeleteRoundedIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            )}
-          </AccordionSummary>
+      <div className="space-y-4">
+        {chapters.map((ch, ci) => {
+          const isExpanded = expandedId === ch.id;
 
-          <AccordionDetails sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={7}>
-                <TextField label="Chapter Title *" fullWidth size="small" value={ch.title}
-                  onChange={e => updateChapter(ci, { ...ch, title: e.target.value })} />
-              </Grid>
-              <Grid item xs={6} sm={2.5}>
-                <TextField label="Duration" fullWidth size="small" value={ch.duration}
-                  onChange={e => updateChapter(ci, { ...ch, duration: e.target.value })}
-                  placeholder="45 min" />
-              </Grid>
-              <Grid item xs={6} sm={2.5}>
-                <ToggleButtonGroup exclusive value={ch.type} size="small"
-                  onChange={(_, v) => v && updateChapter(ci, { ...ch, type: v })}
-                  sx={{ height: 40, '& .MuiToggleButton-root': { px: 1.5, py: 0.5, color: STEEL, borderColor: 'rgba(139,155,180,0.2)', '&.Mui-selected': { background: 'rgba(108,127,216,0.2)', color: ACCENT2 } } }}>
-                  <ToggleButton value="text"><ArticleRoundedIcon sx={{ fontSize: 15 }} /></ToggleButton>
-                  <ToggleButton value="video"><PlayArrowRoundedIcon sx={{ fontSize: 15 }} /></ToggleButton>
-                </ToggleButtonGroup>
-              </Grid>
-            </Grid>
+          return (
+            <div
+              key={ch.id}
+              className={`border rounded-2xl overflow-hidden transition-all duration-300 ${isExpanded ? 'border-primary-500/50 bg-bg-surface shadow-[0_4px_24px_rgba(0,0,0,0.2)]' : 'border-border-subtle bg-bg-elevated/30 hover:bg-bg-elevated/60'
+                }`}
+            >
+              {/* Accordion Header */}
+              <button
+                onClick={() => setExpandedId(isExpanded ? null : ch.id)}
+                className="w-full flex items-center justify-between p-4 md:p-5 outline-none"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-syne font-bold text-sm transition-colors ${isExpanded ? 'bg-primary-500/20 text-primary-400' : 'bg-bg-elevated text-text-muted'
+                    }`}>
+                    {ci + 1}
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="font-semibold text-text-primary text-left">
+                      {ch.title || `Chapter ${ci + 1}`}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${ch.type === 'video' ? 'bg-primary-500/10 text-primary-400' : 'bg-amber-500/10 text-amber-500'
+                        }`}>
+                        {ch.type === 'video' ? <MonitorPlay size={10} /> : <FileText size={10} />}
+                        {ch.type}
+                      </span>
+                      {ch.duration && <span className="text-xs text-text-muted">{ch.duration}</span>}
+                    </div>
+                  </div>
+                </div>
 
-            {ch.type === 'video' && (
-              <TextField label="Video URL (YouTube embed)" fullWidth size="small" value={ch.content.videoUrl}
-                onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, videoUrl: e.target.value } })}
-                placeholder="https://www.youtube.com/embed/..." sx={{ mb: 2 }} />
-            )}
+                <div className="flex items-center gap-2">
+                  {chapters.length > 1 && (
+                    <div
+                      onClick={(e) => { e.stopPropagation(); deleteChapter(ci); }}
+                      className="w-8 h-8 rounded-lg text-text-muted hover:bg-red-500/10 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer"
+                      title="Delete Chapter"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div className={`w-8 h-8 rounded-lg text-text-muted flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-180 text-text-primary' : ''}`}>
+                    <ChevronDown className="w-5 h-5" />
+                  </div>
+                </div>
+              </button>
 
-            <TextField label="Text Content (Markdown supported)" fullWidth multiline rows={4} size="small"
-              value={ch.content.textContent}
-              onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, textContent: e.target.value } })}
-              placeholder="# Chapter Title&#10;&#10;Write your content here..." sx={{ mb: 2.5 }} />
+              {/* Accordion Body */}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden border-t border-border-subtle bg-bg-surface"
+                  >
+                    <div className="p-4 md:p-6 pb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 mb-6">
+                        <div className="md:col-span-7">
+                          <InputGroup label="Chapter Title">
+                            <input
+                              type="text"
+                              value={ch.title}
+                              onChange={e => updateChapter(ci, { ...ch, title: e.target.value })}
+                              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+                              placeholder="e.g. Introduction to Neural Networks"
+                            />
+                          </InputGroup>
+                        </div>
 
-            {/* Chapter quiz */}
-            <Box sx={{ borderTop: '1px solid rgba(139,155,180,0.1)', pt: 2.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <QuizRoundedIcon sx={{ color: ACCENT2, fontSize: 18 }} />
-                  <Typography sx={{ color: CREAM, fontFamily: '"Syne",sans-serif', fontWeight: 600, fontSize: '0.88rem' }}>
-                    Chapter Quiz ({ch.assessment?.questions?.length || 0} questions)
-                  </Typography>
-                </Box>
-                <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
-                  onClick={() => addQuestion(ci)} sx={{ borderRadius: 2 }}>
-                  Add Q
-                </Button>
-              </Box>
+                        <div className="md:col-span-3">
+                          <InputGroup label="Duration">
+                            <input
+                              type="text"
+                              value={ch.duration}
+                              onChange={e => updateChapter(ci, { ...ch, duration: e.target.value })}
+                              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+                              placeholder="e.g. 15 min"
+                            />
+                          </InputGroup>
+                        </div>
 
-              {ch.assessment?.questions?.map((q, qi) => (
-                <QuestionEditor key={qi} q={q} qi={qi}
-                  onChange={updated => updateQuestion(ci, qi, updated)}
-                  onDelete={() => deleteQuestion(ci, qi)}
-                  showDelete={(ch.assessment?.questions?.length || 0) > 1} />
-              ))}
-            </Box>
-          </AccordionDetails>
-        </MuiAccordion>
-      ))}
-    </Box>
+                        <div className="md:col-span-2">
+                          <InputGroup label="Type">
+                            <div className="flex bg-bg-elevated p-1 rounded-xl border border-border-subtle w-full h-[46px]">
+                              <button
+                                onClick={() => updateChapter(ci, { ...ch, type: 'video' })}
+                                className={`flex-1 flex items-center justify-center rounded-lg transition-all ${ch.type === 'video' ? 'bg-primary-500/20 text-primary-400 font-medium shadow-sm' : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
+                                  }`}
+                              >
+                                <MonitorPlay className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => updateChapter(ci, { ...ch, type: 'text' })}
+                                className={`flex-1 flex items-center justify-center rounded-lg transition-all ${ch.type === 'text' ? 'bg-amber-500/20 text-amber-500 font-medium shadow-sm' : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
+                                  }`}
+                              >
+                                <FileText className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </InputGroup>
+                        </div>
+                      </div>
+
+                      {ch.type === 'video' && (
+                        <div className="mb-6">
+                          <InputGroup label="Video URL (YouTube Embed)">
+                            <input
+                              type="text"
+                              value={ch.content.videoUrl}
+                              onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, videoUrl: e.target.value } })}
+                              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+                              placeholder="https://www.youtube.com/embed/..."
+                            />
+                          </InputGroup>
+                        </div>
+                      )}
+
+                      <div className="mb-8">
+                        <InputGroup label="Text Content (Markdown supported)">
+                          <textarea
+                            value={ch.content.textContent}
+                            onChange={e => updateChapter(ci, { ...ch, content: { ...ch.content, textContent: e.target.value } })}
+                            rows={6}
+                            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-mono text-sm"
+                            placeholder="# Chapter Overview\n\nWrite your content here..."
+                          />
+                        </InputGroup>
+                      </div>
+
+                      {/* Chapter Quiz Section */}
+                      <div className="pt-6 border-t border-border-subtle">
+                        <div className="flex items-center justify-between mb-5">
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="w-5 h-5 text-amber-500" />
+                            <h3 className="font-syne font-bold text-text-primary">
+                              Chapter Quiz <span className="text-text-muted font-normal text-sm ml-2">({ch.assessment?.questions?.length || 0} questions)</span>
+                            </h3>
+                          </div>
+                          <button
+                            onClick={() => addQuestion(ci)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-elevated hover:bg-bg-elevated-hover border border-border-subtle text-text-primary text-xs font-semibold rounded-lg transition-all active:scale-95"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            Add Q
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          {ch.assessment?.questions?.map((q, qi) => (
+                            <QuestionEditor
+                              key={qi}
+                              q={q}
+                              qi={qi}
+                              onChange={updated => updateQuestion(ci, qi, updated)}
+                              onDelete={() => deleteQuestion(ci, qi)}
+                              showDelete={(ch.assessment?.questions?.length || 0) > 1}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
 
@@ -310,29 +485,59 @@ function Step3({ grandAssessment, onChange }) {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: CREAM }}>🏆 Grand Assessment</Typography>
-        <Button variant="outlined" color="primary" size="small" startIcon={<AddRoundedIcon />}
-          onClick={addQuestion} sx={{ borderRadius: 2.5 }}>
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 10 }}
+      className="max-w-3xl"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <span className="text-xl">🏆</span>
+          </div>
+          <h2 className="text-xl font-bold font-syne text-text-primary">Grand Assessment</h2>
+        </div>
+        <button
+          onClick={addQuestion}
+          className="flex items-center gap-2 px-4 py-2 bg-bg-elevated hover:bg-bg-elevated-hover border border-border-subtle hover:border-border-strong text-text-primary text-sm font-semibold rounded-lg transition-all active:scale-95"
+        >
+          <Plus className="w-4 h-4" />
           Add Question
-        </Button>
-      </Box>
-      <Typography sx={{ color: STEEL, fontSize: '0.83rem', mb: 3 }}>
+        </button>
+      </div>
+
+      <p className="text-sm text-text-muted mb-8 ml-14">
         Students must complete all chapters before taking this final test to earn their certificate.
-      </Typography>
+      </p>
 
-      <TextField label="Passing Score (%)" type="number" value={grandAssessment.passingScore}
-        onChange={e => onChange({ ...grandAssessment, passingScore: Number(e.target.value) })}
-        inputProps={{ min: 1, max: 100 }} sx={{ mb: 3, width: 200 }} size="small" />
+      <div className="mb-8 w-full max-w-xs">
+        <InputGroup label="Passing Score (%)" required>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            value={grandAssessment.passingScore}
+            onChange={e => onChange({ ...grandAssessment, passingScore: Number(e.target.value) })}
+            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+            placeholder="e.g. 70"
+          />
+        </InputGroup>
+      </div>
 
-      {(grandAssessment.questions || []).map((q, qi) => (
-        <QuestionEditor key={qi} q={q} qi={qi}
-          onChange={updated => updateQuestion(qi, updated)}
-          onDelete={() => deleteQuestion(qi)}
-          showDelete={(grandAssessment.questions?.length || 0) > 1} />
-      ))}
-    </Box>
+      <div className="space-y-4">
+        {(grandAssessment.questions || []).map((q, qi) => (
+          <QuestionEditor
+            key={qi}
+            q={q}
+            qi={qi}
+            onChange={updated => updateQuestion(qi, updated)}
+            onDelete={() => deleteQuestion(qi)}
+            showDelete={(grandAssessment.questions?.length || 0) > 1}
+          />
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
@@ -391,72 +596,110 @@ export default function CreateCourse() {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#0D1117' }}>
-      <InstructorSidebar />
-      <Box sx={{ ml: { md: `${SIDEBAR_W}px` }, flex: 1, p: { xs: 2, sm: 3, md: 4 }, pt: { xs: 7, md: 4 } }}>
-        <Box sx={{ maxWidth: 860, mx: 'auto' }}>
+    <InstructorLayout>
+      <div className="max-w-4xl mx-auto w-full pb-20">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">
+            Create Course
+          </h1>
+          <p className="text-text-secondary font-dmsans">Build and publish your course step by step</p>
+        </motion.div>
 
-          {/* Header */}
-          <Box className="anim-fadeInUp" sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' } }}>
-              Create Course
-            </Typography>
-            <Typography sx={{ color: STEEL, mt: 0.5, fontSize: '0.9rem' }}>Build and publish your course step by step</Typography>
-          </Box>
+        {/* Custom Tailwind Stepper */}
+        <div className="flex items-center justify-between mb-8 relative">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-border-subtle/50 -z-10" />
+          <div
+            className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-primary-500 -z-10 transition-all duration-300"
+            style={{ width: `${(activeStep / (STEPS.length - 1)) * 100}%` }}
+          />
 
-          {/* Stepper */}
-          <Stepper activeStep={activeStep} className="anim-fadeInUp delay-1" sx={{ mb: 4,
-            '& .MuiStepLabel-label': { fontFamily: '"Syne",sans-serif', fontWeight: 600, color: STEEL, fontSize: '0.83rem',
-              '&.Mui-active': { color: CREAM }, '&.Mui-completed': { color: TEAL } },
-            '& .MuiStepIcon-root': { color: 'rgba(139,155,180,0.2)', '&.Mui-active': { color: ACCENT }, '&.Mui-completed': { color: TEAL } },
-          }}>
-            {STEPS.map(label => (
-              <Step key={label}><StepLabel>{label}</StepLabel></Step>
-            ))}
-          </Stepper>
+          {STEPS.map((label, index) => {
+            const isCompleted = index < activeStep;
+            const isActive = index === activeStep;
 
-          {/* Content card */}
-          <Card className="anim-fadeInUp delay-2"
-            sx={{ background: 'rgba(22,27,39,0.85)', border: '1px solid rgba(139,155,180,0.1)', borderRadius: 4 }}>
-            <CardContent sx={{ p: { xs: 2.5, md: 4 }, '&:last-child': { pb: { xs: 2.5, md: 4 } } }}>
-              {activeStep === 0 && <Step1 data={courseData} onChange={setCourseData} />}
-              {activeStep === 1 && <Step2 chapters={chapters} onChange={setChapters} />}
-              {activeStep === 2 && <Step3 grandAssessment={grandAssessment} onChange={setGrandAssessment} />}
+            return (
+              <div key={label} className="flex flex-col items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 z-10 ${isActive ? 'bg-primary-500 text-white shadow-[0_0_15px_rgba(108,127,216,0.4)] scale-110' :
+                  isCompleted ? 'bg-primary-500 text-white' :
+                    'bg-bg-elevated text-text-muted border-2 border-border-subtle'
+                  }`}>
+                  {isCompleted ? <CheckCircle className="w-5 h-5" /> : index + 1}
+                </div>
+                <span className={`text-xs md:text-sm font-semibold transition-colors ${isActive || isCompleted ? 'text-text-primary' : 'text-text-muted'
+                  }`}>
+                  {label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
-              {error && <Alert severity="error" sx={{ mt: 2.5, borderRadius: 2.5 }}>{error}</Alert>}
+        {/* Content Card */}
+        <div className="bg-bg-surface border border-border-subtle rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+          <div className="p-6 md:p-8 lg:p-10">
+            {/* Form Content Will Go Here */}
+            {activeStep === 0 && <Step1 data={courseData} onChange={setCourseData} />}
+            {activeStep === 1 && <Step2 chapters={chapters} onChange={setChapters} />}
+            {activeStep === 2 && <Step3 grandAssessment={grandAssessment} onChange={setGrandAssessment} />}
 
-              {/* Navigation */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 4, pt: 3, borderTop: '1px solid rgba(139,155,180,0.1)' }}>
-                <Button variant="outlined" color="primary" startIcon={<ArrowBackRoundedIcon />}
-                  onClick={() => setActiveStep(s => s - 1)} disabled={activeStep === 0}
-                  sx={{ px: 3, py: 1.2 }}>
-                  Back
-                </Button>
+            {error && (
+              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {STEPS.map((_, i) => (
-                    <Box key={i} sx={{ width: i === activeStep ? 24 : 8, height: 8, borderRadius: 4, transition: 'all 0.3s ease',
-                      background: i < activeStep ? TEAL : i === activeStep ? ACCENT : 'rgba(139,155,180,0.2)' }} />
-                  ))}
-                </Box>
+            {/* Navigation Footer */}
+            <div className="flex items-center justify-between mt-10 pt-6 border-t border-border-subtle">
+              <button
+                onClick={() => setActiveStep(s => s - 1)}
+                disabled={activeStep === 0}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${activeStep === 0
+                  ? 'opacity-50 cursor-not-allowed text-text-muted bg-bg-elevated/50'
+                  : 'text-text-secondary bg-bg-elevated hover:bg-bg-elevated-hover hover:text-text-primary active:scale-95'
+                  }`}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
 
-                {activeStep < STEPS.length - 1 ? (
-                  <Button variant="contained" color="primary" endIcon={<ArrowForwardRoundedIcon />}
-                    onClick={handleNext} sx={{ px: 3, py: 1.2 }}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button variant="contained" startIcon={<PublishRoundedIcon />}
-                    onClick={handlePublish}
-                    sx={{ px: 3.5, py: 1.2, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700 }}>
-                    Publish Course
-                  </Button>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
-    </Box>
+              <div className="hidden sm:flex items-center gap-2">
+                {STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-2 rounded-full transition-all duration-300 ${i === activeStep ? 'w-6 bg-primary-500' :
+                      i < activeStep ? 'w-2 bg-teal-500' : 'w-2 bg-border-subtle'
+                      }`}
+                  />
+                ))}
+              </div>
+
+              {activeStep < STEPS.length - 1 ? (
+                <button
+                  onClick={handleNext}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handlePublish}
+                  className="flex items-center gap-2 px-7 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-900 font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95"
+                >
+                  <UploadCloud className="w-5 h-5 flex-shrink-0" />
+                  Publish Course
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </InstructorLayout>
   );
 }
