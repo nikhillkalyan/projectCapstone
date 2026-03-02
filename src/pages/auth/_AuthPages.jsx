@@ -1,89 +1,151 @@
-import { useState } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Alert from '@mui/material/Alert';
-import LinearProgress from '@mui/material/LinearProgress';
-import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
-import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, NAVY, DANGER } from '../../theme';
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Zap,
+  ArrowRight,
+  ArrowLeft,
+  GraduationCap,
+  Beaker,
+  AlertCircle
+} from 'lucide-react';
 
 const interestList = [
-  { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', desc: 'Neural networks, deep learning, NLP', color: ACCENT2, bg: 'rgba(108,127,216,0.15)', border: 'rgba(108,127,216,0.4)' },
-  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', desc: 'AWS, Azure, GCP, DevOps', color: TEAL, bg: 'rgba(78,205,196,0.15)', border: 'rgba(78,205,196,0.4)' },
-  { key: 'DataScience', label: 'Data Science', icon: '📊', desc: 'Analytics, visualization, statistics', color: GOLD, bg: 'rgba(212,168,67,0.15)', border: 'rgba(212,168,67,0.4)' },
-  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', desc: 'Ethical hacking, network security', color: DANGER, bg: 'rgba(231,76,111,0.15)', border: 'rgba(231,76,111,0.4)' },
+  { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', desc: 'Neural networks, deep learning, NLP', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', desc: 'AWS, Azure, GCP, DevOps', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'DataScience', label: 'Data Science', icon: '📊', desc: 'Analytics, visualization, statistics', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', desc: 'Ethical hacking, network security', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
 ];
 
 const specializationList = [
-  { key: 'AIML', label: 'AI & ML', icon: '🤖', color: ACCENT2, bg: 'rgba(108,127,216,0.15)', border: 'rgba(108,127,216,0.4)' },
-  { key: 'Cloud', label: 'Cloud', icon: '☁️', color: TEAL, bg: 'rgba(78,205,196,0.15)', border: 'rgba(78,205,196,0.4)' },
-  { key: 'DataScience', label: 'Data Science', icon: '📊', color: GOLD, bg: 'rgba(212,168,67,0.15)', border: 'rgba(212,168,67,0.4)' },
-  { key: 'Cybersecurity', label: 'Security', icon: '🔒', color: DANGER, bg: 'rgba(231,76,111,0.15)', border: 'rgba(231,76,111,0.4)' },
+  { key: 'AIML', label: 'AI & ML', icon: '🤖', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+  { key: 'Cloud', label: 'Cloud', icon: '☁️', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'DataScience', label: 'Data Science', icon: '📊', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  { key: 'Cybersecurity', label: 'Security', icon: '🔒', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
 ];
 
 const years = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Post Graduate'];
 
-function AuthLayout({ children, title, subtitle, isStudent = true }) {
-  return (
-    <Box className="hero-bg grid-bg" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, py: 4 }}>
-      <Box sx={{ width: '100%', maxWidth: 480 }} className="anim-scaleIn">
-        {/* Logo */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Box component={Link} to="/" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.5, textDecoration: 'none', mb: 2.5 }}>
-            <Box sx={{
-              width: 40, height: 40, borderRadius: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: isStudent ? `linear-gradient(135deg, ${ACCENT} 0%, ${TEAL} 100%)` : `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`,
-            }}>
-              <BoltRoundedIcon sx={{ color: isStudent ? '#fff' : NAVY, fontSize: 22 }} />
-            </Box>
-            <Typography className="gradient-text" sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 800, fontSize: '1.3rem' }}>EduForge</Typography>
-          </Box>
-          <Typography variant="h4" sx={{ color: CREAM, fontWeight: 800, mb: 0.7, fontSize: '1.7rem' }}>{title}</Typography>
-          <Typography sx={{ color: STEEL, fontSize: '0.9rem' }}>{subtitle}</Typography>
-        </Box>
+// Custom Input Field Wrapper
+const InputField = ({ label, type = "text", value, onChange, placeholder, required = false, endAdornment, multiline = false, autoFocus = false }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
+      {label} {required && <span className="text-rose-400">*</span>}
+    </label>
+    <div className="relative">
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          rows={3}
+          className="w-full bg-bg-surface/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all resize-none placeholder:text-text-secondary/50"
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          autoFocus={autoFocus}
+          className="w-full h-12 bg-bg-surface/50 border border-border-subtle rounded-xl pl-4 pr-12 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all placeholder:text-text-secondary/50"
+        />
+      )}
+      {endAdornment && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
+          {endAdornment}
+        </div>
+      )}
+    </div>
+  </div>
+);
 
-        <Box sx={{ background: 'rgba(22,27,39,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(139,155,180,0.12)', borderRadius: 4, p: { xs: 3, sm: 4 } }}>
-          {children}
-        </Box>
-      </Box>
-    </Box>
+// Unified Split Layout Container
+function AuthLayout({ children, title, subtitle, isStudent = true }) {
+  // Lock body scroll while in auth pages
+  useLayoutEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return (
+    <div className="min-h-screen w-full flex bg-bg-base overflow-hidden selection:bg-primary-500/30">
+
+      {/* LEFT PANEL - Decorative Info (Hidden on mobile) */}
+      <div className={`hidden lg:flex lg:w-[45%] xl:w-1/2 flex-col justify-between p-12 relative overflow-hidden bg-gradient-to-br ${isStudent ? 'from-bg-surface to-bg-base' : 'from-bg-surface to-bg-elevated'}`}>
+
+        {/* Background ambient glows */}
+        <div className="absolute inset-0 z-0">
+          <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-30 blur-[100px] pointer-events-none transition-colors duration-1000 ${isStudent ? 'bg-primary-600/40' : 'bg-amber-600/30'}`} />
+          <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000 ${isStudent ? 'bg-teal-600/40' : 'bg-indigo-600/30'}`} />
+        </div>
+
+        <div className="relative z-10">
+          <Link to="/" className="inline-flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isStudent ? 'bg-gradient-to-br from-primary-500 to-teal-400 shadow-primary-500/20' : 'bg-gradient-to-br from-amber-500 to-rose-400 shadow-amber-500/20'}`}>
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-syne font-bold text-xl tracking-tight text-white">
+              EduForge
+            </span>
+          </Link>
+        </div>
+
+        <div className="relative z-10 max-w-lg">
+          <h1 className="font-syne font-extrabold text-4xl xl:text-5xl text-white mb-6 leading-tight">
+            {isStudent ? "Master the tools defining tomorrow." : "Equip the next generation of builders."}
+          </h1>
+          <p className="text-text-secondary text-lg leading-relaxed mb-12">
+            {isStudent
+              ? "Join thousands of students learning from elite industry professionals. Build real projects and earn certifications."
+              : "Share your expertise with an eager community. Build courses, track progress, and shape careers."}
+          </p>
+
+          <div className="flex items-center gap-4 text-sm font-bold text-text-muted">
+            <CheckCircle2 className={`w-5 h-5 ${isStudent ? 'text-teal-400' : 'text-amber-400'}`} />
+            <span>Trusted by top universities & tech companies</span>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL - Actual Form Area */}
+      <div className="w-full lg:w-[55%] xl:w-1/2 flex items-center justify-center p-6 sm:p-12 h-screen overflow-y-auto relative no-scrollbar">
+        {/* The Glass Container */}
+        <div className="w-full max-w-[480px] animate-fade-in-up">
+
+          <div className="text-center lg:text-left mb-8">
+            <h2 className="font-syne font-bold text-3xl text-white mb-2">{title}</h2>
+            <p className="text-text-secondary">{subtitle}</p>
+          </div>
+
+          <div className="bg-bg-surface/50 border border-border-subtle rounded-[2rem] p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl">
+            {children}
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }
 
+// Reusable Step Progress Indicator
 function StepProgress({ step, total, isStudent }) {
-  const color = isStudent ? ACCENT : GOLD;
   return (
-    <Box sx={{ display: 'flex', gap: 1, mb: 3.5 }}>
+    <div className="flex gap-2 mb-8">
       {Array.from({ length: total }).map((_, i) => (
-        <Box key={i} sx={{ flex: 1, height: 4, borderRadius: 2, overflow: 'hidden', background: 'rgba(139,155,180,0.15)' }}>
-          <Box sx={{
-            height: '100%', borderRadius: 2,
-            background: i === 0
-              ? `linear-gradient(90deg, ${isStudent ? ACCENT : GOLD}, ${isStudent ? TEAL : SAND})`
-              : `linear-gradient(90deg, ${isStudent ? ACCENT : GOLD}, ${isStudent ? TEAL : SAND})`,
-            width: step > i ? '100%' : '0%',
-            transition: 'width 0.5s ease',
-          }} />
-        </Box>
+        <div key={i} className="flex-1 h-1.5 rounded-full bg-border-subtle overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${isStudent ? 'bg-gradient-to-r from-primary-500 to-teal-400' : 'bg-gradient-to-r from-amber-500 to-rose-400'}`}
+            style={{ width: step > i ? '100%' : '0%' }}
+          />
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
@@ -108,43 +170,69 @@ export function StudentLoginPage() {
 
   return (
     <AuthLayout title="Welcome Back!" subtitle="Sign in to continue your learning journey" isStudent>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        <TextField label="Email Address" type="email" fullWidth required
-          value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-          placeholder="arjun@student.com" />
-        <TextField label="Password" type={showPass ? 'text' : 'password'} fullWidth required
-          value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-          InputProps={{ endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPass(p => !p)} edge="end" sx={{ color: STEEL }}>
-                {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-              </IconButton>
-            </InputAdornment>
-          )}} />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-        {error && <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error}</Alert>}
+        <InputField
+          label="Email Address"
+          type="email"
+          required
+          autoFocus
+          value={form.email}
+          onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+          placeholder="arjun@student.com"
+        />
 
-        <Button type="submit" variant="contained" color="primary" size="large" fullWidth disabled={loading}
-          sx={{ py: 1.5, fontSize: '0.95rem', mt: 0.5 }}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </Button>
+        <InputField
+          label="Password"
+          type={showPass ? 'text' : 'password'}
+          required
+          value={form.password}
+          onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+          placeholder="••••••••"
+          endAdornment={
+            <button type="button" onClick={() => setShowPass(!showPass)} className="text-text-muted hover:text-text-primary transition-colors p-1">
+              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          }
+        />
 
-        <Button variant="outlined" color="primary" fullWidth
-          startIcon={<ScienceRoundedIcon />}
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-fade-in-up">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 mt-2 bg-gradient-to-r from-primary-600 to-indigo-600 hover:to-indigo-500 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : 'Sign In'}
+        </button>
+
+        <button
+          type="button"
           onClick={() => setForm({ email: 'arjun@student.com', password: 'password123' })}
-          sx={{ py: 1.2, fontSize: '0.85rem' }}>
+          className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary rounded-xl font-bold tracking-wide hover:bg-bg-elevated transition-colors flex items-center justify-center gap-2"
+        >
+          <Beaker className="w-4 h-4 text-teal-400" />
           Use Demo Account
-        </Button>
+        </button>
 
-        <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-          Don't have an account?{' '}
-          <Box component={Link} to="/student/signup" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Sign Up Free</Box>
-        </Typography>
-        <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-          Are you an instructor?{' '}
-          <Box component={Link} to="/instructor/login" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Instructor Login</Box>
-        </Typography>
-      </Box>
+        <div className="mt-4 pt-5 border-t border-border-subtle/50 text-center text-sm text-text-secondary flex flex-col gap-2">
+          <p>
+            Don't have an account?{' '}
+            <Link to="/student/signup" className="text-primary-400 font-bold hover:underline">Sign Up Free</Link>
+          </p>
+          <p>
+            Are you an instructor?{' '}
+            <Link to="/instructor/login" className="text-amber-400 font-bold hover:underline">Instructor Login</Link>
+          </p>
+        </div>
+      </form>
     </AuthLayout>
   );
 }
@@ -172,97 +260,111 @@ export function StudentSignupPage() {
   };
 
   return (
-    <AuthLayout title="Join as Student" subtitle={`Step ${step} of 2 — ${step === 1 ? 'Account Details' : 'Your Profile'}`} isStudent>
+    <AuthLayout title="Join as Student" subtitle={step === 1 ? 'Step 1: Account Details' : 'Step 2: Profile Settings'} isStudent>
       <StepProgress step={step} total={2} isStudent />
 
       {step === 1 && (
-        <Box className="anim-fadeIn" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <TextField label="Full Name" fullWidth required
-            value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Arjun Sharma" />
-          <TextField label="Email Address" type="email" fullWidth required
-            value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="arjun@example.com" />
-          <TextField label="Password (min 6 chars)" type={showPass ? 'text' : 'password'} fullWidth required
-            value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-            InputProps={{ endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPass(p => !p)} edge="end" sx={{ color: STEEL }}>
-                  {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                </IconButton>
-              </InputAdornment>
-            )}} />
-          <Button variant="contained" color="primary" size="large" fullWidth
+        <div className="animate-fade-in-up flex flex-col gap-5">
+          <InputField
+            label="Full Name" required autoFocus
+            value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Arjun Sharma"
+          />
+          <InputField
+            label="Email Address" type="email" required
+            value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="arjun@example.com"
+          />
+          <InputField
+            label="Password (min 6 chars)" type={showPass ? 'text' : 'password'} required
+            value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} placeholder="••••••••"
+            endAdornment={
+              <button onClick={() => setShowPass(!showPass)} className="text-text-muted hover:text-text-primary p-1 transition-colors">
+                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            }
+          />
+
+          <button
             disabled={!step1Valid} onClick={() => step1Valid && setStep(2)}
-            endIcon={<ArrowForwardRoundedIcon />} sx={{ py: 1.5 }}>
-            Continue
-          </Button>
-          <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-            Already have an account?{' '}
-            <Box component={Link} to="/student/login" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none' }}>Sign In</Box>
-          </Typography>
-        </Box>
+            className="w-full h-12 mt-2 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            Continue <ArrowRight className="w-4 h-4" />
+          </button>
+
+          <p className="text-center text-sm text-text-secondary mt-2">
+            Already have an account? <Link to="/student/login" className="text-primary-400 font-bold hover:underline">Sign In</Link>
+          </p>
+        </div>
       )}
 
       {step === 2 && (
-        <Box className="anim-fadeIn" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={7}>
-              <TextField label="College *" fullWidth
-                value={form.college} onChange={e => setForm(p => ({ ...p, college: e.target.value }))} placeholder="IIT Madras" />
-            </Grid>
-            <Grid item xs={12} sm={5}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: STEEL }}>Year *</InputLabel>
-                <Select value={form.year} label="Year *" onChange={e => setForm(p => ({ ...p, year: e.target.value }))}
-                  sx={{ background: 'rgba(30,37,53,0.6)', color: CREAM, borderRadius: 2.5, '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(139,155,180,0.2)' } }}>
-                  {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+        <div className="animate-fade-in flex flex-col gap-5">
 
-          <Box>
-            <Typography sx={{ color: STEEL, fontSize: '0.82rem', mb: 1.5, fontWeight: 500 }}>
-              Interests * <Box component="span" sx={{ color: '#666', fontWeight: 400 }}>(select all that apply)</Box>
-            </Typography>
-            <Grid container spacing={1.5}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InputField
+              label="College" required
+              value={form.college} onChange={e => setForm(p => ({ ...p, college: e.target.value }))} placeholder="e.g. IIT Madras"
+            />
+            <div className="flex flex-col gap-1.5 w-full">
+              <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">Year <span className="text-rose-400">*</span></label>
+              <select
+                value={form.year} onChange={e => setForm(p => ({ ...p, year: e.target.value }))}
+                className="w-full h-12 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all appearance-none"
+              >
+                <option value="" disabled hidden>Select Year</option>
+                {years.map(y => <option key={y} value={y} className="bg-bg-elevated">{y}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1 block mb-2">
+              Interests <span className="text-rose-400">*</span> <span className="text-text-muted font-normal normal-case">(select all that apply)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
               {interestList.map(int => {
                 const sel = form.interests.includes(int.key);
                 return (
-                  <Grid item xs={6} key={int.key}>
-                    <Box onClick={() => toggleInterest(int.key)}
-                      sx={{
-                        p: 1.8, borderRadius: 3, cursor: 'pointer', position: 'relative',
-                        background: sel ? int.bg : 'rgba(22,27,39,0.6)',
-                        border: `1.5px solid ${sel ? int.border : 'rgba(139,155,180,0.12)'}`,
-                        transition: 'all 0.22s cubic-bezier(.22,.68,0,1.2)',
-                        '&:hover': { borderColor: int.border, transform: 'translateY(-2px)' },
-                        transform: sel ? 'translateY(-2px) scale(1.01)' : 'none',
-                      }}>
-                      {sel && <CheckCircleRoundedIcon sx={{ position: 'absolute', top: 8, right: 8, fontSize: 16, color: int.color }} />}
-                      <Typography sx={{ fontSize: '1.4rem', mb: 0.5 }}>{int.icon}</Typography>
-                      <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: CREAM, fontSize: '0.78rem' }}>{int.label}</Typography>
-                      <Typography sx={{ color: STEEL, fontSize: '0.68rem', mt: 0.3 }}>{int.desc}</Typography>
-                    </Box>
-                  </Grid>
+                  <button
+                    key={int.key}
+                    type="button"
+                    onClick={() => toggleInterest(int.key)}
+                    className={`relative p-3 rounded-xl border flex flex-col items-center text-center transition-all ${sel ? `${int.bg} ${int.border} ring-1 ring-inset ${int.color.replace('text-', 'ring-')}/50 transform -translate-y-0.5` : 'bg-bg-base border-border-subtle hover:border-border-strong text-text-secondary'}`}
+                  >
+                    {sel && <CheckCircle2 className={`absolute top-2 right-2 w-4 h-4 ${int.color}`} />}
+                    <span className="text-3xl mb-1">{int.icon}</span>
+                    <span className={`text-xs font-bold font-syne ${sel ? 'text-white' : 'text-text-primary'}`}>{int.label}</span>
+                  </button>
                 );
               })}
-            </Grid>
-          </Box>
+            </div>
+          </div>
 
-          <TextField label="About You (optional)" multiline rows={2} fullWidth
-            value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-            placeholder="Tell us about your learning goals..." />
+          <InputField
+            label="About You (Optional)" multiline
+            value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} placeholder="Tell us about your learning goals..."
+          />
 
-          {error && <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error}</Alert>}
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
+            </div>
+          )}
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button variant="outlined" color="primary" onClick={() => setStep(1)} startIcon={<ArrowBackRoundedIcon />} sx={{ px: 3, py: 1.4 }}>Back</Button>
-            <Button variant="contained" color="secondary" fullWidth disabled={!step2Valid} onClick={handleSubmit}
-              sx={{ py: 1.4, fontSize: '0.92rem', background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY }}>
+          <div className="flex gap-3 mt-2">
+            <button
+              onClick={() => setStep(1)}
+              className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <button
+              disabled={!step2Valid} onClick={handleSubmit}
+              className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-teal-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
               🚀 Start Learning!
-            </Button>
-          </Box>
-        </Box>
+            </button>
+          </div>
+        </div>
       )}
     </AuthLayout>
   );
@@ -289,42 +391,48 @@ export function InstructorLoginPage() {
 
   return (
     <AuthLayout title="Instructor Portal" subtitle="Welcome back, educator!" isStudent={false}>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        <TextField label="Email Address" type="email" fullWidth required
-          value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-          placeholder="instructor@example.com" />
-        <TextField label="Password" type={showPass ? 'text' : 'password'} fullWidth required
-          value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-          InputProps={{ endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPass(p => !p)} edge="end" sx={{ color: STEEL }}>
-                {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-              </IconButton>
-            </InputAdornment>
-          )}} />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-        {error && <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error}</Alert>}
+        <InputField
+          label="Email Address" type="email" required autoFocus
+          value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="instructor@example.com"
+        />
 
-        <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}
-          sx={{ py: 1.5, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700, '&:hover': { boxShadow: `0 8px 24px rgba(212,168,67,0.35)` } }}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </Button>
+        <InputField
+          label="Password" type={showPass ? 'text' : 'password'} required
+          value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} placeholder="••••••••"
+          endAdornment={
+            <button type="button" onClick={() => setShowPass(!showPass)} className="text-text-muted hover:text-text-primary p-1">
+              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          }
+        />
 
-        <Button variant="outlined" color="primary" fullWidth startIcon={<ScienceRoundedIcon />}
-          onClick={() => setForm({ email: 'ramesh@instructor.com', password: 'password123' })}
-          sx={{ py: 1.2 }}>
-          Use Demo Account
-        </Button>
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
+          </div>
+        )}
 
-        <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-          New instructor?{' '}
-          <Box component={Link} to="/instructor/signup" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none' }}>Sign Up</Box>
-        </Typography>
-        <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-          Are you a student?{' '}
-          <Box component={Link} to="/student/login" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none' }}>Student Login</Box>
-        </Typography>
-      </Box>
+        <button
+          type="submit" disabled={loading}
+          className="w-full h-12 mt-2 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center"
+        >
+          {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
+        </button>
+
+        <button
+          type="button" onClick={() => setForm({ email: 'ramesh@instructor.com', password: 'password123' })}
+          className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary rounded-xl font-bold tracking-wide hover:bg-bg-elevated transition-colors flex items-center justify-center gap-2"
+        >
+          <Beaker className="w-4 h-4 text-amber-400" /> Use Demo Account
+        </button>
+
+        <div className="mt-4 pt-5 border-t border-border-subtle/50 text-center text-sm text-text-secondary flex flex-col gap-2">
+          <p>New instructor? <Link to="/instructor/signup" className="text-amber-400 font-bold hover:underline">Sign Up</Link></p>
+          <p>Are you a student? <Link to="/student/login" className="text-primary-400 font-bold hover:underline">Student Login</Link></p>
+        </div>
+      </form>
     </AuthLayout>
   );
 }
@@ -352,71 +460,75 @@ export function InstructorSignupPage() {
       <StepProgress step={step} total={2} isStudent={false} />
 
       {step === 1 && (
-        <Box className="anim-fadeIn" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <TextField label="Full Name *" fullWidth value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Dr. Ramesh Kumar" />
-          <TextField label="Email *" type="email" fullWidth value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
-          <TextField label="Password * (min 6 chars)" type={showPass ? 'text' : 'password'} fullWidth value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-            InputProps={{ endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPass(p => !p)} edge="end" sx={{ color: STEEL }}>
-                  {showPass ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                </IconButton>
-              </InputAdornment>
-            )}} />
-          <Button variant="contained" size="large" fullWidth disabled={!step1Valid} onClick={() => step1Valid && setStep(2)}
-            endIcon={<ArrowForwardRoundedIcon />}
-            sx={{ py: 1.5, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY }}>
-            Continue
-          </Button>
-          <Typography sx={{ textAlign: 'center', color: STEEL, fontSize: '0.83rem' }}>
-            Already registered?{' '}
-            <Box component={Link} to="/instructor/login" sx={{ color: ACCENT2, fontWeight: 600, textDecoration: 'none' }}>Sign In</Box>
-          </Typography>
-        </Box>
+        <div className="animate-fade-in-up flex flex-col gap-5">
+          <InputField label="Full Name" required autoFocus value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Dr. Ramesh Kumar" />
+          <InputField label="Email Address" type="email" required value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="ramesh@example.com" />
+          <InputField label="Password (min 6 chars)" type={showPass ? 'text' : 'password'} required value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} placeholder="••••••••"
+            endAdornment={
+              <button onClick={() => setShowPass(!showPass)} className="text-text-muted hover:text-text-primary p-1">
+                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            }
+          />
+
+          <button
+            disabled={!step1Valid} onClick={() => step1Valid && setStep(2)}
+            className="w-full h-12 mt-2 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            Continue <ArrowRight className="w-4 h-4" />
+          </button>
+
+          <p className="text-center text-sm text-text-secondary mt-2">
+            Already registered? <Link to="/instructor/login" className="text-amber-400 font-bold hover:underline">Sign In</Link>
+          </p>
+        </div>
       )}
 
       {step === 2 && (
-        <Box className="anim-fadeIn" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <TextField label="Qualification *" fullWidth value={form.qualification} onChange={e => setForm(p => ({ ...p, qualification: e.target.value }))} placeholder="PhD in Computer Science, IIT Delhi" />
-          <TextField label="Experience *" fullWidth value={form.experience} onChange={e => setForm(p => ({ ...p, experience: e.target.value }))} placeholder="8 years as Cloud Architect at AWS" />
+        <div className="animate-fade-in flex flex-col gap-5">
+          <InputField label="Qualification" required value={form.qualification} onChange={e => setForm(p => ({ ...p, qualification: e.target.value }))} placeholder="e.g. PhD in Computer Science" />
+          <InputField label="Experience" required value={form.experience} onChange={e => setForm(p => ({ ...p, experience: e.target.value }))} placeholder="e.g. 8 years as Cloud Architect" />
 
-          <Box>
-            <Typography sx={{ color: STEEL, fontSize: '0.82rem', mb: 1.5, fontWeight: 500 }}>Specialization *</Typography>
-            <Grid container spacing={1.5}>
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1 block mb-2">
+              Primary Specialization <span className="text-rose-400">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
               {specializationList.map(s => {
                 const sel = form.specialization === s.key;
                 return (
-                  <Grid item xs={6} key={s.key}>
-                    <Box onClick={() => setForm(p => ({ ...p, specialization: s.key }))}
-                      sx={{
-                        p: 2, borderRadius: 3, cursor: 'pointer', textAlign: 'center',
-                        background: sel ? s.bg : 'rgba(22,27,39,0.6)',
-                        border: `1.5px solid ${sel ? s.border : 'rgba(139,155,180,0.12)'}`,
-                        transition: 'all 0.22s ease',
-                        '&:hover': { borderColor: s.border },
-                      }}>
-                      <Typography sx={{ fontSize: '1.4rem', mb: 0.5 }}>{s.icon}</Typography>
-                      <Typography sx={{ fontFamily: '"Syne",sans-serif', fontWeight: 700, color: sel ? s.color : CREAM, fontSize: '0.78rem' }}>{s.label}</Typography>
-                    </Box>
-                  </Grid>
+                  <button
+                    key={s.key} type="button" onClick={() => setForm(p => ({ ...p, specialization: s.key }))}
+                    className={`p-3 rounded-xl border flex flex-col items-center transition-all ${sel ? `${s.bg} ${s.border} ring-1 ring-inset ${s.color.replace('text-', 'ring-')}/50 transform -translate-y-0.5` : 'bg-bg-base border-border-subtle hover:border-border-strong text-text-secondary'}`}
+                  >
+                    <span className="text-3xl mb-1">{s.icon}</span>
+                    <span className={`text-xs font-bold font-syne ${sel ? 'text-white' : 'text-text-primary'}`}>{s.label}</span>
+                  </button>
                 );
               })}
-            </Grid>
-          </Box>
+            </div>
+          </div>
 
-          <TextField label="Bio (optional)" multiline rows={2} fullWidth
-            value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} placeholder="Tell students about yourself..." />
+          <InputField label="Bio (Optional)" multiline value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} placeholder="Tell students about your expertise..." />
 
-          {error && <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error}</Alert>}
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
+            </div>
+          )}
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button variant="outlined" color="primary" onClick={() => setStep(1)} startIcon={<ArrowBackRoundedIcon />} sx={{ px: 3, py: 1.4 }}>Back</Button>
-            <Button variant="contained" fullWidth disabled={!step2Valid} onClick={handleSubmit}
-              sx={{ py: 1.4, background: `linear-gradient(135deg, ${GOLD} 0%, ${SAND} 100%)`, color: NAVY, fontWeight: 700 }}>
+          <div className="flex gap-3 mt-2">
+            <button onClick={() => setStep(1)} className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <button
+              disabled={!step2Valid} onClick={handleSubmit}
+              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
               🎓 Join as Instructor!
-            </Button>
-          </Box>
-        </Box>
+            </button>
+          </div>
+        </div>
       )}
     </AuthLayout>
   );

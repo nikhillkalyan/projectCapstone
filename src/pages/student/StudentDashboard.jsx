@@ -4,14 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import Avatar from '@mui/material/Avatar';
 import { Star, Play, Award, Compass, BookOpen, Heart, Trophy, TrendingUp } from 'lucide-react';
 import { ACCENT, ACCENT2, TEAL, STEEL, CREAM, SAND, GOLD, DANGER, NAVY, NAVY2 } from '../../theme';
 
@@ -51,24 +43,28 @@ export default function StudentDashboard() {
   return (
     <StudentLayout>
       {/* Header */}
-      <Box className="anim-fadeInUp" sx={{ display: 'flex', alignItems: { sm: 'center' }, justifyContent: 'space-between', mb: 4, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-        <Box>
-          <Typography sx={{ color: ACCENT2, fontSize: '0.78rem', fontWeight: 600, letterSpacing: 0.5, mb: 0.5 }}>{dateStr}</Typography>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: CREAM, fontSize: { xs: '1.6rem', md: '2rem' }, lineHeight: 1.2 }}>
+      <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <p className="text-[#6C7FD8] text-xs font-semibold tracking-wider mb-1 uppercase drop-shadow-[0_0_8px_rgba(108,127,216,0.3)]">
+            {dateStr}
+          </p>
+          <h1 className="font-syne font-extrabold text-white text-3xl md:text-4xl leading-tight mb-2">
             Welcome back, {user?.name?.split(' ')[0]}! 👋
-          </Typography>
-          <Typography sx={{ color: STEEL, mt: 0.7, fontSize: '0.9rem' }}>
+          </h1>
+          <p className="text-text-secondary text-sm">
             {inProgressCourses.length > 0
               ? `You have ${inProgressCourses.length} course${inProgressCourses.length > 1 ? 's' : ''} in progress.`
               : 'Ready to start learning today?'}
-          </Typography>
-        </Box>
-        <Button variant="contained" color="secondary" startIcon={<Compass />}
-          onClick={() => navigate('/student/explore')} className="anim-pulse-glow"
-          sx={{ px: 3, py: 1.3, background: `linear-gradient(135deg, ${SAND} 0%, #D4C9A5 100%)`, color: NAVY, whiteSpace: 'nowrap', flexShrink: 0 }}>
-          Explore Courses
-        </Button>
-      </Box>
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/student/explore')}
+          className="animate-pulse-glow flex-shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#D4A843] to-[#D4C9A5] text-[#161B27] rounded-xl font-bold font-syne shadow-lg shadow-[#D4A843]/20 hover:shadow-[#D4A843]/40 transition-all hover:-translate-y-0.5"
+        >
+          <Compass className="w-5 h-5" />
+          <span>Explore Courses</span>
+        </button>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

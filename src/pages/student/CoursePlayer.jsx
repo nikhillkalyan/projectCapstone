@@ -3,22 +3,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
-import { Star } from 'lucide-react';
-import Assessment from '../../components/shared/Assessment';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
-import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
-import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
-import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import BookmarkAddRoundedIcon from '@mui/icons-material/BookmarkAddRounded';
-import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
-import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
+import {
+  Star,
+  Play,
+  FileText,
+  CheckCircle2,
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  HelpCircle,
+  Trophy,
+  BookOpen,
+  X,
+  BookmarkPlus,
+  CheckCheck,
+  Award
+} from 'lucide-react';
 
 function MarkdownRenderer({ text }) {
   const html = text
@@ -62,6 +62,7 @@ export default function CoursePlayer() {
 
   useEffect(() => {
     if (!isInitialized.current && course?.chapters?.length > 0) {
+      // eslint-disable-next-line
       setActiveChapter(course.chapters[0]);
       isInitialized.current = true;
     }
@@ -142,15 +143,15 @@ export default function CoursePlayer() {
               <div className="flex items-center gap-3 w-full">
                 <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${chProg.completed ? 'bg-teal-500/20 text-teal-400' : 'bg-bg-elevated border border-border-subtle text-text-secondary group-hover:text-primary-400 group-hover:border-primary-500/50'}`}>
                   {chProg.completed
-                    ? <CheckCircleRoundedIcon sx={{ fontSize: 16 }} color="inherit" />
+                    ? <CheckCircle2 size={16} />
                     : <span className="font-syne font-bold text-[0.65rem]">{idx + 1}</span>}
                 </div>
                 <span className={`text-[0.85rem] flex-1 line-clamp-2 leading-snug ${isActive ? 'text-text-primary font-bold' : 'text-text-secondary font-medium group-hover:text-text-primary transition-colors'}`}>
                   {ch.title}
                 </span>
                 {ch.type === 'video'
-                  ? <PlayArrowRoundedIcon sx={{ fontSize: 16 }} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />
-                  : <ArticleRoundedIcon sx={{ fontSize: 16 }} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />}
+                  ? <Play size={16} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />
+                  : <FileText size={16} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />}
               </div>
               {chProg.assessmentScore !== undefined && (
                 <span className="text-teal-400 text-[0.65rem] ml-10 font-bold block mt-1">
@@ -165,7 +166,7 @@ export default function CoursePlayer() {
         {allChaptersComplete && (
           <div className="mt-4 p-4 rounded-2xl bg-warning/10 border border-warning/20 flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <EmojiEventsRoundedIcon sx={{ color: '#D4A843', fontSize: 18 }} />
+              <Trophy size={18} className="text-[#D4A843]" />
               <span className="font-syne font-bold text-warning text-[0.85rem]">Grand Test</span>
             </div>
             {completed ? (
@@ -205,7 +206,7 @@ export default function CoursePlayer() {
               className="text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 group p-2 rounded-xl border border-transparent hover:border-border-subtle hover:bg-white/5 cursor-pointer active:scale-95"
               onClick={() => navigate(`/student/course/${courseId}`)}
             >
-              <ArrowBackRoundedIcon fontSize="small" className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
               <span className="hidden sm:inline font-syne font-bold text-sm">Course Details</span>
             </button>
             <div className="hidden sm:block w-[1px] h-6 bg-border-subtle mx-2" />
@@ -220,7 +221,7 @@ export default function CoursePlayer() {
                 onClick={() => enrollCourse(courseId)}
                 className="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-primary-500/50 hover:bg-white/5 text-primary-400 font-bold text-xs transition-all hover:scale-[1.05] active:scale-95 cursor-pointer"
               >
-                <BookmarkAddRoundedIcon fontSize="small" />
+                <BookmarkPlus size={16} />
                 Enroll Free
               </button>
             ) : (
@@ -236,7 +237,7 @@ export default function CoursePlayer() {
               title={isFav ? "Remove from Favorites" : "Add to Favorites"}
               className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border ${isFav ? 'bg-danger/10 border-danger/30 text-danger' : 'bg-transparent border-border-subtle hover:bg-white/5 text-text-secondary hover:text-text-primary'}`}
             >
-              {isFav ? <FavoriteRoundedIcon sx={{ fontSize: 18 }} color="inherit" /> : <FavoriteBorderRoundedIcon sx={{ fontSize: 18 }} color="inherit" />}
+              {isFav ? <Heart size={18} className="fill-current" /> : <Heart size={18} />}
             </button>
 
             {/* Mobile Sidebar Toggle */}
@@ -244,7 +245,7 @@ export default function CoursePlayer() {
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border border-border-subtle bg-bg-surface text-text-secondary"
               onClick={() => setChapterDrawerOpen(p => !p)}
             >
-              <MenuBookRoundedIcon fontSize="small" color="inherit" />
+              <BookOpen size={16} />
             </button>
           </div>
         </header>
@@ -269,7 +270,7 @@ export default function CoursePlayer() {
                         onClick={() => setShowAssessment(false)}
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-text-secondary transition-colors"
                       >
-                        <CloseRoundedIcon sx={{ fontSize: 20 }} />
+                        <X size={20} />
                       </button>
                     </div>
                     <Assessment assessment={activeChapter.assessment} onComplete={handleAssessmentComplete} onClose={() => setShowAssessment(false)} />
@@ -286,14 +287,14 @@ export default function CoursePlayer() {
                   <div className="bg-bg-surface/80 backdrop-blur-md border border-warning/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-warning/5 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <EmojiEventsRoundedIcon sx={{ color: '#D4A843', fontSize: 28 }} />
+                        <Trophy size={28} className="text-[#D4A843]" />
                         <h2 className="font-syne font-bold text-xl text-text-primary">Grand Assessment</h2>
                       </div>
                       <button
                         onClick={() => setShowGrandTest(false)}
                         className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-text-secondary transition-colors"
                       >
-                        <CloseRoundedIcon sx={{ fontSize: 20 }} />
+                        <X size={20} />
                       </button>
                     </div>
                     <p className="text-text-secondary text-sm font-medium mb-8">Passing score: {course.grandAssessment.passingScore}%</p>
@@ -329,7 +330,7 @@ export default function CoursePlayer() {
                       onClick={() => navigate(`/student/certificate/${courseId}`)}
                       className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-xl shadow-warning/20 font-bold text-[1.1rem] transition-transform hover:scale-105"
                     >
-                      <WorkspacePremiumRoundedIcon />
+                      <Award size={20} />
                       Get Certificate
                     </button>
                   ) : (
@@ -352,7 +353,7 @@ export default function CoursePlayer() {
                           : 'bg-warning/10 text-warning border-warning/20'
                           }`}
                       >
-                        {activeChapter.type === 'video' ? <PlayArrowRoundedIcon sx={{ fontSize: 16 }} /> : <ArticleRoundedIcon sx={{ fontSize: 16 }} />}
+                        {activeChapter.type === 'video' ? <Play size={16} /> : <FileText size={16} />}
                         {activeChapter.type === 'video' ? 'Video' : 'Reading'}
                       </span>
                       <span className="text-text-secondary text-[0.85rem] font-medium flex items-center gap-1.5">
@@ -392,7 +393,7 @@ export default function CoursePlayer() {
                           onClick={handleMarkComplete}
                           className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-primary-500/50 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         >
-                          <DoneAllRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:scale-110" />
+                          <CheckCheck size={18} className="transition-transform group-hover:scale-110" />
                           Mark Complete
                         </button>
                       )}
@@ -402,14 +403,14 @@ export default function CoursePlayer() {
                           onClick={() => setShowAssessment(true)}
                           className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group shadow-lg shadow-primary-500/20 focus:ring-2 focus:ring-primary-400 focus:outline-none"
                         >
-                          <QuizRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:-rotate-6 group-hover:scale-110" />
+                          <HelpCircle size={18} className="transition-transform group-hover:-rotate-6 group-hover:scale-110" />
                           Take Chapter Quiz
                         </button>
                       )}
 
                       {chapterProgress.assessmentCompleted && (
                         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold text-[0.85rem] cursor-default">
-                          <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />
+                          <CheckCircle2 size={18} />
                           Quiz Passed ({chapterProgress.assessmentScore}%)
                         </div>
                       )}
@@ -422,7 +423,7 @@ export default function CoursePlayer() {
                           className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-bg-base font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-white focus:outline-none"
                         >
                           Next Chapter
-                          <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:translate-x-1" />
+                          <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                         </button>
                       )}
                       {allChaptersComplete && !completed && !nextChapter && (
@@ -430,7 +431,7 @@ export default function CoursePlayer() {
                           onClick={() => setShowGrandTest(true)}
                           className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-lg shadow-warning/20 font-bold text-[0.85rem] transition-transform hover:scale-[1.02] cursor-pointer active:scale-95 group focus:ring-2 focus:ring-warning focus:outline-none"
                         >
-                          <EmojiEventsRoundedIcon sx={{ fontSize: 18 }} className="transition-transform group-hover:scale-110" />
+                          <Trophy size={18} className="transition-transform group-hover:scale-110" />
                           Take Grand Test
                         </button>
                       )}
