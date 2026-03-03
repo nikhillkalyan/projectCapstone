@@ -19,6 +19,7 @@ import {
   CheckCheck,
   Award
 } from 'lucide-react';
+import Assessment from '../../components/shared/Assessment';
 
 function MarkdownRenderer({ text }) {
   const html = text
