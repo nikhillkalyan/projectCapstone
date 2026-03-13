@@ -1,9 +1,13 @@
 package backend.backend.Entity;
 
+import backend.backend.Enums.CourseLevel;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,12 +27,15 @@ public class Course {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "instructor_id", nullable = false)
-    private UUID instructorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instructor_id", nullable = false)
+    private Instructor instructor;
 
     private String category;
 
-    private String level;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private CourseLevel level;
 
     private String duration;
 
@@ -45,8 +52,22 @@ public class Course {
 
     private Double price;
 
-    private Float rating;
+    @Builder.Default
+    private Float rating = 0.0f;
 
-    @Column(name = "created_at")
+    @Builder.Default
+    @Column(name = "total_enrollments")
+    private Integer totalEnrollments = 0;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("chapterOrder ASC")
+    @Builder.Default
+    private List<Chapter> chapters = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Assessment grandAssessment;
 }
