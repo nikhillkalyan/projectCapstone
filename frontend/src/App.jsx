@@ -27,6 +27,9 @@ import StudentProgress from './pages/instructor/StudentProgress';
 import InstructorChat from './pages/instructor/InstructorChat';
 import InstructorProfile from './pages/instructor/InstructorProfile';
 
+import AdminDashboard from './pages/admin/AdminDashboard';
+import InstructorVerification from './pages/admin/InstructorVerification';
+
 function PrivateRoute({ children, role }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/" />;
@@ -63,6 +66,9 @@ function App() {
             <Route path="/instructor/students/:courseId" element={<PrivateRoute role="instructor"><StudentProgress /></PrivateRoute>} />
             <Route path="/instructor/chat" element={<PrivateRoute role="instructor"><InstructorChat /></PrivateRoute>} />
             <Route path="/instructor/profile" element={<PrivateRoute role="instructor"><InstructorProfile /></PrivateRoute>} />
+
+            <Route path="/admin/dashboard" element={<PrivateRoute role="admin"><AdminDashboard /></PrivateRoute>} />
+            <Route path="/admin/verify-instructors" element={<PrivateRoute role="admin"><InstructorVerification /></PrivateRoute>} />
           </Routes>
         </AppProvider>
       </AuthProvider>

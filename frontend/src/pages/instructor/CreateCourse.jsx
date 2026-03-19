@@ -588,11 +588,13 @@ export default function CreateCourse() {
       enrolledCount: 0,
       rating: 0,
       reviews: [],
+      isApproved: false,
+      status: 'PENDING',
       createdAt: new Date().toISOString(),
     };
 
     db.courses.push(newCourse);
-    showNotification('🎉 Course published successfully!');
+    showNotification('⏳ Course submitted! Pending Admin approval.');
     navigate('/instructor/courses');
   };
 
