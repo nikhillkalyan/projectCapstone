@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { db } from '../data/mockDatabase';
+import api from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -13,31 +13,30 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (email, password, role) => {
-    const users = role === 'student' ? db.students : db.instructors;
-    const found = users.find(u => u.email === email && u.password === password);
-    if (found) {
-      const userData = { ...found, role };
+  const login = async (email, password, role) => {
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      const userData = res.data.user;
+      userData.token = res.data.token;
       setUser(userData);
       localStorage.setItem('lms_user', JSON.stringify(userData));
       return { success: true, user: userData };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.message || 'Invalid credentials' };
     }
-    return { success: false, error: 'Invalid credentials' };
   };
 
-  const signup = (data, role) => {
-    if (role === 'student') {
-      const newStudent = { ...data, id: `s${Date.now()}`, role: 'student', enrolledCourses: [], favoriteCourses: [], completedCourses: [], progress: {} };
-      db.students.push(newStudent);
-      setUser(newStudent);
-      localStorage.setItem('lms_user', JSON.stringify(newStudent));
-      return { success: true, user: newStudent };
-    } else {
-      const newInstructor = { ...data, id: `i${Date.now()}`, role: 'instructor', courses: [] };
-      db.instructors.push(newInstructor);
-      setUser(newInstructor);
-      localStorage.setItem('lms_user', JSON.stringify(newInstructor));
-      return { success: true, user: newInstructor };
+  const signup = async (data, role) => {
+    try {
+      const endpoint = role === 'student' ? '/auth/student/signup' : '/auth/instructor/signup';
+      const res = await api.post(endpoint, data);
+      const userData = res.data.user;
+      userData.token = res.data.token;
+      setUser(userData);
+      localStorage.setItem('lms_user', JSON.stringify(userData));
+      return { success: true, user: userData };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.message || 'Signup failed' };
     }
   };
 
@@ -46,16 +45,15 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('lms_user');
   };
 
-  const updateUser = (updates) => {
-    const updated = { ...user, ...updates };
-    setUser(updated);
-    localStorage.setItem('lms_user', JSON.stringify(updated));
-    if (user.role === 'student') {
-      const idx = db.students.findIndex(s => s.id === user.id);
-      if (idx !== -1) db.students[idx] = updated;
-    } else {
-      const idx = db.instructors.findIndex(i => i.id === user.id);
-      if (idx !== -1) db.instructors[idx] = updated;
+  const updateUser = async (updates) => {
+    try {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('lms_user', JSON.stringify(updatedUser));
+      // Optionally sync to backend here when endpoint exists
+      // await api.put('/users/me', updates);
+    } catch (err) {
+      console.error('Failed to update user profile', err);
     }
   };
 

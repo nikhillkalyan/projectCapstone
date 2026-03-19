@@ -36,4 +36,8 @@ public class Instructor {
     @Column(name = "total_students")
     @Builder.Default
     private Integer totalStudents = 0;
+
+    @Column(name = "is_verified")
+    @Builder.Default
+    private Boolean isVerified = false;
 }
