@@ -1,11 +1,13 @@
 package backend.backend.Controller;
 
-import backend.backend.DTO.Auth.AuthResponse;
-import backend.backend.DTO.Auth.InstructorSignupRequest;
-import backend.backend.DTO.Auth.LoginRequest;
-import backend.backend.DTO.Auth.StudentSignupRequest;
+import backend.backend.Dto.Request.InstructorSignupRequest;
+import backend.backend.Dto.Request.LoginRequest;
+import backend.backend.Dto.Request.StudentSignupRequest;
+import backend.backend.Dto.Response.AuthResponse;
 import backend.backend.Service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,18 +19,22 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/student/signup")
-    public ResponseEntity<AuthResponse> studentSignup(@RequestBody StudentSignupRequest request) {
-        return ResponseEntity.ok(authService.studentSignup(request));
+    public ResponseEntity<AuthResponse> studentSignup(
+            @Valid @RequestBody StudentSignupRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.studentSignup(request));
     }
 
     @PostMapping("/instructor/signup")
-    public ResponseEntity<AuthResponse> instructorSignup(@RequestBody InstructorSignupRequest request) {
-        return ResponseEntity.ok(authService.instructorSignup(request));
+    public ResponseEntity<AuthResponse> instructorSignup(
+            @Valid @RequestBody InstructorSignupRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.instructorSignup(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
-
 }
