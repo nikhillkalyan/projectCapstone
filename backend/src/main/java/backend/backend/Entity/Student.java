@@ -32,8 +32,9 @@ public class Student {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
-    @ElementCollection
-    @CollectionTable(name = "student_interests", joinColumns = @JoinColumn(name = "student_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "student_interests",
+            joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "interest")
     @Builder.Default
     private List<String> interests = new ArrayList<>();
