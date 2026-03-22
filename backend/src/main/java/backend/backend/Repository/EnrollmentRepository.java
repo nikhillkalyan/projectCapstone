@@ -1,15 +1,15 @@
 package backend.backend.Repository;
 
+import backend.backend.Entity.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.List;
-import backend.backend.Entity.Enrollment;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
     Optional<Enrollment> findByStudentIdAndCourseId(UUID studentId, UUID courseId);
-
     List<Enrollment> findByStudentId(UUID studentId);
-
+    List<Enrollment> findByCourseId(UUID courseId);
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
 }

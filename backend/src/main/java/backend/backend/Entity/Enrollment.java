@@ -40,4 +40,11 @@ public class Enrollment {
     @Builder.Default
     @Column(name = "is_completed")
     private Boolean isCompleted = false;
+
+    @Column(name = "grand_assessment_score")
+    private Integer grandAssessmentScore;
+
+    @Builder.Default
+    @Column(name = "grand_assessment_passed")
+    private Boolean grandAssessmentPassed = false;
 }
