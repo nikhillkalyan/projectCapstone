@@ -38,4 +38,13 @@ public class Student {
     @Column(name = "interest")
     @Builder.Default
     private List<String> interests = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "student_favorite_courses",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    @Builder.Default
+    private List<Course> favoriteCourses = new ArrayList<>();
 }
