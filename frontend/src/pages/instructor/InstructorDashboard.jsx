@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getCoursesByInstructor } from '../../api/courseApi';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
-import { Star, Eye, BarChart2, BookOpen, Plus, Users, MessageSquare } from 'lucide-react';
+import { Star, Eye, BarChart2, BookOpen, Plus, Users, MessageSquare, Loader2 } from 'lucide-react';
 import CourseCard from '../../components/shared/CourseCard';
 import StatCard from '../../components/shared/StatCard';
 import SectionShell from '../../components/shared/SectionShell';
@@ -15,11 +13,31 @@ import ReviewCard from '../../components/shared/ReviewCard';
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
-  const { db } = useApp();
   const navigate = useNavigate();
 
-  const myCourses = useMemo(() => db.courses.filter(c => c.instructorId === user?.id), [user, db.courses]);
-  const totalStudents = myCourses.reduce((s, c) => s + (c.enrolledCount || 0), 0);
+  const [myCourses, setMyCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+     const fetchCourses = async () => {
+         if (!user?.id) {
+             setLoading(false);
+             return;
+         }
+         setLoading(true);
+         try {
+             const res = await getCoursesByInstructor(user.id);
+             setMyCourses(res.data || []);
+         } catch(err) {
+             console.error("Failed to fetch instructor courses:", err);
+         } finally {
+             setLoading(false);
+         }
+     };
+     fetchCourses();
+  }, [user]);
+
+  const totalStudents = myCourses.reduce((s, c) => s + (c.totalEnrollments || 0), 0);
   const avgRating = myCourses.length > 0
     ? (myCourses.reduce((s, c) => s + (c.rating || 0), 0) / myCourses.length).toFixed(1) : '—';
   const allReviews = myCourses.flatMap(c => (c.reviews || []).map(r => ({ ...r, courseTitle: c.title })));
@@ -30,6 +48,17 @@ export default function InstructorDashboard() {
     { icon: Star, label: 'Avg Rating', value: avgRating, color: '#D4A843', delay: 3 },
     { icon: MessageSquare, label: 'Total Reviews', value: allReviews.length, color: '#E74C3C', delay: 4 },
   ];
+
+  if (loading) {
+      return (
+          <InstructorLayout>
+              <div className="flex flex-col h-[60vh] items-center justify-center font-dmsans text-text-primary">
+                  <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                  <span className="text-text-secondary">Loading dashboard...</span>
+              </div>
+          </InstructorLayout>
+      );
+  }
 
   return (
     <InstructorLayout>

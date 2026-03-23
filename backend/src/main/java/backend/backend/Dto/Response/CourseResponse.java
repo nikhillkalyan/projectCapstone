@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -28,4 +29,6 @@ public class CourseResponse {
     private Integer totalEnrollments;
     private LocalDateTime createdAt;
     private InstructorSummaryResponse instructor;
+    private AssessmentResponse grandAssessment;
+    private List<ReviewResponse> reviews;
 }

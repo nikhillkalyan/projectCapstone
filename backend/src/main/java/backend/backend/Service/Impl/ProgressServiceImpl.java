@@ -289,6 +289,7 @@ public class ProgressServiceImpl implements ProgressService {
                             .isCompleted(enrollment.getIsCompleted())
                             .completedChapters((int) completedCount)
                             .totalChapters(chapters.size())
+                            .grandScore(enrollment.getGrandAssessmentScore())
                             .chapterProgress(chapterProgressResponses)
                             .build();
                 })

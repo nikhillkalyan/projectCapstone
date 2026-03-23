@@ -20,5 +20,6 @@ public class StudentProgressSummaryResponse {
     private Boolean isCompleted;
     private Integer completedChapters;
     private Integer totalChapters;
+    private Integer grandScore;
     private List<ProgressResponse> chapterProgress;
 }

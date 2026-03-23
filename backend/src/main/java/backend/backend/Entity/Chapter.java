@@ -24,7 +24,7 @@ public class Chapter {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String title;
 
     private String duration;
@@ -33,12 +33,13 @@ public class Chapter {
     @Column(length = 10)
     private ChapterType type;
 
-    @Column(name = "video_url")
+    @Column(name = "video_url", columnDefinition = "TEXT")
     private String videoUrl;
 
     @Column(name = "text_content", columnDefinition = "TEXT")
     private String textContent;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "chapter_order")

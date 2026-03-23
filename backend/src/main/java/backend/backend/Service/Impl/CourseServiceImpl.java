@@ -7,13 +7,20 @@ import backend.backend.Dto.Response.InstructorSummaryResponse;
 import backend.backend.Entity.Course;
 import backend.backend.Entity.Instructor;
 import backend.backend.Entity.User;
+import backend.backend.Entity.Assessment;
+import backend.backend.Dto.Response.AssessmentResponse;
+import backend.backend.Dto.Response.QuestionResponse;
+import backend.backend.Dto.Response.OptionResponse;
+import backend.backend.Dto.Response.ReviewResponse;
 import backend.backend.Exceptions.BadRequestException;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
 import backend.backend.Repository.CourseRepository;
 import backend.backend.Repository.InstructorRepository;
+import backend.backend.Repository.ReviewRepository;
 import backend.backend.Service.CourseService;
 import backend.backend.Utils.SecurityUtils;
+import backend.backend.Entity.Review;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +35,7 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final InstructorRepository instructorRepository;
+    private final ReviewRepository reviewRepository;
     private final SecurityUtils securityUtils;
 
     @Override
@@ -53,7 +61,23 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Course not found with id: " + courseId));
-        return mapToCourseResponse(course);
+        CourseResponse response = mapToCourseResponse(course);
+        
+        List<Review> reviews = reviewRepository.findByCourseId(courseId);
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(r -> ReviewResponse.builder()
+                        .id(r.getId())
+                        .studentId(r.getStudent().getId())
+                        .studentName(r.getStudent().getUser().getName())
+                        .studentAvatar(r.getStudent().getUser().getAvatarUrl())
+                        .rating(r.getRating())
+                        .reviewText(r.getReviewText())
+                        .createdAt(r.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+        
+        response.setReviews(reviewResponses);
+        return response;
     }
 
     @Override
@@ -163,6 +187,31 @@ public class CourseServiceImpl implements CourseService {
                         .specialization(instructor.getSpecialization())
                         .rating(instructor.getRating())
                         .build())
+                .grandAssessment(course.getGrandAssessment() != null ? mapToAssessmentResponse(course.getGrandAssessment()) : null)
+                .build();
+    }
+
+    private AssessmentResponse mapToAssessmentResponse(Assessment assessment) {
+        List<QuestionResponse> questions = assessment.getQuestions().stream()
+                .map(q -> QuestionResponse.builder()
+                        .id(q.getId())
+                        .questionText(q.getQuestionText())
+                        .correctOptionIndex(q.getCorrectOptionIndex())
+                        .options(q.getOptions().stream()
+                                .map(o -> OptionResponse.builder()
+                                        .id(o.getId())
+                                        .optionText(o.getOptionText())
+                                        .optionIndex(o.getOptionIndex())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
+        return AssessmentResponse.builder()
+                .id(assessment.getId())
+                .title(assessment.getTitle())
+                .passingScore(assessment.getPassingScore())
+                .questions(questions)
                 .build();
     }
 }

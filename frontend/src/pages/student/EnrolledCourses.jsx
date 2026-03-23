@@ -1,17 +1,18 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getEnrolledCourses, getFavoriteCourses } from '../../api/studentApi';
+import { getCourseProgress } from '../../api/progressApi';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
 import EmptyState from '../../components/shared/EmptyState';
 import SectionShell from '../../components/shared/SectionShell';
-import { BookOpen, Heart, Compass, CheckCircle2, PlayCircle, Clock } from 'lucide-react';
+import { BookOpen, Heart, Compass, CheckCircle2, PlayCircle, Clock, Loader2 } from 'lucide-react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 function Section({ title, icon, courses, user, isCompletedSection = false }) {
-  if (courses.length === 0) return null;
+  if (!courses || courses.length === 0) return null;
   return (
     <SectionShell title={title} icon={icon} className="mb-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -25,6 +26,7 @@ function Section({ title, icon, courses, user, isCompletedSection = false }) {
               favorited={user?.favoriteCourses?.includes(course.id)}
               completed={isCompletedSection}
               score={completedData?.score}
+              progress={course.progress}
             />
           );
         })}
@@ -35,22 +37,65 @@ function Section({ title, icon, courses, user, isCompletedSection = false }) {
 
 export function EnrolledCourses() {
   const { user } = useAuth();
-  const { db, getCourseProgress } = useApp();
   const navigate = useNavigate();
 
-  const enrolled = useMemo(() => db.courses.filter(c => user?.enrolledCourses?.includes(c.id)), [user, db.courses]);
-  const inProgress = enrolled.filter(c => { const p = getCourseProgress(c.id); return p > 0 && p < 100; });
-  const notStarted = enrolled.filter(c => getCourseProgress(c.id) === 0);
-  const completed = user?.completedCourses?.map(cc => db.courses.find(c => c.id === cc.courseId)).filter(Boolean) || [];
+  const [enrolled, setEnrolled] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  console.info("DEBUG EnrolledCourses:", {
-    user: user?.name,
-    enrolledIds: user?.enrolledCourses,
-    enrolledObjectsCount: enrolled.length,
-    inProgressCount: inProgress.length,
-    notStartedCount: notStarted.length,
-    completedCount: completed.length
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await getEnrolledCourses();
+            let enrollments = res.data || [];
+            
+            // extract courses
+            let courses = enrollments.map(e => ({
+                ...(e.course || {}),
+                enrollmentId: e.enrollmentId,
+                enrolledAt: e.enrolledAt,
+                progress: 0 // Default, will be updated below
+            }));
+            
+            // fetch progress for all
+            const progressPromises = courses.map(c => {
+                if(!c.id) return Promise.resolve({ data: { percentage: 0 } });
+                return getCourseProgress(c.id).catch(() => ({ data: { percentage: 0 } }));
+            });
+            const progressResults = await Promise.all(progressPromises);
+            
+            courses = courses.map((c, i) => ({
+                ...c,
+                progress: progressResults[i]?.data?.overallProgress || 0,
+                isCompleted: progressResults[i]?.data?.isCompleted || false
+            }));
+
+            // unique in case backend returns dups
+            const unique = Array.from(new Map(courses.map(item => [item.id, item])).values());
+            setEnrolled(unique);
+        } catch (err) {
+            console.error("Failed to load enrolled courses:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+    if (user) fetchData();
+  }, [user]);
+
+  const inProgress = enrolled.filter(c => c.progress > 0 && !c.isCompleted);
+  const notStarted = enrolled.filter(c => c.progress === 0 && !c.isCompleted);
+  const completed = enrolled.filter(c => c.isCompleted || c.progress >= 100);
+
+  if (loading) {
+    return (
+        <StudentLayout>
+            <div className="flex flex-col h-full items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+                <p className="text-text-secondary font-dmsans">Loading your courses...</p>
+            </div>
+        </StudentLayout>
+    );
+  }
 
   return (
     <StudentLayout>
@@ -75,9 +120,9 @@ export function EnrolledCourses() {
           </button>
         </motion.div>
 
-        {enrolled.length === 0 && completed.length === 0 ? (
+        {enrolled.length === 0 ? (
           <EmptyState
-            icon={BookOpen}
+             icon={BookOpen}
             title="No enrolled courses yet"
             description="Start your learning journey today! Browse our catalog to find a course that interests you."
             action={
@@ -108,10 +153,41 @@ export function EnrolledCourses() {
 
 export function FavoriteCourses() {
   const { user } = useAuth();
-  const { db } = useApp();
   const navigate = useNavigate();
 
-  const favorites = useMemo(() => db.courses.filter(c => user?.favoriteCourses?.includes(c.id)), [user, db.courses]);
+  const [favorites, setFavorites] = useState([]);
+  const [enrolledIds, setEnrolledIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [favRes, enrRes] = await Promise.all([
+                getFavoriteCourses(),
+                getEnrolledCourses().catch(() => ({ data: [] }))
+            ]);
+            setFavorites(favRes.data || []);
+            setEnrolledIds((enrRes.data || []).map(e => e.course?.id).filter(Boolean));
+        } catch (err) {
+            console.error("Failed to load favorite courses:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+    if (user) fetchData();
+  }, [user]);
+
+  if (loading) {
+    return (
+        <StudentLayout>
+            <div className="flex flex-col h-full items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+                <p className="text-text-secondary font-dmsans">Loading favorites...</p>
+            </div>
+        </StudentLayout>
+    );
+  }
 
   return (
     <StudentLayout>
@@ -156,7 +232,7 @@ export function FavoriteCourses() {
               <CourseCard
                 key={course.id}
                 course={course}
-                enrolled={user?.enrolledCourses?.includes(course.id)}
+                enrolled={enrolledIds.includes(course.id)}
                 favorited
               />
             ))}

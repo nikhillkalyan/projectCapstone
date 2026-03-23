@@ -1,11 +1,11 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, Filter, X } from 'lucide-react';
+import { Search, ChevronDown, Filter, X, Loader2, AlertCircle } from 'lucide-react';
+import { getAllCourses } from '../../api/courseApi';
+import { getEnrolledCourses } from '../../api/studentApi';
 
 const categories = ['All', 'AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
 const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
@@ -73,36 +73,80 @@ const CustomSelect = ({ label, value, options, onChange }) => {
 
 export default function ExploreCourses() {
   const { user } = useAuth();
-  const { db } = useApp();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [level, setLevel] = useState('All');
   const [sort, setSort] = useState('Most Popular');
+  
+  const [enrolledIds, setEnrolledIds] = useState([]);
 
-  // Filter Logic
-  const filtered = useMemo(() => {
-    let courses = [...db.courses];
-    if (search) {
-      const q = search.toLowerCase();
-      courses = courses.filter(c =>
-        c.title.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q) ||
-        c.tags?.some(t => t.toLowerCase().includes(q)) ||
-        c.instructorName.toLowerCase().includes(q)
-      );
+  // Fetch enrolled courses once on mount to compare
+  useEffect(() => {
+    const fetchEnrolled = async () => {
+      try {
+        const res = await getEnrolledCourses();
+        const enrollments = res.data || [];
+        const ids = enrollments.map(e => e.course?.id).filter(Boolean);
+        setEnrolledIds(ids);
+      } catch (err) {
+        console.error("Failed to load enrolled IDs", err);
+      }
+    };
+    if (user?.role === 'student') {
+      fetchEnrolled();
     }
-    if (category !== 'All') courses = courses.filter(c => c.category === category);
-    if (level !== 'All') courses = courses.filter(c => c.level === level);
+  }, [user]);
 
-    if (sort === 'Most Popular') courses.sort((a, b) => b.enrolledCount - a.enrolledCount);
-    else if (sort === 'Highest Rated') courses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    else if (sort === 'Newest') courses.reverse();
+  const checkEnrolled = (courseId) => {
+    return enrolledIds.includes(courseId) || 
+           user?.profile?.enrolledCourses?.includes(courseId) || 
+           user?.enrolledCourses?.includes(courseId);
+  };
 
-    return courses;
-  }, [db.courses, search, category, level, sort]);
+  // Fetch courses from API when filters change
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      setFetchError('');
+      try {
+        const params = {};
+        if (category !== 'All') params.category = category;
+        if (level !== 'All') params.level = level;
+        if (search) params.search = search;
+        
+        const res = await getAllCourses(params);
+        setCourses(res.data);
+      } catch (err) {
+        console.error("Failed to fetch courses", err);
+        setFetchError('Unable to load courses. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const recommended = db.courses.filter(c =>
-    (user?.interests || []).includes(c.category) && !user?.enrolledCourses?.includes(c.id)
+    const delayDebounceFn = setTimeout(() => {
+      fetchCourses();
+    }, 400); // 400ms debounce for typing
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [category, level, search]);
+
+  // Client-side Sorting
+  const sortedCourses = useMemo(() => {
+    let sorted = [...courses];
+    if (sort === 'Most Popular') sorted.sort((a, b) => (b.totalEnrollments || 0) - (a.totalEnrollments || 0));
+    else if (sort === 'Highest Rated') sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    else if (sort === 'Newest') sorted.reverse(); // Or sort by created_at if your backend sends it
+    return sorted;
+  }, [courses, sort]);
+
+  // Recommended courses (Only makes sense when no filters are applied, so we look at the raw fetched list)
+  const recommended = courses.filter(c =>
+    (user?.profile?.interests || user?.interests || []).includes(c.category) && !checkEnrolled(c.id)
   );
 
   const activeFilters = (category !== 'All' || level !== 'All');
@@ -132,9 +176,13 @@ export default function ExploreCourses() {
           className="mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">Explore Courses</h1>
-          <p className="text-text-secondary font-dmsans">
-            {filtered.length} course{filtered.length !== 1 ? 's' : ''} found{search && ` for "${search}"`}
-          </p>
+          {loading ? (
+             <p className="text-text-secondary font-dmsans">Searching courses...</p>
+          ) : (
+            <p className="text-text-secondary font-dmsans">
+              {courses.length} course{courses.length !== 1 ? 's' : ''} found{search && ` for "${search}"`}
+            </p>
+          )}
         </motion.div>
 
         {/* Glassmorphic Filter Bar */}
@@ -217,7 +265,7 @@ export default function ExploreCourses() {
 
         {/* Recommended Section (Only if no active search/filters) */}
         <AnimatePresence>
-          {!search && category === 'All' && recommended.length > 0 && (
+          {!search && category === 'All' && recommended.length > 0 && !loading && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -232,8 +280,8 @@ export default function ExploreCourses() {
                   <CourseCard
                     key={`rec-${course.id}`}
                     course={course}
-                    enrolled={user?.enrolledCourses?.includes(course.id)}
-                    favorited={user?.favoriteCourses?.includes(course.id)}
+                    enrolled={checkEnrolled(course.id)}
+                    favorited={user?.profile?.favoriteCourses?.includes(course.id) || user?.favoriteCourses?.includes(course.id)}
                   />
                 ))}
               </div>
@@ -247,7 +295,26 @@ export default function ExploreCourses() {
             {search ? 'Search Results' : category !== 'All' ? `${category} Courses` : 'All Courses'}
           </h2>
 
-          {filtered.length === 0 ? (
+          {fetchError ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-20 bg-rose-500/5 border border-rose-500/20 rounded-2xl"
+            >
+              <AlertCircle className="text-rose-400 w-10 h-10 mb-4" />
+              <h3 className="text-xl font-syne font-bold text-rose-300 mb-2">Error</h3>
+              <p className="text-rose-400/80">{fetchError}</p>
+            </motion.div>
+          ) : loading ? (
+             <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               className="flex flex-col items-center justify-center py-32"
+             >
+               <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+               <p className="text-text-secondary">Loading courses...</p>
+             </motion.div>
+          ) : courses.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -271,16 +338,19 @@ export default function ExploreCourses() {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             >
               <AnimatePresence mode="popLayout">
-                {filtered.map(course => (
+                {sortedCourses.map(course => (
                   <motion.div
                     key={course.id}
                     variants={itemVariants}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
                     layout
                   >
                     <CourseCard
                       course={course}
-                      enrolled={user?.enrolledCourses?.includes(course.id)}
-                      favorited={user?.favoriteCourses?.includes(course.id)}
+                      enrolled={checkEnrolled(course.id)}
+                      favorited={user?.profile?.favoriteCourses?.includes(course.id) || user?.favoriteCourses?.includes(course.id)}
                     />
                   </motion.div>
                 ))}

@@ -162,10 +162,10 @@ export function StudentLoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     await new Promise(r => setTimeout(r, 400));
-    const result = login(form.email, form.password, 'student');
+    const result = await login(form.email, form.password);
     setLoading(false);
     if (result.success) navigate('/student');
-    else setError('Invalid email or password. Try the demo account!');
+    else setError(result.error || 'Invalid email or password');
   };
 
   return (
@@ -215,7 +215,7 @@ export function StudentLoginPage() {
 
         <button
           type="button"
-          onClick={() => setForm({ email: 'arjun@student.com', password: 'password123' })}
+          onClick={() => setForm({ email: 'john@example.com', password: 'password123' })}
           className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary rounded-xl font-bold tracking-wide hover:bg-bg-elevated transition-colors flex items-center justify-center gap-2"
         >
           <Beaker className="w-4 h-4 text-teal-400" />
@@ -253,10 +253,19 @@ export function StudentSignupPage() {
   const step1Valid = form.name && form.email && form.password.length >= 6;
   const step2Valid = form.college && form.year && form.interests.length > 0;
 
-  const handleSubmit = () => {
-    const result = signup(form, 'student');
+  const handleSubmit = async () => {
+    const payload = {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        college: form.college,
+        yearOfStudy: form.year,
+        bio: form.bio,
+        interests: form.interests,
+    };
+    const result = await signup(payload, 'student');
     if (result.success) navigate('/student');
-    else setError(result.error);
+    else setError(result.error || 'Signup failed');
   };
 
   return (
@@ -383,10 +392,10 @@ export function InstructorLoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     await new Promise(r => setTimeout(r, 400));
-    const result = login(form.email, form.password, 'instructor');
+    const result = await login(form.email, form.password);
     setLoading(false);
     if (result.success) navigate('/instructor');
-    else setError('Invalid email or password. Try the demo account!');
+    else setError(result.error || 'Invalid email or password');
   };
 
   return (
@@ -422,7 +431,7 @@ export function InstructorLoginPage() {
         </button>
 
         <button
-          type="button" onClick={() => setForm({ email: 'ramesh@instructor.com', password: 'password123' })}
+          type="button" onClick={() => setForm({ email: 'smith@example.com', password: 'password123' })}
           className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary rounded-xl font-bold tracking-wide hover:bg-bg-elevated transition-colors flex items-center justify-center gap-2"
         >
           <Beaker className="w-4 h-4 text-amber-400" /> Use Demo Account
@@ -449,10 +458,19 @@ export function InstructorSignupPage() {
   const step1Valid = form.name && form.email && form.password.length >= 6;
   const step2Valid = form.qualification && form.experience && form.specialization;
 
-  const handleSubmit = () => {
-    const result = signup(form, 'instructor');
+  const handleSubmit = async () => {
+    const payload = {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        qualification: form.qualification,
+        experience: form.experience,
+        specialization: form.specialization,
+        bio: form.bio,
+    };
+    const result = await signup(payload, 'instructor');
     if (result.success) navigate('/instructor');
-    else setError(result.error);
+    else setError(result.error || 'Signup failed');
   };
 
   return (

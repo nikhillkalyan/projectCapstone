@@ -1,45 +1,75 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getCourseById, getChapters } from '../../api/courseApi';
+import { getStudentsProgress } from '../../api/progressApi';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
-import { ArrowLeft, Users, Trophy, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, TrendingUp, CheckCircle, Clock, Loader2 } from 'lucide-react';
 
 export default function StudentProgress() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { db } = useApp();
 
-  const course = db.courses.find(c => c.id === courseId && c.instructorId === user?.id);
-  const enrolledStudents = useMemo(() => {
-    return db.students.filter(s => s.enrolledCourses?.includes(courseId));
-  }, [db.students, courseId]);
+  const [course, setCourse] = useState(null);
+  const [studentRows, setStudentRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Compute per-student progress
-  const studentRows = useMemo(() => {
-    return enrolledStudents.map(student => {
-      const prog = student.progress?.[courseId] || {};
-      const totalChapters = course?.chapters?.length || 1;
-      const completedChapters = Object.values(prog).filter(p => p.completed).length;
-      const overallPct = Math.round((completedChapters / totalChapters) * 100);
-      const isCompleted = student.completedCourses?.some(c => c.courseId === courseId);
-      const grandScore = student.completedCourses?.find(c => c.courseId === courseId)?.score;
+  useEffect(() => {
+     const fetchData = async () => {
+         setLoading(true);
+         try {
+             const [courseRes, progRes, chaptersRes] = await Promise.all([
+                 getCourseById(courseId),
+                 getStudentsProgress(courseId).catch(() => ({ data: [] })),
+                 getChapters(courseId).catch(() => ({ data: [] }))
+             ]);
+             
+             let c = courseRes.data;
+             if (c && (!c.instructorId || c.instructorId === user?.id || c.instructor?.id === user?.id)) {
+                 c = { ...c, chapters: chaptersRes.data };
+                 setCourse(c);
+             } else {
+                 setCourse(null);
+             }
+             
+             const rows = (progRes.data || []).map(p => {
+                 const student = p.student || { id: p.userId || p.studentId || p.id || Math.random(), name: p.studentName || 'Student', college: '' };
+                 return {
+                     student,
+                     overallPct: p.overallProgress || p.percentage || p.progress || 0,
+                     isCompleted: p.isCompleted || p.overallProgress >= 100 || false,
+                     grandScore: p.grandScore,
+                     chapterScores: Array.isArray(p.chapterProgress) ? p.chapterProgress.map(cp => cp.assessmentScore) : (c?.chapters || []).map(() => null)
+                 };
+             });
+             setStudentRows(rows);
+             
+         } catch(err) {
+             console.error("Failed to fetch progress", err);
+         } finally {
+             setLoading(false);
+         }
+     };
+     if (user) fetchData();
+  }, [courseId, user]);
 
-      // Per-chapter scores
-      const chapterScores = course?.chapters?.map(ch => {
-        const chProg = prog[ch.id] || {};
-        return chProg.assessmentScore !== undefined ? chProg.assessmentScore : null;
-      }) || [];
-
-      return { student, overallPct, completedChapters, totalChapters, isCompleted, grandScore, chapterScores };
-    });
-  }, [enrolledStudents, course, courseId]);
-
+  const enrolledStudents = studentRows.map(r => r.student);
   const completedCount = studentRows.filter(r => r.isCompleted).length;
   const avgProgress = studentRows.length > 0
-    ? Math.round(studentRows.reduce((s, r) => s + r.overallPct, 0) / studentRows.length)
+    ? Math.round(studentRows.reduce((s, r) => s + (r.overallPct || 0), 0) / studentRows.length)
     : 0;
+
+  if (loading) {
+      return (
+          <InstructorLayout>
+              <div className="flex flex-col h-[60vh] items-center justify-center font-dmsans text-text-primary">
+                  <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                  <span className="text-text-secondary">Loading statistics...</span>
+              </div>
+          </InstructorLayout>
+      );
+  }
 
   if (!course) return (
     <InstructorLayout>

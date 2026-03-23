@@ -1,10 +1,12 @@
-import { useState } from 'react';
-// eslint-disable-next-line no-unused-vars
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getCourseById, getChapters } from '../../api/courseApi';
+import { enrollInCourse } from '../../api/studentApi';
+import { getCourseProgress } from '../../api/progressApi';
 import { useApp } from '../../context/AppContext';
-import { BookOpen, Star, Info, List, Clock, BarChart2, Award, Bookmark, Play, Users, Calendar, ChevronDown, Video } from 'lucide-react';
+import { BookOpen, Star, Info, List, Clock, BarChart2, Award, Bookmark, Play, Users, Calendar, ChevronDown, Video, Loader2, AlertCircle, MessageSquare } from 'lucide-react';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import SectionShell from '../../components/shared/SectionShell';
 import ReviewCard from '../../components/shared/ReviewCard';
@@ -12,30 +14,113 @@ import ReviewCard from '../../components/shared/ReviewCard';
 export default function CourseDetails() {
     const { courseId } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const { db, enrollCourse } = useApp();
+    const { user, updateLocalUser } = useAuth();
 
     const [expandedChapter, setExpandedChapter] = useState(null);
+    const [course, setCourse] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [enrolling, setEnrolling] = useState(false);
+    const { rateCourse } = useApp();
+    
+    // Auth-based progress checks
+    const [isEnrolled, setIsEnrolled] = useState(false);
+    const [courseProgress, setCourseProgress] = useState(null);
+
+    // Review Modal State
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+    
+    const hasReviewed = course?.reviews?.some(r => r.studentId === user?.id);
+
+    useEffect(() => {
+        const fetchDetails = async () => {
+            setLoading(true);
+            try {
+                // Fetch course and chapters in parallel
+                const [courseRes, chaptersRes] = await Promise.all([
+                    getCourseById(courseId),
+                    getChapters(courseId).catch(() => ({ data: [] })) // fallback if chapters fail
+                ]);
+                
+                setCourse({
+                    ...courseRes.data,
+                    chapters: chaptersRes.data
+                });
+
+                // Check real enrollment via backend if logged in
+                if (user) {
+                    try {
+                        const progRes = await getCourseProgress(courseId);
+                        setIsEnrolled(true);
+                        setCourseProgress(progRes.data);
+                    } catch (e) {
+                        setIsEnrolled(false);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch course details", err);
+                setError("Course not found or unable to load details.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDetails();
+    }, [courseId, user]);
 
     const toggleChapter = (chapterId) => {
         setExpandedChapter(expandedChapter === chapterId ? null : chapterId);
     };
 
-    const course = db.courses.find(c => c.id === courseId);
-    const isEnrolled = user?.enrolledCourses?.includes(courseId);
+    const handleEnroll = async () => {
+        setEnrolling(true);
+        try {
+            await enrollInCourse(courseId);
+            setIsEnrolled(true);
+            // We navigate to the player which should fetch fresh progress
+            navigate(`/student/course/${courseId}/learn`);
+        } catch (err) {
+            console.error("Failed to enroll", err);
+            alert(err.response?.data?.error || "Failed to enroll. Please try again.");
+            setEnrolling(false);
+        }
+    };
 
-    // Fallback if course invalid
-    if (!course) {
+    // Loading State
+    if (loading) {
         return (
             <StudentLayout>
-                <div className="flex h-full items-center justify-center min-h-[60vh]">
-                    <p className="text-text-secondary font-dmsans">Course not found.</p>
+                <div className="flex flex-col h-full items-center justify-center min-h-[60vh]">
+                    <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+                    <p className="text-text-secondary font-dmsans">Loading course details...</p>
                 </div>
             </StudentLayout>
         );
     }
 
-    // Temporary Placeholders
+    // Error / Fallback State
+    if (error || !course) {
+        return (
+            <StudentLayout>
+                <div className="flex h-full items-center justify-center min-h-[60vh]">
+                    <div className="flex flex-col items-center p-8 bg-rose-500/5 border border-rose-500/20 rounded-3xl max-w-md text-center">
+                        <AlertCircle className="w-12 h-12 text-rose-400 mb-4" />
+                        <h2 className="text-xl font-syne font-bold text-rose-300 mb-2">Error</h2>
+                        <p className="text-rose-400/80 mb-6">{error || "Course not found."}</p>
+                        <button 
+                            onClick={() => navigate('/student/explore')}
+                            className="px-6 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-bold rounded-xl transition-colors"
+                        >
+                            Back to Explore
+                        </button>
+                    </div>
+                </div>
+            </StudentLayout>
+        );
+    }
+
+    // Main Rendering
     const renderHero = () => (
         <div className="w-full mb-12 flex flex-col gap-6">
 
@@ -74,20 +159,20 @@ export default function CourseDetails() {
                     </div>
                     <span className="text-sm font-medium text-text-primary ml-1">{course.rating?.toFixed(1) || "New"}</span>
                     <span className="text-sm text-text-secondary">
-                        ({(course.enrolledCount > 1000 ? Math.floor(course.enrolledCount / 10) : 42).toLocaleString()} reviews)
+                        ({(course.totalEnrollments > 1000 ? Math.floor(course.totalEnrollments / 10) : (course.reviews?.length || 0)).toLocaleString()} reviews)
                     </span>
                 </div>
 
                 {/* Enrollment */}
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
                     <Users className="w-4 h-4" />
-                    <span>{(course.enrolledCount || 0).toLocaleString()} students enrolled</span>
+                    <span>{(course.totalEnrollments || 0).toLocaleString()} students enrolled</span>
                 </div>
 
                 {/* Last Updated */}
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
                     <Calendar className="w-4 h-4" />
-                    <span>Last updated {course.lastUpdated || "Recently"}</span>
+                    <span>Last updated {course.lastUpdated ? new Date(course.lastUpdated).toLocaleDateString() : "Recently"}</span>
                 </div>
             </div>
         </div>
@@ -99,7 +184,7 @@ export default function CourseDetails() {
             {/* Thumbnail */}
             <div className="w-full h-44 rounded-xl overflow-hidden relative border border-white/5 bg-bg-base">
                 <img
-                    src={course.thumbnail}
+                    src={course.thumbnail || `https://source.unsplash.com/800x600/?education,${course.category}`}
                     alt={course.title}
                     className="w-full h-full object-cover"
                 />
@@ -121,20 +206,39 @@ export default function CourseDetails() {
                         className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(108,127,216,0.15)] relative z-10"
                     >
                         <Play className="w-4 h-4 fill-current" />
-                        Continue Learning
+                        {courseProgress?.isCompleted || courseProgress?.overallProgress >= 100 ? "Revisit Course" : "Continue Learning"}
                     </button>
                 ) : (
                     <button
-                        onClick={() => {
-                            enrollCourse(courseId);
-                            navigate(`/student/course/${courseId}/learn`);
-                        }}
-                        className="w-full bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer relative z-10"
+                        onClick={handleEnroll}
+                        disabled={enrolling}
+                        className="w-full bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed relative z-10"
                     >
-                        <Bookmark className="w-4 h-4" />
-                        Enroll Now
+                        {enrolling ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <>
+                                <Bookmark className="w-4 h-4" />
+                                Enroll Now
+                            </>
+                        )}
                     </button>
                 )}
+                
+                {isEnrolled && (courseProgress?.isCompleted || courseProgress?.overallProgress >= 100) && (
+                    <button
+                        onClick={() => { setShowReviewModal(true); setReviewRating(0); setReviewText(''); }}
+                        disabled={hasReviewed}
+                        className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl transition-all border font-bold text-sm cursor-pointer ${hasReviewed 
+                            ? 'bg-white/5 border-border-subtle text-text-tertiary disabled:cursor-not-allowed'
+                            : 'bg-transparent border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:shadow-lg shadow-amber-500/20'
+                        }`}
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        {hasReviewed ? 'Reviewed' : 'Write a Review'}
+                    </button>
+                )}
+                
                 <p className="text-center text-text-secondary text-[0.75rem]">
                     Full lifetime access. No credit card required.
                 </p>
@@ -148,7 +252,7 @@ export default function CourseDetails() {
 
                 <div className="flex items-center gap-3 text-text-secondary">
                     <Clock className="w-4 h-4 text-primary-400" />
-                    <span className="text-[0.85rem]"><strong className="text-text-primary font-medium">{course.duration}</strong> of content</span>
+                    <span className="text-[0.85rem]"><strong className="text-text-primary font-medium">{course.duration || 'Flexible'}</strong> of content</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-text-secondary">
@@ -170,15 +274,17 @@ export default function CourseDetails() {
             <div className="h-[1px] w-full bg-border-subtle/50" />
 
             {/* Instructor Preview */}
-            <div className="flex items-center gap-3 pt-1">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-teal-400 flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-sm">{course.instructorName.charAt(0)}</span>
+            {course.instructorName && (
+                <div className="flex items-center gap-3 pt-1">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-teal-400 flex items-center justify-center shrink-0">
+                        <span className="text-white font-bold text-sm">{course.instructorName.charAt(0)}</span>
+                    </div>
+                    <div>
+                        <p className="text-[0.7rem] text-text-secondary uppercase tracking-widest font-bold">Instructor</p>
+                        <p className="font-syne font-bold text-text-primary text-[0.9rem] leading-tight">{course.instructorName}</p>
+                    </div>
                 </div>
-                <div>
-                    <p className="text-[0.7rem] text-text-secondary uppercase tracking-widest font-bold">Instructor</p>
-                    <p className="font-syne font-bold text-text-primary text-[0.9rem] leading-tight">{course.instructorName}</p>
-                </div>
-            </div>
+            )}
 
         </div>
     );
@@ -188,13 +294,12 @@ export default function CourseDetails() {
             <div className="max-w-[1400px] mx-auto w-full pb-20">
 
                 {/* PREMIUM 3-COLUMN GRID LAYOUT */}
-                {/* Mobile: 1 Col | Tablet: 1 Col | Desktop: 3 Cols (2 content / 1 sidebar) */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 xl:gap-14 pt-4 md:pt-8 min-h-screen items-start">
 
                     {/* Main Content (Left Side - 2 columns span) */}
                     <div className="lg:col-span-2 flex flex-col w-full">
 
-                        {/* HERO SECTION (Unconstrained Height) */}
+                        {/* HERO SECTION */}
                         {renderHero()}
 
                         {/* VERTICAL RHYTHM SECTIONS */}
@@ -206,12 +311,10 @@ export default function CourseDetails() {
                                 icon={Info}
                                 iconColor="text-teal-400"
                                 delay={0.1}
-                                disableAnimation={true} // Reduce motion on reading pages
+                                disableAnimation={true}
                             >
-                                <div className="prose prose-invert max-w-none font-dmsans text-text-secondary text-[0.95rem] leading-loose">
-                                    <p>
-                                        {course.longDescription || course.description || "Course description placeholder. This area will focus cleanly on typography."}
-                                    </p>
+                                <div className="prose prose-invert max-w-none font-dmsans text-text-secondary text-[0.95rem] leading-loose whitespace-pre-line">
+                                    {course.longDescription || course.description || "Course description placeholder. This area will focus cleanly on typography."}
                                 </div>
                             </SectionShell>
 
@@ -247,7 +350,7 @@ export default function CourseDetails() {
                                                             <div className="flex items-center gap-3 text-text-secondary text-[0.8rem] font-medium">
                                                                 <span>{chapter.lessons?.length || 0} lessons</span>
                                                                 <span className="w-1 h-1 rounded-full bg-border-subtle" />
-                                                                <span>{chapter.lessons?.reduce((acc, curr) => acc + (parseInt(curr.duration) || 0), 0)} min</span>
+                                                                <span>{chapter.duration || "N/A"}</span>
                                                             </div>
                                                         </div>
                                                         <motion.div
@@ -327,7 +430,7 @@ export default function CourseDetails() {
                                                 key={review.id || i}
                                                 review={{
                                                     ...review,
-                                                    courseTitle: course.title // Injecting for ReviewCard prop requirement 
+                                                    courseTitle: course.title
                                                 }}
                                                 index={i}
                                             />
@@ -349,18 +452,87 @@ export default function CourseDetails() {
                         </div>
                     </div>
 
-                    {/* Sticky Sidebar / CTA Card (Right Side - 1 column span) */}
+                    {/* Sticky Sidebar / CTA Card */}
                     <div className="hidden lg:block lg:col-span-1 sticky top-24 z-10">
                         {renderSidebarCTA()}
                     </div>
 
-                    {/* Mobile CTA Fallback (Shows only on mobile/tablet at bottom) */}
+                    {/* Mobile CTA Fallback */}
                     <div className="block lg:hidden mt-8 mb-12 w-full">
                         {renderSidebarCTA()}
                     </div>
 
                 </div>
             </div>
+
+            {/* Review Modal portal structure */}
+            <AnimatePresence>
+                {showReviewModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowReviewModal(false)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-default"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center cursor-default"
+                        >
+                            <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Review Course</h3>
+                            <p className="text-text-secondary font-medium mb-6 line-clamp-1">"{course.title}"</p>
+
+                            <div className="flex justify-center gap-2 mb-6 cursor-pointer">
+                                {[1, 2, 3, 4, 5].map((starIndex) => (
+                                    <Star
+                                        key={starIndex}
+                                        onClick={() => setReviewRating(starIndex)}
+                                        className={`w-12 h-12 transition-all hover:scale-110 ${reviewRating >= starIndex
+                                            ? 'fill-[#D4A843] text-[#D4A843]'
+                                            : 'fill-white/5 text-white/10'
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+
+                            <textarea
+                                rows={3}
+                                placeholder="What did you think of the course? (optional)"
+                                value={reviewText}
+                                onChange={e => setReviewText(e.target.value)}
+                                className="w-full bg-bg-base border border-border-subtle rounded-xl p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 mb-6 resize-none transition-all cursor-text"
+                            />
+
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => setShowReviewModal(false)}
+                                    className="flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    disabled={!reviewRating}
+                                    onClick={() => {
+                                        rateCourse(course.id, reviewRating, reviewText);
+                                        setShowReviewModal(false);
+                                        // Update local state so standard review immediately appears as reviewed 
+                                        setCourse(prev => {
+                                             const newReview = { id: Date.now(), studentId: user.id, studentName: user.name, rating: reviewRating, reviewText, date: new Date().toISOString() };
+                                             return {...prev, reviews: [...(prev.reviews || []), newReview]};
+                                        });
+                                    }}
+                                    className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-amber-500 to-[#E2D9BE] disabled:opacity-50 disabled:cursor-not-allowed text-[#09090b] font-bold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all font-syne cursor-pointer"
+                                >
+                                    Submit Review
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </StudentLayout>
     );
 }

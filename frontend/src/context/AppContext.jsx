@@ -3,6 +3,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { db } from '../data/mockDatabase';
 import { useAuth } from './AuthContext';
+import { submitReview } from '../api/courseApi';
 
 const AppContext = createContext(null);
 
@@ -61,13 +62,18 @@ export function AppProvider({ children }) {
     showNotification('🎉 Congratulations! Course completed!', 'success');
   };
 
-  const rateCourse = (courseId, rating, review) => {
-    const course = db.courses.find(c => c.id === courseId);
-    if (!course) return;
-    if (!course.reviews) course.reviews = [];
-    course.reviews.push({ studentId: user.id, studentName: user.name, rating, review, date: new Date().toISOString() });
-    course.rating = course.reviews.reduce((a, r) => a + r.rating, 0) / course.reviews.length;
-    showNotification('Thank you for your review!');
+  const rateCourse = async (courseId, rating, reviewText) => {
+    try {
+      if (!user) {
+        showNotification('Please log in to submit a review', 'error');
+        return;
+      }
+      await submitReview(courseId, { rating, reviewText });
+      showNotification('Thank you for your valuable review!');
+    } catch (e) {
+      console.error(e);
+      showNotification(e.response?.data?.error || 'Failed to submit review', 'error');
+    }
   };
 
   const sendMessage = (toId, courseId, message) => {

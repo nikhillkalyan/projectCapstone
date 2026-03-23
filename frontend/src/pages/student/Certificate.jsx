@@ -1,24 +1,55 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Download, Share2, Award, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { getCourseById } from '../../api/courseApi';
+import { getCourseProgress } from '../../api/progressApi';
 
 export default function Certificate() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { db } = useApp();
   const certRef = useRef(null);
+  
+  const [course, setCourse] = useState(null);
+  const [progress, setProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const course = db.courses.find(c => c.id === courseId);
-  const completedData = user?.completedCourses?.find(c => c.courseId === courseId);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [courseRes, progRes] = await Promise.all([
+          getCourseById(courseId),
+          getCourseProgress(courseId)
+        ]);
+        setCourse(courseRes.data);
+        setProgress(progRes.data);
+      } catch (err) {
+        console.error("Failed to load certificate data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (courseId) fetchData();
+  }, [courseId]);
 
-  if (!course || !completedData) {
+  const isEligible = progress?.isCompleted || progress?.grandAssessmentResult?.passed;
+
+  if (loading) {
+    return (
+      <StudentLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+        </div>
+      </StudentLayout>
+    );
+  }
+
+  if (!course || !isEligible) {
     return (
       <StudentLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -40,7 +71,9 @@ export default function Certificate() {
     );
   }
 
-  const completedDate = new Date(completedData.completedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+  // Use today's date if completedAt is missing from progress
+  const completedDate = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+  const finalScore = progress?.grandAssessmentResult?.score || 100;
 
   const handleDownload = () => {
     setIsDownloading(true);
@@ -106,12 +139,12 @@ export default function Certificate() {
                     
                     <div class="cert-score-wrap">
                         <span class="cert-score-label">Final Assessment Score</span>
-                        <span class="cert-score">${completedData.score}%</span>
+                        <span class="cert-score">${finalScore}%</span>
                     </div>
                     
                     <div class="cert-footer">
                       <div class="footer-block">
-                        <div class="footer-signature">${course.instructorName}</div>
+                        <div class="footer-signature">${course.instructor?.name || 'Instructor'}</div>
                         <div class="footer-label">Lead Instructor</div>
                       </div>
                       <div class="footer-block" style="justify-content:flex-end">
@@ -217,7 +250,7 @@ export default function Certificate() {
                 Final Assessment Score
               </span>
               <span className="font-syne font-extrabold text-2xl sm:text-3xl text-teal-400 print:text-black">
-                {completedData.score}%
+                {finalScore}%
               </span>
             </div>
 
@@ -227,7 +260,7 @@ export default function Certificate() {
               {/* Instructor Name (Signature logic) */}
               <div className="flex flex-col items-center text-center w-full sm:w-1/3">
                 <div className="font-serif italic text-2xl sm:text-3xl text-primary-200 mb-2 print:text-black">
-                  {course.instructorName}
+                  {course.instructor?.name || 'Instructor'}
                 </div>
                 <div className="w-32 h-px bg-border-subtle mb-3 print:bg-gray-400" />
                 <span className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-widest print:text-gray-600">

@@ -10,7 +10,7 @@ import {
   Plus, Trash2, ChevronDown, MonitorPlay, FileText, HelpCircle,
   Sparkles, Loader2, BookOpen, Users, Tag, Lightbulb, X
 } from 'lucide-react';
-import { getCourseTopicInsights } from '../../lib/geminiService';
+import { createCourse, addChapter, addChapterAssessment, addGrandAssessment } from '../../api/courseApi';
 
 const STEPS = ['Basic Info', 'Course Content', 'Grand Assessment'];
 const CATEGORIES = ['AIML', 'Cloud', 'DataScience', 'Cybersecurity'];
@@ -115,179 +115,11 @@ function InputGroup({ label, required, children, helperText }) {
   );
 }
 
-// ─── AI Topic Insight Card ───────────────────────────────────────────────────
-function AIInsightCard({ insight, onUse, onDismiss }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.97 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="relative mb-6 rounded-2xl overflow-hidden border border-primary-500/30 bg-gradient-to-br from-primary-500/[0.07] via-bg-surface to-violet-500/[0.05] shadow-[0_4px_32px_rgba(108,127,216,0.12)]"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-primary-500/15">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary-500/15 flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-primary-400" />
-          </div>
-          <span className="text-sm font-bold font-syne text-primary-400 tracking-wide">AI Topic Insights</span>
-          <span className="text-[10px] uppercase tracking-widest font-bold text-primary-500/50 bg-primary-500/10 px-2 py-0.5 rounded-full">Gemini</span>
-        </div>
-        <button
-          onClick={onDismiss}
-          className="w-6 h-6 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-elevated flex items-center justify-center transition-all"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
 
-      {/* Body */}
-      <div className="p-5 space-y-4">
-        {/* Overview */}
-        <div className="flex gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <Lightbulb className="w-4 h-4 text-violet-400" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Overview</p>
-            <p className="text-sm text-text-primary leading-relaxed">{insight.overview}</p>
-          </div>
-        </div>
-
-        {/* Suggested Chapters */}
-        <div className="flex gap-3">
-          <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <BookOpen className="w-4 h-4 text-teal-400" />
-          </div>
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Suggested Chapter Outline</p>
-            <ul className="space-y-1.5">
-              {insight.chapters.map((ch, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-[10px] font-bold text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0">{i + 1}</span>
-                  <span className="text-sm text-text-secondary">{ch}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Skills */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Tag className="w-4 h-4 text-amber-400" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Key Skills</p>
-              <div className="flex flex-wrap gap-1.5">
-                {insight.skills.map((s, i) => (
-                  <span key={i} className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">{s}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Audience */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Users className="w-4 h-4 text-pink-400" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Target Audience</p>
-              <p className="text-sm text-text-secondary leading-relaxed">{insight.audience}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Use Suggestions Button */}
-      <div className="px-5 pb-4">
-        <button
-          onClick={onUse}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary-500/15 hover:bg-primary-500/25 border border-primary-500/30 text-primary-400 font-semibold text-sm transition-all active:scale-[0.99]"
-        >
-          <Sparkles className="w-4 h-4" />
-          Use these suggestions (auto-fill description &amp; tags)
-        </button>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Shimmer Skeleton for AI card loading ────────────────────────────────────
-function AIInsightSkeleton() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="mb-6 rounded-2xl border border-primary-500/20 bg-bg-surface p-5 space-y-4"
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
-        <span className="text-sm font-semibold text-primary-400">Generating AI insights…</span>
-      </div>
-      {[80, 100, 60, 90, 70].map((w, i) => (
-        <div key={i} className="h-3 rounded-full bg-bg-elevated animate-pulse" style={{ width: `${w}%` }} />
-      ))}
-    </motion.div>
-  );
-}
 
 // ─── Step 1: Basic Info ─────────────────────────────────────────────────────
 function Step1({ data, onChange }) {
-  const [aiState, setAiState] = useState('idle'); // idle | loading | done | error | dismissed
-  const [insight, setInsight] = useState(null);
-  const [aiError, setAiError] = useState('');
-  const debounceRef = useRef(null);
-  const lastFetchedRef = useRef('');
 
-  // Debounce: trigger AI fetch when title changes (≥5 chars)
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    const title = data.title?.trim();
-    if (!title || title.length < 5) {
-      if (aiState !== 'idle') { setAiState('idle'); setInsight(null); }
-      return;
-    }
-    if (title === lastFetchedRef.current) return;
-
-    setAiState('loading');
-    setInsight(null);
-    setAiError('');
-
-    debounceRef.current = setTimeout(async () => {
-      lastFetchedRef.current = title;
-      try {
-        const result = await getCourseTopicInsights(title, data.category);
-        setInsight(result);
-        setAiState('done');
-      } catch (err) {
-        if (err.message === 'NO_API_KEY') {
-          setAiError('Add your VITE_GEMINI_API_KEY in the .env file to enable AI insights.');
-        } else {
-          setAiError(err.message || 'AI request failed. Please try again.');
-        }
-        setAiState('error');
-      }
-    }, 1200);
-
-    return () => clearTimeout(debounceRef.current);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.title, data.category]);
-
-  const handleUseSuggestions = () => {
-    if (!insight) return;
-    onChange({
-      ...data,
-      description: insight.description || data.description,
-      tagsRaw: insight.tags?.join(', ') || data.tagsRaw,
-    });
-    setAiState('dismissed');
-  };
 
   return (
     <motion.div
@@ -314,33 +146,6 @@ function Step1({ data, onChange }) {
               placeholder="e.g. Complete Machine Learning Bootcamp 2024"
             />
           </InputGroup>
-        </div>
-
-        {/* ─── AI Insight Panel ─── */}
-        <div className="md:col-span-2">
-          <AnimatePresence mode="wait">
-            {aiState === 'loading' && <AIInsightSkeleton key="skeleton" />}
-            {aiState === 'done' && insight && (
-              <AIInsightCard
-                key="card"
-                insight={insight}
-                onUse={handleUseSuggestions}
-                onDismiss={() => setAiState('dismissed')}
-              />
-            )}
-            {aiState === 'error' && (
-              <motion.div
-                key="error"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="mb-5 flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm"
-              >
-                <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{aiError}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         <div className="md:col-span-2">
@@ -751,6 +556,7 @@ export default function CreateCourse() {
 
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const [courseData, setCourseData] = useState({
     title: '', description: '', longDescription: '', category: 'AIML',
@@ -775,28 +581,71 @@ export default function CreateCourse() {
     setActiveStep(s => s + 1);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!step3Valid) { setError('Please complete all questions with options.'); return; }
+    setIsPublishing(true);
+    try {
+        const coursePayload = {
+            title: courseData.title,
+            category: courseData.category.toUpperCase(),
+            level: courseData.level.toUpperCase(),
+            duration: courseData.duration,
+            thumbnail: courseData.thumbnail || '',
+            description: courseData.description,
+            longDescription: courseData.longDescription || '',
+            price: 0,
+        };
+        const courseRes = await createCourse(coursePayload);
+        const newCourseId = courseRes.data.id;
 
-    const newCourse = {
-      id: `course_${Date.now()}`,
-      ...courseData,
-      tags: courseData.tagsRaw.split(',').map(t => t.trim()).filter(Boolean),
-      instructorId: user.id,
-      instructorName: user.name,
-      chapters: chapters.map((ch, i) => ({ ...ch, id: ch.id || `ch_${i}` })),
-      grandAssessment,
-      enrolledCount: 0,
-      rating: 0,
-      reviews: [],
-      isApproved: false,
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-    };
+        for (let i = 0; i < chapters.length; i++) {
+            const ch = chapters[i];
+            const chapterPayload = {
+                title: ch.title,
+                duration: ch.duration,
+                type: ch.type.toUpperCase(),
+                videoUrl: ch.content.videoUrl || '',
+                textContent: ch.content.textContent || '',
+                chapterOrder: i + 1,
+            };
+            const chRes = await addChapter(newCourseId, chapterPayload);
+            const newChapterId = chRes.data.id;
+            
+            if (ch.assessment && ch.assessment.questions && ch.assessment.questions.length > 0 && ch.assessment.questions[0].question) {
+                const assessmentPayload = {
+                    title: `${ch.title} Quiz`,
+                    passingScore: 70,
+                    questions: ch.assessment.questions.map(q => ({
+                        questionText: q.question,
+                        correctOptionIndex: q.correct,
+                        options: q.options
+                    }))
+                };
+                await addChapterAssessment(newCourseId, newChapterId, assessmentPayload);
+            }
+        }
 
-    db.courses.push(newCourse);
-    showNotification('⏳ Course submitted! Pending Admin approval.');
-    navigate('/instructor/courses');
+        if (grandAssessment.questions && grandAssessment.questions.length > 0 && grandAssessment.questions[0].question) {
+            const grandPayload = {
+                title: `${courseData.title} Grand Assessment`,
+                passingScore: grandAssessment.passingScore,
+                questions: grandAssessment.questions.map(q => ({
+                    questionText: q.question,
+                    correctOptionIndex: q.correct,
+                    options: q.options
+                }))
+            };
+            await addGrandAssessment(newCourseId, grandPayload);
+        }
+
+        showNotification('✅ Course created successfully!');
+        navigate('/instructor/courses');
+    } catch (err) {
+        console.error(err);
+        setError('Failed to publish course. Please try again.');
+    } finally {
+        setIsPublishing(false);
+    }
   };
 
   return (
@@ -894,10 +743,11 @@ export default function CreateCourse() {
               ) : (
                 <button
                   onClick={handlePublish}
-                  className="flex items-center gap-2 px-7 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-900 font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95"
+                  disabled={isPublishing}
+                  className="flex items-center gap-2 px-7 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-900 font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 disabled:opacity-50"
                 >
-                  <UploadCloud className="w-5 h-5 flex-shrink-0" />
-                  Publish Course
+                  {isPublishing ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <UploadCloud className="w-5 h-5 flex-shrink-0" />}
+                  {isPublishing ? 'Publishing...' : 'Publish Course'}
                 </button>
               )}
             </div>

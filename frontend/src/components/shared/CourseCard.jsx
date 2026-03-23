@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+import { enrollInCourse } from '../../api/studentApi';
 
 // Modern Lucide Icons
 import {
@@ -30,8 +31,8 @@ export default function CourseCard({
   const hoverTimeoutRef = useRef(null);
 
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { enrollCourse, toggleFavorite, getCourseProgress, rateCourse } = useApp();
+  const { user, updateLocalUser } = useAuth();
+  const { toggleFavorite, getCourseProgress, rateCourse } = useApp();
 
   // Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -73,9 +74,26 @@ export default function CourseCard({
     }
   };
 
-  const handleEnroll = (e) => {
+  const handleEnroll = async (e) => {
     e.stopPropagation();
-    enrollCourse(course.id);
+    try {
+      await enrollInCourse(course.id);
+      const currentEnrolled = user?.profile?.enrolledCourses || user?.enrolledCourses || [];
+      if (!currentEnrolled.includes(course.id)) {
+        updateLocalUser({
+          ...user,
+          profile: {
+            ...(user.profile || {}),
+            enrolledCourses: [...currentEnrolled, course.id]
+          }
+        });
+      }
+      // Assuming we navigate after enrollment
+      navigate(`/student/course/${course.id}/learn`);
+    } catch (err) {
+      console.error("Failed to enroll", err);
+      alert(err.response?.data?.error || "Failed to enroll. Please try again.");
+    }
   };
 
   const handleFavorite = (e) => {
@@ -173,7 +191,7 @@ export default function CourseCard({
           </div>
           <div className="flex items-center gap-1.5 text-text-secondary">
             <Users className="w-4 h-4" />
-            <span className="text-[0.8rem]">{course.enrolledCount?.toLocaleString()}</span>
+            <span className="text-[0.8rem]">{course.totalEnrollments?.toLocaleString() || 0}</span>
           </div>
           <div className="flex items-center gap-1.5 text-text-secondary">
             <Clock className="w-4 h-4" />
@@ -182,7 +200,7 @@ export default function CourseCard({
         </div>
 
         <p className="text-[0.8rem] text-text-secondary mb-4">
-          By <span className="text-primary-400 font-medium">{course.instructorName}</span>
+          By <span className="text-primary-400 font-medium">{course.instructor?.name || course.instructorName || 'Unknown Instructor'}</span>
         </p>
 
         {/* Netflix Expanded Section (Tags & Dynamic CTA) */}

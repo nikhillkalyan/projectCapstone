@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getCoursesByInstructor } from '../../api/courseApi';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 import {
   Camera,
@@ -48,25 +48,36 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, disabl
 
 export default function InstructorProfile() {
   const { user, updateUser } = useAuth();
-  const { db } = useApp();
-
-  // Form State
+  
   const [form, setForm] = useState({
     name: user?.name || '',
-    qualification: user?.qualification || '',
-    experience: user?.experience || '',
-    bio: user?.bio || '',
-    specialization: user?.specialization || '',
+    qualification: user?.profile?.qualification || user?.qualification || '',
+    experience: user?.profile?.experience || user?.experience || '',
+    bio: user?.profile?.bio || user?.bio || '',
+    specialization: user?.profile?.specialization || user?.specialization || '',
   });
   const [saved, setSaved] = useState(false);
+  const [myCourses, setMyCourses] = useState([]);
 
-  const myCourses = db.courses.filter(c => c.instructorId === user?.id);
-  const totalStudents = myCourses.reduce((s, c) => s + (c.enrolledCount || 0), 0);
+  useEffect(() => {
+      const fetchStats = async () => {
+          if (!user?.id) return;
+          try {
+              const res = await getCoursesByInstructor(user.id);
+              setMyCourses(res.data || []);
+          } catch(err) {
+              console.error("Failed to fetch courses for profile stats", err);
+          }
+      };
+      fetchStats();
+  }, [user]);
+
+  const totalStudents = myCourses.reduce((s, c) => s + (c.totalEnrollments || 0), 0);
   const avgRating = myCourses.length > 0
     ? (myCourses.reduce((s, c) => s + (c.rating || 0), 0) / myCourses.length).toFixed(1)
     : '—';
 
-  const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'I';
+  const initials = form.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'I';
 
   const handleSave = () => {
     updateUser(form);
@@ -74,7 +85,7 @@ export default function InstructorProfile() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const currentSpec = specializationList.find(s => s.key === user?.specialization);
+  const currentSpec = specializationList.find(s => s.key === form.specialization);
 
   return (
     <InstructorLayout>

@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getCoursesByInstructor } from '../../api/courseApi';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
-import { Plus, Settings, BarChart2, FileText } from 'lucide-react';
+import { Plus, Settings, BarChart2, FileText, Loader2 } from 'lucide-react';
 
 import CourseCard from '../../components/shared/CourseCard';
 import SectionShell from '../../components/shared/SectionShell';
@@ -14,11 +12,42 @@ import EmptyState from '../../components/shared/EmptyState';
 
 export default function InstructorCourses() {
   const { user } = useAuth();
-  const { db } = useApp();
   const navigate = useNavigate();
 
-  const myCourses = useMemo(() => db.courses.filter(c => c.instructorId === user?.id), [user, db.courses]);
-  const totalStudents = myCourses.reduce((s, c) => s + (c.enrolledCount || 0), 0);
+  const [myCourses, setMyCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+     const fetchCourses = async () => {
+         if (!user?.id) {
+             setLoading(false);
+             return;
+         }
+         setLoading(true);
+         try {
+             const res = await getCoursesByInstructor(user.id);
+             setMyCourses(res.data || []);
+         } catch(err) {
+             console.error("Failed to fetch instructor courses:", err);
+         } finally {
+             setLoading(false);
+         }
+     };
+     fetchCourses();
+  }, [user]);
+
+  const totalStudents = myCourses.reduce((s, c) => s + (c.totalEnrollments || 0), 0);
+
+  if (loading) {
+      return (
+          <InstructorLayout>
+              <div className="flex flex-col h-[60vh] items-center justify-center font-dmsans text-text-primary">
+                  <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                  <span className="text-text-secondary">Loading courses...</span>
+              </div>
+          </InstructorLayout>
+      );
+  }
 
   return (
     <InstructorLayout>

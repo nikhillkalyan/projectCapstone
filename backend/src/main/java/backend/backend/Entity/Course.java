@@ -24,7 +24,7 @@ public class Course {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,9 +39,10 @@ public class Course {
 
     private String duration;
 
+    @Column(columnDefinition = "TEXT")
     private String thumbnail;
 
-    @Column(name = "preview_video")
+    @Column(name = "preview_video", columnDefinition = "TEXT")
     private String previewVideo;
 
     @Column(columnDefinition = "TEXT")

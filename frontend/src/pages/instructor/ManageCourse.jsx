@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { getCourseById, getChapters } from '../../api/courseApi';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
-import { ArrowLeft, Users, Star, MessageSquare, BarChart, Clock, Play, FileText, Search } from 'lucide-react';
+import { ArrowLeft, Users, Star, MessageSquare, BarChart, Clock, Play, FileText, Search, Loader2 } from 'lucide-react';
 
 const categoryColors = {
   AIML: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
@@ -30,9 +31,47 @@ export default function ManageCourse() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { db } = useApp();
 
-  const course = db.courses.find(c => c.id === courseId && c.instructorId === user?.id);
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+        setLoading(true);
+        try {
+            const [res, chaptersRes] = await Promise.all([
+                getCourseById(courseId),
+                getChapters(courseId).catch(() => ({ data: [] }))
+            ]);
+            
+            const c = {
+                ...res.data,
+                chapters: chaptersRes.data
+            };
+            
+            // Instructor verification (we do a loose check locally, backend should enforce too)
+            if (c && (!c.instructorId || c.instructorId === user?.id || c.instructor?.id === user?.id)) {
+                setCourse(c);
+            }
+        } catch(err) {
+            console.error("Failed to fetch course details:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    if (user) fetchCourse();
+  }, [courseId, user]);
+
+  if (loading) {
+      return (
+          <InstructorLayout>
+              <div className="flex flex-col h-[60vh] items-center justify-center font-dmsans text-text-primary">
+                  <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                  <span className="text-text-secondary">Loading course details...</span>
+              </div>
+          </InstructorLayout>
+      );
+  }
 
   if (!course) return (
     <InstructorLayout>
@@ -46,7 +85,7 @@ export default function ManageCourse() {
         </p>
         <button
           onClick={() => navigate('/instructor/courses')}
-          className="px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
+          className="px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors cursor-pointer"
         >
           Back to Courses
         </button>
@@ -63,7 +102,7 @@ export default function ManageCourse() {
   });
 
   const stats = [
-    { icon: Users, label: 'Students', value: course.enrolledCount || 0, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+    { icon: Users, label: 'Students', value: course.totalEnrollments || 0, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
     { icon: Star, label: 'Rating', value: course.rating?.toFixed(1) || '—', color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
     { icon: MessageSquare, label: 'Reviews', value: course.reviews?.length || 0, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
     { icon: BarChart, label: 'Chapters', value: course.chapters?.length || 0, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
@@ -216,8 +255,8 @@ export default function ManageCourse() {
                           <div className="font-semibold text-sm text-text-primary">{r.studentName}</div>
                           <StarRating rating={r.rating} size={12} />
                         </div>
-                        {r.review && (
-                          <p className="text-sm text-text-muted italic leading-relaxed">"{r.review}"</p>
+                        {r.reviewText && (
+                          <p className="text-sm text-text-muted italic leading-relaxed">"{r.reviewText}"</p>
                         )}
                       </div>
                     ))}
