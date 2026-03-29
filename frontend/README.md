@@ -8,11 +8,26 @@
 # 1. Install dependencies
 npm install
 
-# 2. Start dev server
+# 2. Configure Environment Variables
+cp .env.example .env
+# Open .env and add your VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET
+
+# 3. Start dev server
 npm run dev
 
-# 3. Open http://localhost:5173
+# 4. Open http://localhost:5173
 ```
+
+---
+
+## ☁️ Cloudinary Configuration
+
+To allow instructor certificate uploads locally, you need a free Cloudinary account:
+1. Create an account at [Cloudinary](https://cloudinary.com).
+2. Get your **Cloud Name** from the dashboard.
+3. Go to Settings -> Upload -> **Upload Presets** and click "Add upload preset".
+4. Set the preset strictly to **Unsigned**.
+5. Save and add both your Cloud Name and Upload Preset to your `.env` file referencing the given names in `.env.example`.
 
 ---
 

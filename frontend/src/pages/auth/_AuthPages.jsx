@@ -10,7 +10,10 @@ import {
   ArrowLeft,
   GraduationCap,
   Beaker,
-  AlertCircle
+  AlertCircle,
+  UploadCloud,
+  FileText,
+  X
 } from 'lucide-react';
 
 const interestList = [
@@ -62,6 +65,52 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, requir
         </div>
       )}
     </div>
+  </div>
+);
+
+// Custom File Upload Box
+const UploadBox = ({ label, required, type, uploading, error, fileUrl, fileName, onUpload, onRemove }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
+      {label} {required && <span className="text-rose-400">*</span>}
+    </label>
+    
+    {!fileUrl ? (
+      <div className={`relative w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all ${error ? 'border-rose-500/50 bg-rose-500/5 text-rose-400' : 'border-border-subtle hover:border-amber-500/50 bg-bg-surface/50 text-text-secondary'}`}>
+        <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => onUpload(e, type)} disabled={uploading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
+        {uploading ? (
+           <div className="flex flex-col items-center gap-2">
+             <div className="w-6 h-6 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+             <span className="text-sm font-bold text-amber-400">Uploading...</span>
+           </div>
+        ) : (
+           <div className="flex flex-col items-center gap-2 pointer-events-none text-center">
+             <UploadCloud className="w-8 h-8 opacity-50" />
+             <span className="text-sm font-bold">Click to upload or drag & drop</span>
+             <span className="text-xs opacity-70">PDF, JPG, PNG (Max 5MB)</span>
+           </div>
+        )}
+      </div>
+    ) : (
+      <div className="w-full bg-bg-surface/50 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
+         <div className="flex items-center gap-3">
+           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+             <FileText className="w-5 h-5 text-emerald-400" />
+           </div>
+           <div>
+             <p className="text-sm font-bold text-text-primary line-clamp-1">{fileName || 'Document uploaded'}</p>
+             <div className="flex items-center gap-1 mt-0.5">
+               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+               <span className="text-xs text-emerald-400 font-bold">Uploaded successfully</span>
+             </div>
+           </div>
+         </div>
+         <button type="button" onClick={() => onRemove(type)} className="p-2 text-text-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors">
+           <X className="w-4 h-4" />
+         </button>
+      </div>
+    )}
+    {error && <span className="text-xs text-rose-400 font-bold ml-1">{error}</span>}
   </div>
 );
 
@@ -449,16 +498,76 @@ export function InstructorLoginPage() {
 // ─── InstructorSignup ───────────────────────────────────────────────────────
 export function InstructorSignupPage() {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', email: '', password: '', qualification: '', experience: '', specialization: '', bio: '' });
+  const [form, setForm] = useState({ 
+    name: '', email: '', password: '', 
+    qualification: '', experience: '', specialization: '', bio: '',
+    ugCertificateUrl: '', pgCertificateUrl: '', phdCertificateUrl: ''
+  });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState({ ug: false, pg: false, phd: false });
+  const [uploadErrors, setUploadErrors] = useState({ ug: '', pg: '', phd: '' });
+  const [files, setFiles] = useState({ ug: null, pg: null, phd: null });
   const { signup } = useAuth();
   const navigate = useNavigate();
 
+  const handleUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      setUploadErrors(p => ({ ...p, [type]: 'Invalid file type. Only PDF, JPG, PNG allowed.' }));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadErrors(p => ({ ...p, [type]: 'File too large. Maximum size is 5MB.' }));
+      return;
+    }
+
+    setUploadErrors(p => ({ ...p, [type]: '' }));
+    setUploading(p => ({ ...p, [type]: true }));
+
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', 'capstone/certificates');
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setForm(p => ({ ...p, [`${type}CertificateUrl`]: data.secure_url }));
+      setFiles(p => ({ ...p, [type]: file.name }));
+    } catch (err) {
+      setUploadErrors(p => ({ ...p, [type]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploading(p => ({ ...p, [type]: false }));
+    }
+  };
+
+  const handleRemove = (type) => {
+    setForm(p => ({ ...p, [`${type}CertificateUrl`]: '' }));
+    setFiles(p => ({ ...p, [type]: null }));
+    setUploadErrors(p => ({ ...p, [type]: '' }));
+  };
+
   const step1Valid = form.name && form.email && form.password.length >= 6;
   const step2Valid = form.qualification && form.experience && form.specialization;
+  const step3Valid = !!form.ugCertificateUrl;
 
   const handleSubmit = async () => {
+    if (!step3Valid) {
+      setError("UG Certificate is required.");
+      return;
+    }
     const payload = {
         name: form.name,
         email: form.email,
@@ -467,6 +576,9 @@ export function InstructorSignupPage() {
         experience: form.experience,
         specialization: form.specialization,
         bio: form.bio,
+        ugCertificateUrl: form.ugCertificateUrl,
+        pgCertificateUrl: form.pgCertificateUrl,
+        phdCertificateUrl: form.phdCertificateUrl,
     };
     const result = await signup(payload, 'instructor');
     if (result.success) navigate('/instructor');
@@ -474,8 +586,8 @@ export function InstructorSignupPage() {
   };
 
   return (
-    <AuthLayout title="Become an Instructor" subtitle={`Step ${step} of 2`} isStudent={false}>
-      <StepProgress step={step} total={2} isStudent={false} />
+    <AuthLayout title="Become an Instructor" subtitle={`Step ${step} of 3`} isStudent={false}>
+      <StepProgress step={step} total={3} isStudent={false} />
 
       {step === 1 && (
         <div className="animate-fade-in-up flex flex-col gap-5">
@@ -540,7 +652,69 @@ export function InstructorSignupPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <button
-              disabled={!step2Valid} onClick={handleSubmit}
+              disabled={!step2Valid} onClick={() => step2Valid && setStep(3)}
+              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="animate-fade-in flex flex-col gap-5">
+          <div className="text-sm text-text-secondary mb-2">
+            Upload your professional certificates to verify your expertise.
+          </div>
+          
+          <UploadBox
+            label="Undergraduate Certificate"
+            required
+            type="ug"
+            uploading={uploading.ug}
+            error={uploadErrors.ug}
+            fileUrl={form.ugCertificateUrl}
+            fileName={files.ug}
+            onUpload={handleUpload}
+            onRemove={handleRemove}
+          />
+
+          <UploadBox
+            label="Postgraduate Certificate"
+            type="pg"
+            uploading={uploading.pg}
+            error={uploadErrors.pg}
+            fileUrl={form.pgCertificateUrl}
+            fileName={files.pg}
+            onUpload={handleUpload}
+            onRemove={handleRemove}
+          />
+
+          {form.qualification.toLowerCase().includes('phd') && (
+            <UploadBox
+              label="PhD Certificate"
+              type="phd"
+              uploading={uploading.phd}
+              error={uploadErrors.phd}
+              fileUrl={form.phdCertificateUrl}
+              fileName={files.phd}
+              onUpload={handleUpload}
+              onRemove={handleRemove}
+            />
+          )}
+
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-4">
+            <button onClick={() => setStep(2)} className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <button
+              disabled={!step3Valid} onClick={handleSubmit}
               className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               🎓 Join as Instructor!

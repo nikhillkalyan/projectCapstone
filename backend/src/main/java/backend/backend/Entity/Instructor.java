@@ -40,4 +40,13 @@ public class Instructor {
     @Column(name = "is_verified")
     @Builder.Default
     private Boolean isVerified = false;
+
+    @Column(name = "ug_certificate_url", columnDefinition = "TEXT")
+    private String ugCertificateUrl;
+
+    @Column(name = "pg_certificate_url", columnDefinition = "TEXT")
+    private String pgCertificateUrl;
+
+    @Column(name = "phd_certificate_url", columnDefinition = "TEXT")
+    private String phdCertificateUrl;
 }

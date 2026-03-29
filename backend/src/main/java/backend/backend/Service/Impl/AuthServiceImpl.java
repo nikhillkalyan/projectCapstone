@@ -99,6 +99,9 @@ public class AuthServiceImpl implements AuthService {
                 .experience(request.getExperience())
                 .specialization(request.getSpecialization())
                 .bio(request.getBio())
+                .ugCertificateUrl(request.getUgCertificateUrl())
+                .pgCertificateUrl(request.getPgCertificateUrl())
+                .phdCertificateUrl(request.getPhdCertificateUrl())
                 .rating(0.0f)
                 .totalStudents(0)
                 .build();
@@ -120,6 +123,9 @@ public class AuthServiceImpl implements AuthService {
                         .bio(instructor.getBio())
                         .rating(instructor.getRating())
                         .totalStudents(instructor.getTotalStudents())
+                        .ugCertificateUrl(instructor.getUgCertificateUrl())
+                        .pgCertificateUrl(instructor.getPgCertificateUrl())
+                        .phdCertificateUrl(instructor.getPhdCertificateUrl())
                         .build())
                 .build();
     }
@@ -161,6 +167,9 @@ public class AuthServiceImpl implements AuthService {
                     .bio(instructor.getBio())
                     .rating(instructor.getRating())
                     .totalStudents(instructor.getTotalStudents())
+                    .ugCertificateUrl(instructor.getUgCertificateUrl())
+                    .pgCertificateUrl(instructor.getPgCertificateUrl())
+                    .phdCertificateUrl(instructor.getPhdCertificateUrl())
                     .build();
         }
 

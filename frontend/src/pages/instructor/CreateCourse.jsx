@@ -102,6 +102,99 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
   );
 }
 
+function ThumbnailUploader({ thumbnail, onChange }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+      setUploadError('Invalid file type. Only JPG, PNG, and WebP are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('File is too large. Max size is 5MB.');
+      return;
+    }
+
+    setUploadError('');
+    setIsUploading(true);
+    
+    // Use fallback strings in development environments if you haven't sourced your env file yet
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      setUploadError('Cloudinary is not configured. Add keys to .env file.');
+      setIsUploading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', 'capstone/thumbnails');
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      onChange(data.secure_url);
+    } catch (err) {
+      setUploadError('Failed to upload image. Please check your config or internet connection.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Existing URL input */}
+      <input
+        type="text"
+        value={thumbnail}
+        onChange={e => onChange(e.target.value)}
+        className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+        placeholder="https://example.com/image.jpg"
+      />
+      
+      <div className="flex items-center gap-4">
+        <span className="text-text-muted text-sm font-semibold">OR</span>
+        
+        <label className="relative flex items-center justify-center min-w-[150px] gap-2 px-4 py-2.5 bg-bg-surface border border-border-subtle hover:border-primary-500 text-text-primary text-sm font-semibold rounded-lg transition-all cursor-pointer overflow-hidden">
+          <input 
+            type="file" 
+            accept=".jpg,.jpeg,.png,.webp" 
+            className="absolute inset-0 opacity-0 cursor-pointer" 
+            onChange={handleUpload}
+            disabled={isUploading}
+          />
+          {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-primary-500" /> : <UploadCloud className="w-4 h-4 text-primary-500" />}
+          {isUploading ? 'Uploading...' : 'Upload Image'}
+        </label>
+      </div>
+
+      {uploadError && <p className="text-red-500 text-xs font-semibold">{uploadError}</p>}
+      
+      {thumbnail && (
+        <div className="mt-4 relative rounded-xl overflow-hidden border border-border-subtle group max-w-sm">
+           <img src={thumbnail} alt="Thumbnail preview" className="w-full h-48 object-cover" />
+           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+             <button onClick={() => onChange('')} className="bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all focus:opacity-100">
+                <Trash2 className="w-4 h-4" /> Remove Image
+             </button>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Shared Components ───
 function InputGroup({ label, required, children, helperText }) {
   return (
@@ -208,13 +301,10 @@ function Step1({ data, onChange }) {
           />
         </InputGroup>
 
-        <InputGroup label="Thumbnail URL" helperText="16:9 aspect ratio recommended">
-          <input
-            type="text"
-            value={data.thumbnail}
-            onChange={e => onChange({ ...data, thumbnail: e.target.value })}
-            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
-            placeholder="https://example.com/image.jpg"
+        <InputGroup label="Thumbnail" helperText="16:9 aspect ratio recommended. Paste image URL or upload directly to Cloudinary. Max 5MB">
+          <ThumbnailUploader
+            thumbnail={data.thumbnail}
+            onChange={(url) => onChange({ ...data, thumbnail: url })}
           />
         </InputGroup>
 

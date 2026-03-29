@@ -24,4 +24,11 @@ public class InstructorSignupRequest {
     private String specialization;
 
     private String bio;
+
+    @NotBlank(message = "UG Certificate URL is required")
+    private String ugCertificateUrl;
+
+    private String pgCertificateUrl;
+
+    private String phdCertificateUrl;
 }

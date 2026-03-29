@@ -28,4 +28,7 @@ public class UserProfileResponse {
     private String specialization;
     private Float rating;
     private Integer totalStudents;
+    private String ugCertificateUrl;
+    private String pgCertificateUrl;
+    private String phdCertificateUrl;
 }
