@@ -17,11 +17,19 @@ public class MessageResponse {
     private UUID id;
     private UUID senderId;
     private String senderName;
+    private String senderEmail;
     private String senderAvatar;
     private UUID receiverId;
     private String receiverName;
+    private String receiverEmail;
     private UUID courseId;
     private String messageText;
     private MessageStatus status;
     private LocalDateTime sentAt;
+    
+    private UUID replyToId;
+    private String replyToMessageText;
+    private String replyToSenderName;
+    private boolean isEdited;
+    private boolean isDeleted;
 }

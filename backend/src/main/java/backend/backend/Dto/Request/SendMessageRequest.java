@@ -15,6 +15,8 @@ public class SendMessageRequest {
     @NotBlank(message = "Message cannot be empty")
     private String messageText;
 
+    private UUID replyToId;
+
     @NotNull(message = "Course ID is required")
     private UUID courseId;
 }

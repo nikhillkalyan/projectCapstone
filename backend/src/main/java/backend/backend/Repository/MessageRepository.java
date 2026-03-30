@@ -18,4 +18,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             @Param("courseId") UUID courseId,
             @Param("userId") UUID userId,
             @Param("otherUserId") UUID otherUserId);
+
+    Long countByCourseIdAndSenderIdAndReceiverIdAndStatus(UUID courseId, UUID senderId, UUID receiverId, backend.backend.Enums.MessageStatus status);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Message m SET m.status = :status WHERE m.course.id = :courseId AND m.sender.id = :senderId AND m.receiver.id = :receiverId")
+    void updateStatusByCourseAndSenderAndReceiver(
+            @Param("courseId") UUID courseId,
+            @Param("senderId") UUID senderId,
+            @Param("receiverId") UUID receiverId,
+            @Param("status") backend.backend.Enums.MessageStatus status);
 }

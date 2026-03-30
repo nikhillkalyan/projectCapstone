@@ -45,4 +45,16 @@ public class Message {
     @CreationTimestamp
     @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_id")
+    private Message replyTo;
+
+    @Column(name = "is_edited", columnDefinition = "boolean default false")
+    @Builder.Default
+    private Boolean isEdited = false;
+
+    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    @Builder.Default
+    private Boolean isDeleted = false;
 }

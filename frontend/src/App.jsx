@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
+import { ChatProvider } from './context/ChatContext';
 import { useAuth } from './context/AuthContext';
 
 import LandingPage from './pages/LandingPage';
@@ -41,8 +42,9 @@ function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-        <AppProvider>
-          <Routes>
+        <ChatProvider>
+          <AppProvider>
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/student/login" element={<StudentLogin />} />
             <Route path="/student/signup" element={<StudentSignup />} />
@@ -69,8 +71,9 @@ function App() {
 
             <Route path="/admin/dashboard" element={<PrivateRoute role="admin"><AdminDashboard /></PrivateRoute>} />
             <Route path="/admin/verify-instructors" element={<PrivateRoute role="admin"><InstructorVerification /></PrivateRoute>} />
-          </Routes>
-        </AppProvider>
+            </Routes>
+          </AppProvider>
+        </ChatProvider>
       </AuthProvider>
     </Router>
   );
