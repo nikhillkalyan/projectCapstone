@@ -1,0 +1,7 @@
+{
+  "name": "capstone-project",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
