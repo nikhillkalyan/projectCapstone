@@ -1,7 +1,11 @@
 package backend.backend.Entity;
 
+import backend.backend.Enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -23,9 +27,7 @@ public class Instructor {
     private User user;
 
     private String qualification;
-
     private String experience;
-
     private String specialization;
 
     @Column(columnDefinition = "TEXT")
@@ -49,4 +51,25 @@ public class Instructor {
 
     @Column(name = "phd_certificate_url", columnDefinition = "TEXT")
     private String phdCertificateUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status", length = 20)
+    @Builder.Default
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "flag_message", columnDefinition = "TEXT")
+    private String flagMessage;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "flagged_at")
+    private LocalDateTime flaggedAt;
+
+    @CreationTimestamp
+    @Column(name = "registered_at", updatable = false)
+    private LocalDateTime registeredAt;
 }
