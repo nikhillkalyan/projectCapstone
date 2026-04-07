@@ -9,7 +9,7 @@ import {
     flagInstructor,
 } from '../../services/instructorService';
 
-const DocumentCard = ({ label, url }) => {
+const DocumentCard = ({ label, url, onPreview }) => {
     if (!url) return null;
     return (
         <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl border border-white/[0.04]">
@@ -22,14 +22,12 @@ const DocumentCard = ({ label, url }) => {
                 </div>
                 <span className="text-white/70 text-sm">{label}</span>
             </div>
-            <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
+            <button
+                onClick={() => onPreview(url, label)}
                 className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors"
             >
-                View →
-            </a>
+                Preview
+            </button>
         </div>
     );
 };
@@ -45,6 +43,7 @@ const InstructorReview = () => {
     const [rejectReason, setRejectReason] = useState('');
     const [flagMessage, setFlagMessage] = useState('');
     const [toast, setToast] = useState(null);
+    const [previewData, setPreviewData] = useState({ url: null, label: '' });
 
     useEffect(() => {
         fetchInstructor();
@@ -211,9 +210,9 @@ const InstructorReview = () => {
                     <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
                         <h3 className="text-white font-semibold mb-4">Verification Documents</h3>
                         <div className="space-y-3">
-                            <DocumentCard label="UG Certificate" url={instructor.ugCertificateUrl} />
-                            <DocumentCard label="PG Certificate" url={instructor.pgCertificateUrl} />
-                            <DocumentCard label="PhD Certificate" url={instructor.phdCertificateUrl} />
+                            <DocumentCard label="UG Certificate" url={instructor.ugCertificateUrl} onPreview={(url, label) => setPreviewData({ url, label })} />
+                            <DocumentCard label="PG Certificate" url={instructor.pgCertificateUrl} onPreview={(url, label) => setPreviewData({ url, label })} />
+                            <DocumentCard label="PhD Certificate" url={instructor.phdCertificateUrl} onPreview={(url, label) => setPreviewData({ url, label })} />
                             {hasNoDocs && (
                                 <p className="text-white/20 text-sm text-center py-4">No documents uploaded</p>
                             )}
@@ -372,6 +371,40 @@ const InstructorReview = () => {
                             >
                                 Confirm Flag
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Preview Modal */}
+            {previewData.url && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 md:p-8">
+                    <div className="bg-[#0d0d14] border border-white/[0.08] rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+                        <div className="flex items-center justify-between p-4 border-b border-white/[0.08] bg-white/[0.02]">
+                            <h3 className="text-white font-medium">{previewData.label}</h3>
+                            <div className="flex items-center gap-3">
+                                <a
+                                    href={previewData.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                                >
+                                    Open in New Tab ↗
+                                </a>
+                                <button
+                                    onClick={() => setPreviewData({ url: null, label: '' })}
+                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 p-4 bg-black/40">
+                            <iframe
+                                src={previewData.url}
+                                className="w-full h-full rounded-xl bg-white"
+                                title="Document Preview"
+                            />
                         </div>
                     </div>
                 </div>
