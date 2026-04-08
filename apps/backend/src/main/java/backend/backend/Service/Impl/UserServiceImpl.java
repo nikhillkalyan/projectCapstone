@@ -95,6 +95,12 @@ public class UserServiceImpl implements UserService {
                     .bio(instructor.getBio())
                     .rating(instructor.getRating())
                     .totalStudents(instructor.getTotalStudents())
+                    .ugCertificateUrl(instructor.getUgCertificateUrl())
+                    .pgCertificateUrl(instructor.getPgCertificateUrl())
+                    .phdCertificateUrl(instructor.getPhdCertificateUrl())
+                    .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
+                    .rejectionReason(instructor.getRejectionReason())
+                    .flagMessage(instructor.getFlagMessage())
                     .build();
         }
 

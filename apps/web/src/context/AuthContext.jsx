@@ -17,39 +17,32 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.post('/auth/login', { email, password });
       const data = res.data;
-
-      // Map backend response to user object
       const userData = {
         id: data.userId,
         name: data.name,
         email: data.email,
-        role: data.role.toLowerCase(), // backend sends "STUDENT" → "student"
+        role: data.role.toLowerCase(),
         token: data.token,
         profile: data.profile,
       };
-
       setUser(userData);
       localStorage.setItem('lms_user', JSON.stringify(userData));
       localStorage.setItem('token', data.token);
       return { success: true, user: userData };
     } catch (err) {
-      return { 
-        success: false, 
-        error: err.response?.data?.error || 'Invalid credentials' 
+      return {
+        success: false,
+        error: err.response?.data?.error || 'Invalid credentials',
       };
     }
   };
 
   const signup = async (data, role) => {
     try {
-      const endpoint = role === 'student' 
-        ? '/auth/student/signup' 
-        : '/auth/instructor/signup';
-        
+      const endpoint =
+        role === 'student' ? '/auth/student/signup' : '/auth/instructor/signup';
       const res = await api.post(endpoint, data);
       const resData = res.data;
-
-      // Map backend response to user object
       const userData = {
         id: resData.userId,
         name: resData.name,
@@ -58,15 +51,14 @@ export function AuthProvider({ children }) {
         token: resData.token,
         profile: resData.profile,
       };
-
       setUser(userData);
       localStorage.setItem('lms_user', JSON.stringify(userData));
       localStorage.setItem('token', resData.token);
       return { success: true, user: userData };
     } catch (err) {
-      return { 
-        success: false, 
-        error: err.response?.data?.error || 'Signup failed' 
+      return {
+        success: false,
+        error: err.response?.data?.error || 'Signup failed',
       };
     }
   };
@@ -80,10 +72,7 @@ export function AuthProvider({ children }) {
   const updateUser = async (updates) => {
     try {
       const res = await api.put('/users/me', updates);
-      const updatedUser = { 
-        ...user, 
-        profile: res.data.profile 
-      };
+      const updatedUser = { ...user, profile: res.data.profile };
       setUser(updatedUser);
       localStorage.setItem('lms_user', JSON.stringify(updatedUser));
       return { success: true };
@@ -98,8 +87,32 @@ export function AuthProvider({ children }) {
     localStorage.setItem('lms_user', JSON.stringify(updatedUser));
   };
 
+  // Silently re-fetches /users/me and syncs user state + localStorage.
+  // Returns the fresh user object so callers can inspect the new status.
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/users/me');
+      const data = res.data;
+      const freshUser = {
+        ...user,
+        name: data.name ?? user.name,
+        email: data.email ?? user.email,
+        profile: data.profile ?? user.profile,
+      };
+      setUser(freshUser);
+      localStorage.setItem('lms_user', JSON.stringify(freshUser));
+      return freshUser;
+    } catch (err) {
+      // Network blip — silently ignore, keep existing user state
+      console.warn('refreshUser failed silently:', err?.response?.status);
+      return null;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser, updateLocalUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, signup, logout, updateUser, updateLocalUser, refreshUser }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
