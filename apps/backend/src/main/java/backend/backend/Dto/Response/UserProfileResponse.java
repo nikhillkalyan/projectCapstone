@@ -31,4 +31,7 @@ public class UserProfileResponse {
     private String ugCertificateUrl;
     private String pgCertificateUrl;
     private String phdCertificateUrl;
+    private String approvalStatus;
+    private String rejectionReason;
+    private String flagMessage;
 }

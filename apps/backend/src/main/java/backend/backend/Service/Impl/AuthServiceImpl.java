@@ -122,6 +122,9 @@ public class AuthServiceImpl implements AuthService {
                                                 .ugCertificateUrl(instructor.getUgCertificateUrl())
                                                 .pgCertificateUrl(instructor.getPgCertificateUrl())
                                                 .phdCertificateUrl(instructor.getPhdCertificateUrl())
+                                                .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
+                                                .rejectionReason(instructor.getRejectionReason())
+                                                .flagMessage(instructor.getFlagMessage())
                                                 .build())
                                 .build();
         }
@@ -165,6 +168,9 @@ public class AuthServiceImpl implements AuthService {
                                         .ugCertificateUrl(instructor.getUgCertificateUrl())
                                         .pgCertificateUrl(instructor.getPgCertificateUrl())
                                         .phdCertificateUrl(instructor.getPhdCertificateUrl())
+                                        .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
+                                        .rejectionReason(instructor.getRejectionReason())
+                                        .flagMessage(instructor.getFlagMessage())
                                         .build();
                 } else {
                         // ADMIN — no profile needed
