@@ -186,6 +186,7 @@ public class CourseServiceImpl implements CourseService {
                         .avatarUrl(instructorUser.getAvatarUrl())
                         .specialization(instructor.getSpecialization())
                         .rating(instructor.getRating())
+                        .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
                         .build())
                 .grandAssessment(course.getGrandAssessment() != null ? mapToAssessmentResponse(course.getGrandAssessment()) : null)
                 .build();

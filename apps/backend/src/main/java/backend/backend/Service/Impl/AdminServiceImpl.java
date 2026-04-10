@@ -29,6 +29,7 @@ public class AdminServiceImpl implements AdminService {
                 .approved(instructorRepository.countByApprovalStatus(ApprovalStatus.APPROVED))
                 .rejected(instructorRepository.countByApprovalStatus(ApprovalStatus.REJECTED))
                 .flagged(instructorRepository.countByApprovalStatus(ApprovalStatus.FLAGGED))
+                .removed(instructorRepository.countByApprovalStatus(ApprovalStatus.REMOVED))
                 .build();
     }
 
@@ -88,6 +89,26 @@ public class AdminServiceImpl implements AdminService {
         instructor.setApprovalStatus(ApprovalStatus.FLAGGED);
         instructor.setFlagMessage(message);
         instructor.setFlaggedAt(LocalDateTime.now());
+        instructorRepository.save(instructor);
+    }
+
+    @Override
+    @Transactional
+    public void removeInstructor(UUID id) {
+        Instructor instructor = instructorRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Instructor not found"));
+        instructor.setApprovalStatus(ApprovalStatus.REMOVED);
+        instructorRepository.save(instructor);
+    }
+
+    @Override
+    @Transactional
+    public void reinstateInstructor(UUID id) {
+        Instructor instructor = instructorRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Instructor not found"));
+        instructor.setApprovalStatus(ApprovalStatus.APPROVED);
+        instructor.setIsVerified(true);
+        instructor.setApprovedAt(LocalDateTime.now());
         instructorRepository.save(instructor);
     }
 

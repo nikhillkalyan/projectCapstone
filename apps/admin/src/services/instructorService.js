@@ -33,6 +33,16 @@ export const flagInstructor = async (id, message, documentIds) => {
     return response.data;
 };
 
+export const removeInstructor = async (id) => {
+    const response = await api.put(`/admin/instructors/${id}/remove`);
+    return response.data;
+};
+
+export const reinstateInstructor = async (id) => {
+    const response = await api.put(`/admin/instructors/${id}/reinstate`);
+    return response.data;
+};
+
 export const getMessages = async (id) => {
     const response = await api.get(`/admin/instructors/${id}/messages`);
     return response.data;

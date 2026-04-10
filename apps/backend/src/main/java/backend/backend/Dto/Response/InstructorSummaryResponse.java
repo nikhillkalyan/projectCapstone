@@ -17,4 +17,5 @@ public class InstructorSummaryResponse {
     private String avatarUrl;
     private String specialization;
     private Float rating;
+    private String approvalStatus;
 }

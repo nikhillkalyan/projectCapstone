@@ -1,5 +1,6 @@
 import AppShell from './AppShell';
 import { useAuth } from '../../../context/AuthContext';
+import { useStatusWatcher } from '../../../pages/instructor/InstructorWaitingRoom';
 import {
     LayoutDashboard, BookOpen, PlusCircle, Users, MessageSquare, UserCircle
 } from 'lucide-react';
@@ -12,6 +13,14 @@ const instructorNavLinks = [
     { to: '/instructor/profile', icon: UserCircle, label: 'Profile' },
 ];
 
+// Watches for admin removal/reinstatement in the background.
+// If the instructor is removed while browsing, they get redirected
+// to the waiting hall automatically — no logout/login required.
+function StatusWatcher() {
+    useStatusWatcher();
+    return null;
+}
+
 export default function InstructorLayout({ children }) {
     const { user, logout } = useAuth();
     return (
@@ -21,6 +30,7 @@ export default function InstructorLayout({ children }) {
             user={user}
             onLogout={logout}
         >
+            <StatusWatcher />
             {children}
         </AppShell>
     );

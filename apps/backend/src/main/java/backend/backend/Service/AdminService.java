@@ -18,4 +18,8 @@ public interface AdminService {
     void rejectInstructor(UUID id, String reason);
 
     void flagInstructor(UUID id, String message);
+
+    void removeInstructor(UUID id);
+
+    void reinstateInstructor(UUID id);
 }

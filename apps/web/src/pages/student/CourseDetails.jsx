@@ -274,14 +274,16 @@ export default function CourseDetails() {
             <div className="h-[1px] w-full bg-border-subtle/50" />
 
             {/* Instructor Preview */}
-            {course.instructorName && (
+            {(course.instructor || course.instructorName) && (
                 <div className="flex items-center gap-3 pt-1">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-teal-400 flex items-center justify-center shrink-0">
-                        <span className="text-white font-bold text-sm">{course.instructorName.charAt(0)}</span>
+                        <span className="text-white font-bold text-sm">{(course.instructor?.name || course.instructorName)?.charAt(0)}</span>
                     </div>
                     <div>
                         <p className="text-[0.7rem] text-text-secondary uppercase tracking-widest font-bold">Instructor</p>
-                        <p className="font-syne font-bold text-text-primary text-[0.9rem] leading-tight">{course.instructorName}</p>
+                        <p className={`font-syne font-bold text-[0.9rem] leading-tight ${course.instructor?.approvalStatus === 'REMOVED' ? 'text-red-400' : 'text-text-primary'}`}>
+                            {course.instructor?.approvalStatus === 'REMOVED' ? '[Removed Account]' : (course.instructor?.name || course.instructorName)}
+                        </p>
                     </div>
                 </div>
             )}

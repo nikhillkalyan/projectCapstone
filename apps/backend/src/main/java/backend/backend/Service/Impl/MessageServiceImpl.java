@@ -60,6 +60,10 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Course not found with id: " + request.getCourseId()));
 
+        if (receiver.getRole() == Role.INSTRUCTOR && backend.backend.Enums.ApprovalStatus.REMOVED.equals(course.getInstructor().getApprovalStatus())) {
+            throw new backend.backend.Exceptions.BadRequestException("Cannot send messages to a removed instructor.");
+        }
+
         Message replyToMessage = null;
         if (request.getReplyToId() != null) {
             replyToMessage = messageRepository.findById(request.getReplyToId())
@@ -152,6 +156,8 @@ public class MessageServiceImpl implements MessageService {
                 long unreadCount = messageRepository.countByCourseIdAndSenderIdAndReceiverIdAndStatus(
                         course.getId(), instructorUser.getId(), currentUser.getId(), MessageStatus.SENT);
 
+                boolean isRemoved = backend.backend.Enums.ApprovalStatus.REMOVED.equals(course.getInstructor().getApprovalStatus());
+
                 contacts.add(ContactResponse.builder()
                         .userId(instructorUser.getId())
                         .userName(instructorUser.getName())
@@ -159,6 +165,7 @@ public class MessageServiceImpl implements MessageService {
                         .courseId(course.getId())
                         .courseTitle(course.getTitle())
                         .unreadCount(unreadCount)
+                        .isRemoved(isRemoved)
                         .build());
             }
         } else if (currentUser.getRole() == Role.INSTRUCTOR) {

@@ -102,8 +102,8 @@ export default function StudentChat() {
                     {/* Text Info */}
                     <div className="flex-1 overflow-hidden">
                       <div className="flex items-center justify-between mb-0.5">
-                        <h3 className={`font-syne text-sm font-bold truncate ${isActive ? 'text-primary-400' : 'text-text-primary'}`}>
-                          {c.userName}
+                        <h3 className={`font-syne text-sm font-bold truncate ${isActive ? 'text-primary-400' : 'text-text-primary'} ${c.isRemoved ? 'text-red-400' : ''}`}>
+                          {c.isRemoved ? '[Removed Account]' : c.userName}
                         </h3>
                       </div>
                       <p className="text-xs text-text-secondary truncate pr-2 font-dmsans">
@@ -133,17 +133,20 @@ export default function StudentChat() {
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
               </button>
-              <span className="font-syne font-bold text-sm ml-2 truncate">{selectedChat.userName}</span>
+              <span className={`font-syne font-bold text-sm ml-2 truncate ${selectedChat.isRemoved ? 'text-red-400' : ''}`}>
+                {selectedChat.isRemoved ? '[Removed Account]' : selectedChat.userName}
+              </span>
             </div>
           )}
 
           {selectedChat ? (
             <ChatWindow
               otherId={selectedChat.userId}
-              otherName={selectedChat.userName}
+              otherName={selectedChat.isRemoved ? '[Removed Account]' : selectedChat.userName}
               otherAvatar={selectedChat.avatarUrl}
               courseId={selectedChat.courseId}
               courseTitle={selectedChat.courseTitle}
+              isRemoved={selectedChat.isRemoved}
             />
           ) : (
             <div className="hidden md:flex h-full flex-col items-center justify-center text-center opacity-40">

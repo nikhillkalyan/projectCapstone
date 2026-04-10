@@ -12,4 +12,5 @@ public class AdminStatsResponse {
     private long approved;
     private long rejected;
     private long flagged;
+    private long removed;
 }

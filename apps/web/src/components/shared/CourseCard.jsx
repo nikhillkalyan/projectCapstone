@@ -200,7 +200,7 @@ export default function CourseCard({
         </div>
 
         <p className="text-[0.8rem] text-text-secondary mb-4">
-          By <span className="text-primary-400 font-medium">{course.instructor?.name || course.instructorName || 'Unknown Instructor'}</span>
+          By <span className="text-primary-400 font-medium">{course.instructor?.approvalStatus === 'REMOVED' ? '[Removed Account]' : (course.instructor?.name || course.instructorName || 'Unknown Instructor')}</span>
         </p>
 
         {/* Netflix Expanded Section (Tags & Dynamic CTA) */}

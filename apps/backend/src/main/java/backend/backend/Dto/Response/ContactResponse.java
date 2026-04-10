@@ -18,4 +18,5 @@ public class ContactResponse {
     private UUID courseId;
     private String courseTitle;
     private long unreadCount;
+    private boolean isRemoved;
 }

@@ -59,4 +59,16 @@ public class AdminController {
         adminService.flagInstructor(id, request.getMessage());
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/instructors/{id}/remove")
+    public ResponseEntity<Void> removeInstructor(@PathVariable UUID id) {
+        adminService.removeInstructor(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/instructors/{id}/reinstate")
+    public ResponseEntity<Void> reinstateInstructor(@PathVariable UUID id) {
+        adminService.reinstateInstructor(id);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -32,6 +32,7 @@ const InstructorList = () => {
                             <option value="APPROVED">Approved</option>
                             <option value="REJECTED">Rejected</option>
                             <option value="FLAGGED">Flagged</option>
+                            <option value="REMOVED">Removed</option>
                         </select>
                     </div>
                 </div>

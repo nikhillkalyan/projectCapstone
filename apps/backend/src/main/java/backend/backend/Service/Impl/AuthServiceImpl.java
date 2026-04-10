@@ -157,6 +157,9 @@ public class AuthServiceImpl implements AuthService {
                 } else if (user.getRole() == Role.INSTRUCTOR) {
                         Instructor instructor = instructorRepository.findById(user.getId())
                                         .orElseThrow(() -> new UnauthorizedException("Instructor profile not found"));
+                        
+                        // Allowed to login, removed status will be handled in frontend Waiting Room
+
                         profile = UserProfileResponse.builder()
                                         .avatarUrl(user.getAvatarUrl())
                                         .qualification(instructor.getQualification())

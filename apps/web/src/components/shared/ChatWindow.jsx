@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
 import api from '../../lib/api';
 
-export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, courseTitle }) {
+export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, courseTitle, isRemoved }) {
   const { user } = useAuth();
   const { sendMessage, inboundMessage } = useChat();
   const [input, setInput] = useState('');
@@ -151,6 +151,14 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
           <p className="text-text-secondary text-xs">{courseTitle}</p>
         </div>
       </div>
+
+      {isRemoved && (
+          <div className="bg-red-500/10 border-b border-red-500/20 px-6 py-3 flex items-center justify-center text-center backdrop-blur-md z-10 shrink-0">
+            <p className="text-red-400 text-xs font-medium uppercase tracking-wider">
+               This instructor has been removed from the platform. Chat is read-only.
+            </p>
+          </div>
+      )}
 
       {/* Scrollable Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth custom-scrollbar">
@@ -311,13 +319,14 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder={editingMessage ? "Edit message..." : "Message..."}
+              disabled={isRemoved}
+              placeholder={isRemoved ? "Chat is read-only" : (editingMessage ? "Edit message..." : "Message...")}
               rows={1}
-              className="flex-1 max-h-32 bg-transparent text-text-primary text-[0.95rem] placeholder-text-secondary outline-none resize-none py-3 custom-scrollbar"
+              className="flex-1 max-h-32 bg-transparent text-text-primary text-[0.95rem] placeholder-text-secondary outline-none resize-none py-3 custom-scrollbar disabled:cursor-not-allowed"
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || (editingMessage && input.trim() === editingMessage.messageText)}
+              disabled={isRemoved || !input.trim() || (editingMessage && input.trim() === editingMessage.messageText)}
               className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center transition-all bg-primary-500 text-white shadow-md hover:shadow-primary-500/25 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed mb-0.5 mr-0.5"
             >
               {editingMessage ? <CheckCircle2 className="w-5 h-5 ml-0.5" /> : <Send className="w-4 h-4 ml-0.5" />}
