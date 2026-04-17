@@ -130,6 +130,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public AuthResponse login(LoginRequest request) {
 
                 User user = userRepository.findByEmail(request.getEmail())
@@ -174,6 +175,13 @@ public class AuthServiceImpl implements AuthService {
                                         .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
                                         .rejectionReason(instructor.getRejectionReason())
                                         .flagMessage(instructor.getFlagMessage())
+                                        .build();
+                } else if (user.getRole() == Role.UNIVERSITY_ADMIN) {
+                        // University Admin — return the university name for the portal topbar
+                        String universityName = user.getUniversity() != null ? user.getUniversity().getName() : null;
+                        profile = UserProfileResponse.builder()
+                                        .avatarUrl(user.getAvatarUrl())
+                                        .universityName(universityName)
                                         .build();
                 } else {
                         // ADMIN — no profile needed

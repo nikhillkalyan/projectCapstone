@@ -32,7 +32,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private Role role;
 
     @Column(name = "avatar_url")
@@ -45,8 +45,8 @@ public class User {
     @Column(name = "joined_at", updatable = false)
     private LocalDateTime joinedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "university_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "university_id", nullable = true)
     private University university;
 
 }

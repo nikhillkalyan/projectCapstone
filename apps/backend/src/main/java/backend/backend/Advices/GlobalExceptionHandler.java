@@ -1,6 +1,7 @@
 package backend.backend.Advices;
 
 import backend.backend.Exceptions.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,13 +11,14 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String message) {
         Map<String, Object> error = new HashMap<>();
         error.put("status", status.value());
-        error.put("error", message);
+        error.put("message", message);
         error.put("timestamp", LocalDateTime.now().toString());
         return ResponseEntity.status(status).body(error);
     }
@@ -50,7 +52,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
-        return buildError(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Something went wrong: " + ex.getMessage());
+        // Log the FULL stack trace — this will appear in the backend terminal
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+
+        // Also include the root cause in the response so the frontend can display it
+        Throwable rootCause = ex;
+        while (rootCause.getCause() != null) {
+            rootCause = rootCause.getCause();
+        }
+        String detail = rootCause.getMessage() != null ? rootCause.getMessage() : ex.getMessage();
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Server error: " + detail);
     }
-}
+}

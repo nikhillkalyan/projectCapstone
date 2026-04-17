@@ -1,0 +1,35 @@
+/* ══════════════════════════════════════════════════════════════
+   Dashboard Layout — Main content area with mesh background
+   ══════════════════════════════════════════════════════════════ */
+
+.dashboard-layout {
+  min-height: 100vh;
+  background: var(--bg-deep);
+}
+
+.dashboard-content {
+  margin-left: var(--sidebar-width);
+  padding-top: var(--topbar-height);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Mesh gradient background */
+.dashboard-content::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: 100vh;
+  background: var(--gradient-mesh);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-content-inner {
+  position: relative;
+  z-index: var(--z-base);
+  padding: var(--space-8);
+  animation: fadeIn 0.4s ease-out;
+}

@@ -5,6 +5,7 @@ import AdminLogin from './pages/auth/AdminLogin';
 import Dashboard from './pages/dashboard/Dashboard';
 import InstructorList from './pages/instructors/InstructorList';
 import InstructorReview from './pages/instructors/InstructorReview';
+import Universities from './pages/universities/Universities';
 
 const App = () => {
   return (
@@ -20,6 +21,9 @@ const App = () => {
           } />
           <Route path="/instructors/:id" element={
             <ProtectedRoute><InstructorReview /></ProtectedRoute>
+          } />
+          <Route path="/universities" element={
+            <ProtectedRoute><Universities /></ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

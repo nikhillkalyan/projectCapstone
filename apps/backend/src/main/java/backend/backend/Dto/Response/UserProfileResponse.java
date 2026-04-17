@@ -16,6 +16,9 @@ public class UserProfileResponse {
     // Common fields
     private String avatarUrl;
 
+    // University Admin specific
+    private String universityName;
+
     // Student specific
     private String college;
     private String yearOfStudy;
