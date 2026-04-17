@@ -3,5 +3,6 @@ package backend.backend.Enums;
 public enum Role {
     STUDENT,
     INSTRUCTOR,
-    ADMIN
+    ADMIN,
+    UNIVERSITY_ADMIN
 }

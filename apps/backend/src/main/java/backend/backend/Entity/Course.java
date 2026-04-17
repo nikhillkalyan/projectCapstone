@@ -65,6 +65,25 @@ public class Course {
     @Builder.Default
     private List<Chapter> chapters = new ArrayList<>();
 
+    @Column(name = "is_university_course")
+    @Builder.Default
+    private Boolean isUniversityCourse = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "university_id")
+    private University university;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_branch_id")
+    private Branch targetBranch;
+
+    @Column(name = "target_year")
+    private String targetYear;
+
+    @Column(name = "is_approved_by_uni_admin")
+    @Builder.Default
+    private Boolean isApprovedByUniAdmin = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

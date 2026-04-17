@@ -24,6 +24,13 @@ public class Student {
     @JoinColumn(name = "id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id")
+    private Section section;
+
+    @Column(name = "roll_number", unique = true)
+    private String rollNumber;
+
     private String college;
 
     @Column(name = "year_of_study")

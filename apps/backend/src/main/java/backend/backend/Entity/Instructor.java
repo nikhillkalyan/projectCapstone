@@ -26,6 +26,13 @@ public class Instructor {
     @JoinColumn(name = "id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+
+    @Column(name = "employee_id", unique = true)
+    private String employeeId;
+
     private String qualification;
     private String experience;
     private String specialization;
