@@ -40,41 +40,55 @@ This project uses **NPM Workspaces** to easily manage multiple interconnected ap
 ## 🚀 Getting Started
 
 ### Prerequisites
-* **Node.js** (v20+)
+* **Node.js** (LTS v18+ or v20+)
 * **Java Development Kit** (JDK 17 or higher)
-* **Maven** (optional, comes with `mvnw` wrapper)
 
-### Installation
+### Setup & Installation
 
-1. **Clone the repository and install root dependencies**
+**CRITICAL:** This project uses an **NPM Workspaces** monorepo structure. You must install dependencies **only from the root directory**. Do not navigate into `apps/web` or `apps/admin` to run `npm install`.
+
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd CapstoneProject
+   ```
+
+2. **Clean up old modules (Optional, if you had failed installs)**
+   If you previously tried to install and got errors, clear your node modules first:
+   ```bash
+   # Windows PowerShell
+   Remove-Item -Recurse -Force node_modules
    
-   # Using NPM workspaces, this will cleanly install dependencies for all frontend apps
-   npm install
+   # Mac/Linux
+   rm -rf node_modules
    ```
 
-2. **Run the Backend API**
-   Open a terminal and navigate to the backend service:
+3. **Install Dependencies**
+   Run the following command at the root directory. We use the `--legacy-peer-deps` flag to bypass strict version conflicts commonly caused by MUI and Framer Motion:
    ```bash
-   cd apps/backend
-   ./mvnw spring-boot:run
+   npm install --legacy-peer-deps
    ```
 
-3. **Run the Student/Instructor Frontend**
-   Open a second terminal:
-   ```bash
-   cd apps/web
-   npm run dev
-   ```
+### Running the Services
 
-4. **Run the Admin Panel**
-   Open a third terminal:
-   ```bash
-   cd apps/admin
-   npm run dev
-   ```
+**Terminal 1: Run the Backend API**
+Open a terminal and navigate to the backend service:
+```bash
+cd apps/backend
+./mvnw spring-boot:run
+```
+
+**Terminal 2: Run the Frontends**
+Stay in the **root directory** (`CapstoneProject/`) in a new terminal, and use our workspace scripts:
+
+* To start the **Main Web App**:
+  ```bash
+  npm run dev:web
+  ```
+* To start the **Admin Panel**:
+  ```bash
+  npm run dev:admin
+  ```
 
 *(Local servers will hot-reload automatically upon code changes).*
 
