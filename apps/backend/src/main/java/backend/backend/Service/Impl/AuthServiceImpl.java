@@ -4,15 +4,23 @@ import backend.backend.Dto.Request.InstructorSignupRequest;
 import backend.backend.Dto.Request.LoginRequest;
 import backend.backend.Dto.Request.StudentSignupRequest;
 import backend.backend.Dto.Response.AuthResponse;
+import backend.backend.Dto.Response.UniversityLookupResponse;
 import backend.backend.Dto.Response.UserProfileResponse;
+import backend.backend.Entity.Branch;
 import backend.backend.Entity.Instructor;
+import backend.backend.Entity.Section;
 import backend.backend.Entity.Student;
+import backend.backend.Entity.University;
 import backend.backend.Entity.User;
 import backend.backend.Enums.Role;
 import backend.backend.Exceptions.BadRequestException;
+import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
+import backend.backend.Repository.BranchRepository;
 import backend.backend.Repository.InstructorRepository;
+import backend.backend.Repository.SectionRepository;
 import backend.backend.Repository.StudentRepository;
+import backend.backend.Repository.UniversityRepository;
 import backend.backend.Repository.UserRepository;
 import backend.backend.Security.JwtUtil;
 import backend.backend.Service.AuthService;
@@ -21,6 +29,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -28,6 +40,9 @@ public class AuthServiceImpl implements AuthService {
         private final UserRepository userRepository;
         private final StudentRepository studentRepository;
         private final InstructorRepository instructorRepository;
+        private final UniversityRepository universityRepository;
+        private final BranchRepository branchRepository;
+        private final SectionRepository sectionRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
 
@@ -39,11 +54,34 @@ public class AuthServiceImpl implements AuthService {
                         throw new BadRequestException("Email already in use");
                 }
 
+                // --- University onboarding (optional) ---
+                University university = null;
+                Section section = null;
+
+                if (request.getJoinCode() != null && !request.getJoinCode().isBlank()) {
+                        university = universityRepository.findByJoinCode(request.getJoinCode())
+                                        .orElseThrow(() -> new BadRequestException("Invalid join code. Please check with your university admin."));
+
+                        if (!Boolean.TRUE.equals(university.getIsActive())) {
+                                throw new BadRequestException("This university is currently inactive. Please contact your admin.");
+                        }
+
+                        if (request.getSectionId() != null) {
+                                section = sectionRepository.findById(request.getSectionId())
+                                                .orElseThrow(() -> new ResourceNotFoundException("Section not found"));
+                                // Safety: ensure section belongs to this university
+                                if (!section.getBranch().getUniversity().getId().equals(university.getId())) {
+                                        throw new BadRequestException("Section does not belong to this university");
+                                }
+                        }
+                }
+
                 User user = User.builder()
                                 .name(request.getName())
                                 .email(request.getEmail())
                                 .password(passwordEncoder.encode(request.getPassword()))
                                 .role(Role.STUDENT)
+                                .university(university)
                                 .build();
                 userRepository.save(user);
 
@@ -51,6 +89,7 @@ public class AuthServiceImpl implements AuthService {
                                 .user(user)
                                 .college(request.getCollege())
                                 .yearOfStudy(request.getYearOfStudy())
+                                .section(section)
                                 .interests(request.getInterests() != null ? request.getInterests()
                                                 : new java.util.ArrayList<>())
                                 .build();
@@ -66,9 +105,10 @@ public class AuthServiceImpl implements AuthService {
                                 .email(user.getEmail())
                                 .role(user.getRole().name())
                                 .profile(UserProfileResponse.builder()
-                                                .college(student.getCollege())
-                                                .yearOfStudy(student.getYearOfStudy())
+                                                .college(request.getCollege())
+                                                .yearOfStudy(request.getYearOfStudy())
                                                 .interests(student.getInterests())
+                                                .universityName(university != null ? university.getName() : null)
                                                 .build())
                                 .build();
         }
@@ -81,16 +121,40 @@ public class AuthServiceImpl implements AuthService {
                         throw new BadRequestException("Email already in use");
                 }
 
+                // --- University onboarding (optional) ---
+                University university = null;
+                Branch branch = null;
+
+                if (request.getJoinCode() != null && !request.getJoinCode().isBlank()) {
+                        university = universityRepository.findByJoinCode(request.getJoinCode())
+                                        .orElseThrow(() -> new BadRequestException("Invalid join code. Please check with your university admin."));
+
+                        if (!Boolean.TRUE.equals(university.getIsActive())) {
+                                throw new BadRequestException("This university is currently inactive. Please contact your admin.");
+                        }
+
+                        if (request.getBranchId() != null) {
+                                branch = branchRepository.findById(request.getBranchId())
+                                                .orElseThrow(() -> new ResourceNotFoundException("Branch not found"));
+                                // Safety: ensure branch belongs to this university
+                                if (!branch.getUniversity().getId().equals(university.getId())) {
+                                        throw new BadRequestException("Branch does not belong to this university");
+                                }
+                        }
+                }
+
                 User user = User.builder()
                                 .name(request.getName())
                                 .email(request.getEmail())
                                 .password(passwordEncoder.encode(request.getPassword()))
                                 .role(Role.INSTRUCTOR)
+                                .university(university)
                                 .build();
                 userRepository.save(user);
 
                 Instructor instructor = Instructor.builder()
                                 .user(user)
+                                .branch(branch)
                                 .qualification(request.getQualification())
                                 .experience(request.getExperience())
                                 .specialization(request.getSpecialization())
@@ -125,6 +189,7 @@ public class AuthServiceImpl implements AuthService {
                                                 .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
                                                 .rejectionReason(instructor.getRejectionReason())
                                                 .flagMessage(instructor.getFlagMessage())
+                                                .universityName(university != null ? university.getName() : null)
                                                 .build())
                                 .build();
         }
@@ -199,4 +264,48 @@ public class AuthServiceImpl implements AuthService {
                                 .profile(profile)
                                 .build();
         }
+
+        @Override
+        @Transactional(readOnly = true)
+        public UniversityLookupResponse lookupUniversityByJoinCode(String joinCode) {
+                University university = universityRepository.findByJoinCode(joinCode.trim().toUpperCase())
+                                .orElseThrow(() -> new BadRequestException("Invalid join code. Please check with your university admin."));
+
+                if (!Boolean.TRUE.equals(university.getIsActive())) {
+                        throw new BadRequestException("This university is currently inactive. Please contact your admin.");
+                }
+
+                List<backend.backend.Dto.Response.BranchResponse> branches = branchRepository
+                                .findByUniversityId(university.getId())
+                                .stream()
+                                .map(branch -> {
+                                        List<backend.backend.Dto.Response.SectionResponse> sections = sectionRepository
+                                                        .findByBranchId(branch.getId())
+                                                        .stream()
+                                                        .map(section -> backend.backend.Dto.Response.SectionResponse.builder()
+                                                                        .id(section.getId())
+                                                                        .name(section.getName())
+                                                                        .year(section.getYear())
+                                                                        .branchId(branch.getId())
+                                                                        .branchName(branch.getName())
+                                                                        .build())
+                                                        .collect(Collectors.toList());
+
+                                        return backend.backend.Dto.Response.BranchResponse.builder()
+                                                        .id(branch.getId())
+                                                        .name(branch.getName())
+                                                        .createdAt(branch.getCreatedAt())
+                                                        .sections(sections)
+                                                        .build();
+                                })
+                                .collect(Collectors.toList());
+
+                return UniversityLookupResponse.builder()
+                                .id(university.getId())
+                                .name(university.getName())
+                                .joinCode(university.getJoinCode())
+                                .branches(branches)
+                                .build();
+        }
 }
+

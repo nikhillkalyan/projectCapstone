@@ -2,10 +2,10 @@ package backend.backend.Dto.Request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class StudentSignupRequest {
@@ -21,8 +21,10 @@ public class StudentSignupRequest {
     private String password;
 
     private String college;
-
     private String yearOfStudy;
-
     private List<String> interests;
+
+    // University onboarding — optional (null = standalone/public signup)
+    private String joinCode;
+    private UUID sectionId;
 }

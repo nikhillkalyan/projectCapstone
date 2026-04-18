@@ -4,6 +4,7 @@ import backend.backend.Dto.Request.InstructorSignupRequest;
 import backend.backend.Dto.Request.LoginRequest;
 import backend.backend.Dto.Request.StudentSignupRequest;
 import backend.backend.Dto.Response.AuthResponse;
+import backend.backend.Dto.Response.UniversityLookupResponse;
 import backend.backend.Service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,16 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /**
+     * Public endpoint — no auth needed.
+     * Called by the signup form to validate a join code and load the
+     * university's branches + sections for the dropdowns.
+     */
+    @GetMapping("/university/lookup")
+    public ResponseEntity<UniversityLookupResponse> lookupUniversity(
+            @RequestParam String joinCode) {
+        return ResponseEntity.ok(authService.lookupUniversityByJoinCode(joinCode));
     }
 }
