@@ -25,9 +25,9 @@
 }
 
 .stat-primary.branch-card::before { background: var(--gradient-primary); }
-.stat-accent.branch-card::before { background: var(--gradient-accent); }
+.stat-accent.branch-card::before  { background: var(--gradient-accent); }
 .stat-success.branch-card::before { background: var(--gradient-success); }
-.stat-warm.branch-card::before { background: var(--gradient-warm); }
+.stat-warm.branch-card::before    { background: var(--gradient-warm); }
 
 .branch-card:hover {
   border-color: var(--border-default);
@@ -46,15 +46,10 @@
   background: rgba(99, 102, 241, 0.12);
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-3);
-}
-
-.branch-code-badge span {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 700;
+  padding: var(--space-2);
+  display: flex;
+  align-items: center;
   color: var(--primary-300);
-  letter-spacing: 0.05em;
 }
 
 .branch-card-actions {
@@ -157,32 +152,118 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--primary-300);
+  transition: all var(--transition-fast);
+}
+
+/* Deletable chip with inline X button */
+.section-chip-deletable {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 12px;
+}
+
+.section-chip-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: rgba(99, 102, 241, 0.35);
+  transition: color var(--transition-fast);
+}
+
+.section-chip-delete:hover { color: #f87171; }
+
+/* Add section dashed button inside expanded list */
+.btn-add-section {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--space-2);
+  padding: 5px 12px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px dashed rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--primary-400);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.section-chip:hover {
-  background: rgba(99, 102, 241, 0.15);
+.btn-add-section:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: var(--primary-300);
 }
 
-.section-chip-add {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: var(--border-subtle);
+/* No sections hint text */
+.no-sections-hint {
+  font-size: var(--text-xs);
   color: var(--text-tertiary);
-  display: inline-flex;
+  padding: var(--space-2) 0;
+}
+
+/* Centered loader */
+.loader-center {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3px 8px;
+  gap: var(--space-3);
+  padding: var(--space-12) 0;
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
 }
 
-.section-chip-add:hover {
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.2);
-  color: var(--primary-400);
+/* Spin animation */
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) 0;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.empty-state h3 { font-size: var(--text-base); font-weight: 600; color: var(--text-secondary); margin: 0; }
+.empty-state p  { font-size: var(--text-sm); max-width: 280px; }
+
+/* Global error banner */
+.form-error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: #f87171;
+  margin-bottom: var(--space-5);
+}
+
+/* Modal inline error */
+.modal-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: #f87171;
+  margin: 0 var(--space-6) var(--space-2);
 }
 
 @media (max-width: 900px) {
-  .branches-grid {
-    grid-template-columns: 1fr;
-  }
+  .branches-grid { grid-template-columns: 1fr; }
 }
