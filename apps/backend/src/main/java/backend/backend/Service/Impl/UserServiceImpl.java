@@ -1,5 +1,13 @@
 package backend.backend.Service.Impl;
 
+import backend.backend.Dto.Request.JoinUniversityRequest;
+import backend.backend.Entity.Branch;
+import backend.backend.Entity.Section;
+import backend.backend.Entity.University;
+import backend.backend.Exceptions.BadRequestException;
+import backend.backend.Repository.BranchRepository;
+import backend.backend.Repository.SectionRepository;
+import backend.backend.Repository.UniversityRepository;
 import backend.backend.Dto.Request.UpdateProfileRequest;
 import backend.backend.Dto.Response.UserProfileResponse;
 import backend.backend.Dto.Response.UserResponse;
@@ -24,9 +32,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final InstructorRepository instructorRepository;
+    private final UniversityRepository universityRepository;
+    private final BranchRepository branchRepository;
+    private final SectionRepository sectionRepository;
     private final SecurityUtils securityUtils;
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getCurrentUserProfile() {
         User user = securityUtils.getCurrentUser();
         return buildUserResponse(user);
@@ -78,6 +90,7 @@ public class UserServiceImpl implements UserService {
 
             profile = UserProfileResponse.builder()
                     .avatarUrl(user.getAvatarUrl())
+                    .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
                     .college(student.getCollege())
                     .yearOfStudy(student.getYearOfStudy())
                     .bio(student.getBio())
@@ -89,6 +102,7 @@ public class UserServiceImpl implements UserService {
 
             profile = UserProfileResponse.builder()
                     .avatarUrl(user.getAvatarUrl())
+                    .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
                     .qualification(instructor.getQualification())
                     .experience(instructor.getExperience())
                     .specialization(instructor.getSpecialization())
@@ -109,8 +123,63 @@ public class UserServiceImpl implements UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .universityId(user.getUniversity() != null ? user.getUniversity().getId() : null)
                 .joinedAt(user.getJoinedAt())
                 .profile(profile)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void joinUniversity(JoinUniversityRequest request) {
+        User user = securityUtils.getCurrentUser();
+        
+        if (user.getUniversity() != null) {
+            throw new BadRequestException("User already belongs to a university.");
+        }
+
+        University university = universityRepository.findByJoinCode(request.getJoinCode())
+                .orElseThrow(() -> new BadRequestException("Invalid join code."));
+
+        user.setUniversity(university);
+        userRepository.save(user);
+
+        if (user.getRole() == Role.STUDENT) {
+            Student student = studentRepository.findById(user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+            student.setRollNumber(request.getRollNumber());
+            if(request.getCollege() != null) student.setCollege(request.getCollege());
+            if(request.getYearOfStudy() != null) student.setYearOfStudy(request.getYearOfStudy());
+
+            if (request.getSectionId() != null) {
+                Section section = sectionRepository.findById(request.getSectionId())
+                        .orElseThrow(() -> new BadRequestException("Section not found"));
+                if (!section.getBranch().getUniversity().getId().equals(university.getId())) {
+                    throw new BadRequestException("Section belongs to another university.");
+                }
+                student.setSection(section);
+            }
+
+            studentRepository.save(student);
+        } else if (user.getRole() == Role.INSTRUCTOR) {
+            Instructor instructor = instructorRepository.findById(user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+
+            instructor.setEmployeeId(request.getEmployeeId());
+            // We intentionally do NOT reset the approval status to PENDING here.
+            // If they are already approved globally, they remain approved.
+            
+            if (request.getBranchId() != null) {
+                Branch branch = branchRepository.findById(request.getBranchId())
+                        .orElseThrow(() -> new BadRequestException("Branch not found"));
+                if (!branch.getUniversity().getId().equals(university.getId())) {
+                    throw new BadRequestException("Branch belongs to another university.");
+                }
+                instructor.setBranch(branch);
+            }
+            
+            instructorRepository.save(instructor);
+        }
     }
 }

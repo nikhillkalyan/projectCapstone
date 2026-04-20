@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Users,
   BookOpen,
@@ -11,44 +12,13 @@ import {
   Award,
   UserCheck,
   FileText,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import api from '../../services/api';
 import './Dashboard.css';
 
-// Placeholder stats — will be connected to backend
-const stats = [
-  {
-    label: 'Total Students',
-    value: '1,284',
-    trend: '+12%',
-    trendDir: 'up',
-    icon: Users,
-    variant: 'stat-primary',
-  },
-  {
-    label: 'Total Instructors',
-    value: '47',
-    trend: '+3',
-    trendDir: 'up',
-    icon: GraduationCap,
-    variant: 'stat-accent',
-  },
-  {
-    label: 'Active Courses',
-    value: '23',
-    trend: '+5',
-    trendDir: 'up',
-    icon: BookOpen,
-    variant: 'stat-success',
-  },
-  {
-    label: 'Pending Actions',
-    value: '8',
-    trend: '3 urgent',
-    trendDir: 'down',
-    icon: ClipboardList,
-    variant: 'stat-warm',
-  },
-];
+
 
 const recentActivity = [
   {
@@ -86,6 +56,77 @@ const semesterCourses = [
 ];
 
 const Dashboard = () => {
+  const [dbStats, setDbStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get('/uni-admin/users/dashboard');
+        setDbStats(res.data);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load dashboard data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  const stats = [
+    {
+      label: 'Total Students',
+      value: dbStats?.totalStudents || 0,
+      trend: 'Registered',
+      trendDir: 'up',
+      icon: Users,
+      variant: 'stat-primary',
+    },
+    {
+      label: 'Total Instructors',
+      value: dbStats?.totalInstructors || 0,
+      trend: dbStats?.pendingInstructors ? `${dbStats.pendingInstructors} pending` : 'All approved',
+      trendDir: dbStats?.pendingInstructors ? 'down' : 'up',
+      icon: GraduationCap,
+      variant: 'stat-accent',
+    },
+    {
+      label: 'Total Branches',
+      value: dbStats?.totalBranches || 0,
+      trend: 'Active',
+      trendDir: 'up',
+      icon: GitBranch,
+      variant: 'stat-success',
+    },
+    {
+      label: 'Total Sections',
+      value: dbStats?.totalSections || 0,
+      trend: 'Configured',
+      trendDir: 'up',
+      icon: BookOpen,
+      variant: 'stat-warm',
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="loader-center">
+        <Loader2 size={28} className="spin" />
+        <span>Loading dashboard data...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="form-error-banner" style={{ margin: 'var(--space-6)' }}>
+        <AlertCircle size={15} /> <span>{error}</span>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Stats Grid */}

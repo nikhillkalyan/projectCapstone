@@ -24,4 +24,13 @@ public interface InstructorRepository extends JpaRepository<Instructor, UUID> {
             @Param("search") String search);
 
     long countByApprovalStatus(ApprovalStatus status);
+
+    /** All instructors belonging to a specific university. */
+    List<Instructor> findByUserUniversityId(UUID universityId);
+
+    /** Count instructors by university for dashboard stats. */
+    long countByUserUniversityId(UUID universityId);
+
+    /** Count instructors by university + approval status (e.g. pending). */
+    long countByUserUniversityIdAndApprovalStatus(UUID universityId, ApprovalStatus approvalStatus);
 }

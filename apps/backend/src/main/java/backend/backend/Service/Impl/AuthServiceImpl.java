@@ -104,6 +104,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name(user.getName())
                                 .email(user.getEmail())
                                 .role(user.getRole().name())
+                                .universityId(university != null ? university.getId() : null)
                                 .profile(UserProfileResponse.builder()
                                                 .college(request.getCollege())
                                                 .yearOfStudy(request.getYearOfStudy())
@@ -176,6 +177,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name(user.getName())
                                 .email(user.getEmail())
                                 .role(user.getRole().name())
+                                .universityId(university != null ? university.getId() : null)
                                 .profile(UserProfileResponse.builder()
                                                 .qualification(instructor.getQualification())
                                                 .experience(instructor.getExperience())
@@ -215,6 +217,7 @@ public class AuthServiceImpl implements AuthService {
                                         .orElseThrow(() -> new UnauthorizedException("Student profile not found"));
                         profile = UserProfileResponse.builder()
                                         .avatarUrl(user.getAvatarUrl())
+                                        .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
                                         .college(student.getCollege())
                                         .yearOfStudy(student.getYearOfStudy())
                                         .bio(student.getBio())
@@ -228,6 +231,7 @@ public class AuthServiceImpl implements AuthService {
 
                         profile = UserProfileResponse.builder()
                                         .avatarUrl(user.getAvatarUrl())
+                                        .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
                                         .qualification(instructor.getQualification())
                                         .experience(instructor.getExperience())
                                         .specialization(instructor.getSpecialization())
@@ -261,6 +265,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name(user.getName())
                                 .email(user.getEmail())
                                 .role(user.getRole().name())
+                                .universityId(user.getUniversity() != null ? user.getUniversity().getId() : null)
                                 .profile(profile)
                                 .build();
         }

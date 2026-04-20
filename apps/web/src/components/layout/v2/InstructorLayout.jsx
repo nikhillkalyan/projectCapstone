@@ -2,7 +2,7 @@ import AppShell from './AppShell';
 import { useAuth } from '../../../context/AuthContext';
 import { useStatusWatcher } from '../../../pages/instructor/InstructorWaitingRoom';
 import {
-    LayoutDashboard, BookOpen, PlusCircle, Users, MessageSquare, UserCircle
+    LayoutDashboard, BookOpen, PlusCircle, Users, MessageSquare, UserCircle, Building
 } from 'lucide-react';
 
 const instructorNavLinks = [
@@ -10,6 +10,7 @@ const instructorNavLinks = [
     { to: '/instructor/courses', icon: BookOpen, label: 'My Courses' },
     { to: '/instructor/create-course', icon: PlusCircle, label: 'Create Course' },
     { to: '/instructor/chat', icon: MessageSquare, label: 'Messages' },
+    { to: '/instructor/university', icon: Building, label: 'University' },
     { to: '/instructor/profile', icon: UserCircle, label: 'Profile' },
 ];
 

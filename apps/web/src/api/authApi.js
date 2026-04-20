@@ -17,3 +17,6 @@ export const updateMyProfile = (data) =>
 
 export const lookupUniversity = (joinCode) =>
     axiosInstance.get(`/auth/university/lookup?joinCode=${joinCode}`);
+
+export const joinUniversitySpace = (data) =>
+    axiosInstance.put('/users/me/university/join', data);

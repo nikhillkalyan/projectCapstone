@@ -24,4 +24,11 @@ public class UserController {
             @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateCurrentUserProfile(request));
     }
+
+    @PutMapping("/me/university/join")
+    public ResponseEntity<Void> joinUniversity(
+            @RequestBody backend.backend.Dto.Request.JoinUniversityRequest request) {
+        userService.joinUniversity(request);
+        return ResponseEntity.ok().build();
+    }
 }

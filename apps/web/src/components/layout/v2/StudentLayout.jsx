@@ -1,7 +1,7 @@
 import AppShell from './AppShell';
 import { useAuth } from '../../../context/AuthContext';
 import {
-    LayoutDashboard, Compass, BookOpen, Heart, MessageSquare, UserCircle
+    LayoutDashboard, Compass, BookOpen, Heart, MessageSquare, UserCircle, Building
 } from 'lucide-react';
 
 const studentNavLinks = [
@@ -10,6 +10,7 @@ const studentNavLinks = [
     { to: '/student/enrolled', icon: BookOpen, label: 'My Courses' },
     { to: '/student/favorites', icon: Heart, label: 'Favorites' },
     { to: '/student/chat', icon: MessageSquare, label: 'Messages' },
+    { to: '/student/university', icon: Building, label: 'University' },
     { to: '/student/profile', icon: UserCircle, label: 'Profile' },
 ];
 

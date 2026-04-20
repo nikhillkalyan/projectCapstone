@@ -33,6 +33,7 @@ export function AuthProvider({ children }) {
         email: data.email,
         role: data.role.toLowerCase(),
         token: data.token,
+        universityId: data.universityId,
         profile: data.profile,
       };
       setUser(userData);
@@ -60,6 +61,7 @@ export function AuthProvider({ children }) {
         email: resData.email,
         role: resData.role.toLowerCase(),
         token: resData.token,
+        universityId: resData.universityId,
         profile: resData.profile,
       };
       setUser(userData);
@@ -115,6 +117,7 @@ export function AuthProvider({ children }) {
         ...current,
         name: data.name ?? current.name,
         email: data.email ?? current.email,
+        universityId: data.universityId ?? current.universityId,
         profile: data.profile ?? current.profile,
       };
       setUser(freshUser);

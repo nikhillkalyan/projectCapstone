@@ -17,6 +17,7 @@ public class UserResponse {
     private String name;
     private String email;
     private String role;
+    private UUID universityId;
     private LocalDateTime joinedAt;
     private UserProfileResponse profile;
 }

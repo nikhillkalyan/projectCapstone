@@ -1,21 +1,26 @@
 package backend.backend.Dto.Response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class InstructorSummaryResponse {
     private UUID id;
     private String name;
+    private String email;
     private String avatarUrl;
+    private String employeeId;
+    private String branchId;
+    private String branchName;
+    private String qualification;
+    private String experience;
     private String specialization;
+    private String approvalStatus;  // PENDING | APPROVED | REJECTED | REMOVED
     private Float rating;
-    private String approvalStatus;
+    private Integer totalStudents;
+    private LocalDateTime registeredAt;
 }

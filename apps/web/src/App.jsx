@@ -19,6 +19,7 @@ import EnrolledCourses from './pages/student/EnrolledCourses';
 import FavoriteCourses from './pages/student/FavoriteCourses';
 import Certificate from './pages/student/Certificate';
 import StudentChat from './pages/student/StudentChat';
+import UniversitySpace from './pages/shared/UniversitySpace';
 
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import CreateCourse from './pages/instructor/CreateCourse';
@@ -65,6 +66,7 @@ function App() {
               <Route path="/student/favorites" element={<PrivateRoute role="student"><FavoriteCourses /></PrivateRoute>} />
               <Route path="/student/certificate/:courseId" element={<PrivateRoute role="student"><Certificate /></PrivateRoute>} />
               <Route path="/student/chat" element={<PrivateRoute role="student"><StudentChat /></PrivateRoute>} />
+              <Route path="/student/university" element={<PrivateRoute role="student"><UniversitySpace /></PrivateRoute>} />
               <Route path="/student/profile" element={<PrivateRoute role="student"><StudentProfile /></PrivateRoute>} />
 
               {/* Waiting hall — no approval required, just needs instructor role */}
@@ -80,6 +82,7 @@ function App() {
               <Route path="/instructor/course/:courseId" element={<PrivateRoute role="instructor" requireApproval><ManageCourse /></PrivateRoute>} />
               <Route path="/instructor/students/:courseId" element={<PrivateRoute role="instructor" requireApproval><StudentProgress /></PrivateRoute>} />
               <Route path="/instructor/chat" element={<PrivateRoute role="instructor" requireApproval><InstructorChat /></PrivateRoute>} />
+              <Route path="/instructor/university" element={<PrivateRoute role="instructor"><UniversitySpace /></PrivateRoute>} />
 
               <Route path="/admin/dashboard" element={<PrivateRoute role="admin"><AdminDashboard /></PrivateRoute>} />
               <Route path="/admin/verify-instructors" element={<PrivateRoute role="admin"><InstructorVerification /></PrivateRoute>} />

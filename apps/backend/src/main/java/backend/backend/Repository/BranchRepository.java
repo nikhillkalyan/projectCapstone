@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, UUID> {
     List<Branch> findByUniversityId(UUID universityId);
+    long countByUniversityId(UUID universityId);
 }
