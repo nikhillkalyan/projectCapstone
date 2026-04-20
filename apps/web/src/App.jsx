@@ -23,6 +23,7 @@ import UniversitySpace from './pages/shared/UniversitySpace';
 
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import CreateCourse from './pages/instructor/CreateCourse';
+import CreateUniversityCourse from './pages/instructor/CreateUniversityCourse';
 import ManageCourse from './pages/instructor/ManageCourse';
 import InstructorCourses from './pages/instructor/InstructorCourses';
 import StudentProgress from './pages/instructor/StudentProgress';
@@ -79,6 +80,7 @@ function App() {
               <Route path="/instructor" element={<PrivateRoute role="instructor" requireApproval><InstructorDashboard /></PrivateRoute>} />
               <Route path="/instructor/courses" element={<PrivateRoute role="instructor" requireApproval><InstructorCourses /></PrivateRoute>} />
               <Route path="/instructor/create-course" element={<PrivateRoute role="instructor" requireApproval><CreateCourse /></PrivateRoute>} />
+              <Route path="/instructor/create-university-course" element={<PrivateRoute role="instructor" requireApproval><CreateUniversityCourse /></PrivateRoute>} />
               <Route path="/instructor/course/:courseId" element={<PrivateRoute role="instructor" requireApproval><ManageCourse /></PrivateRoute>} />
               <Route path="/instructor/students/:courseId" element={<PrivateRoute role="instructor" requireApproval><StudentProgress /></PrivateRoute>} />
               <Route path="/instructor/chat" element={<PrivateRoute role="instructor" requireApproval><InstructorChat /></PrivateRoute>} />

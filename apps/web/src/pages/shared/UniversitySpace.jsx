@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 import { lookupUniversity, joinUniversitySpace } from '../../api/authApi';
 import SectionShell from '../../components/shared/SectionShell';
-import { KeyRound, Building2, CheckCircle2, ArrowRight, Loader2, AlertCircle, Bookmark, Compass } from 'lucide-react';
+import { KeyRound, Building2, CheckCircle2, ArrowRight, Loader2, AlertCircle, Bookmark, Compass, BookOpen } from 'lucide-react';
 import { TEAL, ACCENT } from '../../theme';
 
 // Inline InputField to prevent dependency loops
@@ -22,6 +23,7 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, requir
 
 export default function UniversitySpace() {
     const { user, refreshUser } = useAuth();
+    const navigate = useNavigate();
     const isStudent = user?.role === 'student';
 
     const [joinCode, setJoinCode] = useState('');
@@ -118,9 +120,18 @@ export default function UniversitySpace() {
                             )}
 
                             {!isStudent && user.profile?.approvalStatus === 'APPROVED' && (
-                                <div className="mt-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-6 py-3 rounded-xl flex items-center gap-3">
-                                    <CheckCircle2 className="w-5 h-5" />
-                                    <span>You are a verified faculty member.</span>
+                                <div className="mt-6 flex flex-col items-center gap-4 w-full">
+                                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-6 py-3 rounded-xl flex items-center gap-3">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        <span>You are a verified faculty member.</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => navigate('/instructor/create-university-course')}
+                                        className="h-12 w-full max-w-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <BookOpen className="w-5 h-5" />
+                                        Create University Course
+                                    </button>
                                 </div>
                             )}
 

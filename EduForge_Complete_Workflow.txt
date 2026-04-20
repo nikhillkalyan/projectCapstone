@@ -1,0 +1,413 @@
+EduForge: Complete Project Workflow & Blueprint
+
+============================================================
+Part 1: Project Architecture & Directory Structure
+============================================================
+
+EduForge is structured as a monorepo containing 4 main components:
+1. web: The main public student and instructor portal.
+2. admin: The top-level EduForge platform super-admin portal.
+3. uni-admin: The dedicated portal for university-level administrators.
+4. backend: The Spring Boot Java backend powering all portals.
+
+Here is the essential directory structure of the application (excluding node_modules, build directories, and configuration boilerplate):
+
+------------------------------
+1. admin (Tier 1 Admin panel)
+------------------------------
+src
+├── assets
+│   ├── hero.png
+│   ├── logo.svg
+│   ├── react.svg
+│   └── vite.svg
+├── components
+│   ├── layout
+│   │   ├── AdminLayout.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   ├── Sidebar.jsx
+│   │   └── Topbar.jsx
+│   ├── shared
+│   │   ├── AuditLog.jsx
+│   │   ├── MessageThread.jsx
+│   │   ├── StatCard.jsx
+│   │   └── StatusBadge.jsx
+│   └── ui
+│       ├── Badge.jsx
+│       ├── Button.jsx
+│       ├── Card.jsx
+│       ├── Modal.jsx
+│       ├── Spinner.jsx
+│       ├── Table.jsx
+│       └── Toast.jsx
+├── context
+│   ├── AuthContext.jsx
+│   └── ToastContext.jsx
+├── hooks
+│   ├── useAuth.js
+│   ├── useInstructors.js
+│   └── useToast.js
+├── pages
+│   ├── auth
+│   │   └── AdminLogin.jsx
+│   ├── dashboard
+│   │   └── Dashboard.jsx
+│   ├── instructors
+│   │   ├── InstructorList.jsx
+│   │   └── InstructorReview.jsx
+│   └── universities
+│       └── Universities.jsx
+├── services
+│   ├── api.js
+│   ├── authService.js
+│   └── instructorService.js
+└── utils
+    ├── constants.js
+    └── formatDate.js
+App.jsx
+main.jsx
+index.css
+
+------------------------------
+2. backend (Spring Boot)
+------------------------------
+src/main/java/backend/backend
+├── Controller
+│   ├── AdminController.java
+│   ├── AuthController.java
+│   ├── ChapterController.java
+│   ├── CourseController.java
+│   ├── MessageController.java
+│   ├── ProgressController.java
+│   ├── StudentController.java
+│   ├── UniversityContextController.java
+│   ├── UniversityController.java
+│   ├── UniversityUsersController.java
+│   └── UserController.java
+├── Dto
+│   ├── Request
+│   │   ├── CreateAssessmentRequest.java
+│   │   ├── CreateBranchRequest.java
+│   │   ├── CreateChapterRequest.java
+│   │   ├── CreateCourseRequest.java
+│   │   ├── CreateReviewRequest.java
+│   │   ├── CreateSectionRequest.java
+│   │   ├── CreateUniversityRequest.java
+│   │   ├── FlagRequest.java
+│   │   ├── InstructorSignupRequest.java
+│   │   ├── JoinUniversityRequest.java
+│   │   ├── LoginRequest.java
+│   │   ├── RejectRequest.java
+│   │   ├── SendMessageRequest.java
+│   │   ├── StudentSignupRequest.java
+│   │   ├── SubmitAssessmentRequest.java
+│   │   ├── UpdateChapterRequest.java
+│   │   ├── UpdateCourseRequest.java
+│   │   └── UpdateProfileRequest.java
+│   └── Response
+│       ├── AdminStatsResponse.java
+│       ├── AssessmentResponse.java
+│       ├── AssessmentResultResponse.java
+│       ├── AuthResponse.java
+│       ├── BranchResponse.java
+│       ├── ChapterResponse.java
+│       ├── ContactResponse.java
+│       ├── CourseProgressResponse.java
+│       ├── CourseResponse.java
+│       ├── EnrollmentResponse.java
+│       ├── InstructorAdminResponse.java
+│       ├── InstructorSummaryResponse.java
+│       ├── MessageResponse.java
+│       ├── OptionResponse.java
+│       ├── ProgressResponse.java
+│       ├── QuestionResponse.java
+│       ├── ReviewResponse.java
+│       ├── SectionResponse.java
+│       ├── StudentProgressSummaryResponse.java
+│       ├── StudentSummaryResponse.java
+│       ├── UniAdminDashboardResponse.java
+│       ├── UniversityLookupResponse.java
+│       ├── UniversityResponse.java
+│       ├── UserProfileResponse.java
+│       └── UserResponse.java
+├── Entity
+│   ├── Assessment.java
+│   ├── Branch.java
+│   ├── Chapter.java
+│   ├── Course.java
+│   ├── CourseAllocation.java
+│   ├── Enrollment.java
+│   ├── Instructor.java
+│   ├── LiveTest.java
+│   ├── MarksSheet.java
+│   ├── Message.java
+│   ├── Option.java
+│   ├── Progress.java
+│   ├── ProjectGroup.java
+│   ├── ProjectRepo.java
+│   ├── Question.java
+│   ├── Review.java
+│   ├── Section.java
+│   ├── Student.java
+│   ├── University.java
+│   └── User.java
+├── Enums
+│   └── Role.java
+├── Exceptions
+│   ├── BadRequestException.java
+│   ├── ResourceNotFoundException.java
+│   └── UnauthorizedException.java
+├── Repository
+│   ├── AssessmentRepository.java
+│   ├── BranchRepository.java
+│   ├── ChapterRepository.java
+│   ├── CourseAllocationRepository.java
+│   ├── CourseRepository.java
+│   ├── EnrollmentRepository.java
+│   ├── InstructorRepository.java
+│   ├── LiveTestRepository.java
+│   ├── MarksSheetRepository.java
+│   ├── MessageRepository.java
+│   ├── ProgressRepository.java
+│   ├── ProjectGroupRepository.java
+│   ├── ProjectRepoRepository.java
+│   ├── ReviewRepository.java
+│   ├── SectionRepository.java
+│   ├── StudentRepository.java
+│   ├── UniversityRepository.java
+│   └── UserRepository.java
+├── Security
+│   ├── CustomUserDetailsService.java
+│   ├── JwtAuthFilter.java
+│   └── JwtUtil.java
+├── Service
+│   ├── Impl
+│   │   ├── AdminServiceImpl.java
+│   │   ├── AuthServiceImpl.java
+│   │   ├── ChapterServiceImpl.java
+│   │   ├── CourseServiceImpl.java
+│   │   ├── MessageServiceImpl.java
+│   │   ├── ProgressServiceImpl.java
+│   │   ├── StudentServiceImpl.java
+│   │   ├── UniversityContextServiceImpl.java
+│   │   ├── UniversityServiceImpl.java
+│   │   └── UserServiceImpl.java
+│   ├── AdminService.java
+│   ├── AuthService.java
+│   ├── ChapterService.java
+│   ├── CourseService.java
+│   ├── MessageService.java
+│   ├── ProgressService.java
+│   ├── StudentService.java
+│   ├── UniversityContextService.java
+│   ├── UniversityService.java
+│   └── UserService.java
+└── Utils
+    └── SecurityUtils.java
+src/main/resources
+└── application.properties
+
+------------------------------
+3. uni-admin (Tier 2 Admin panel)
+------------------------------
+src
+├── assets
+│   ├── hero.png
+│   ├── react.svg
+│   └── vite.svg
+├── components
+│   └── layout
+│       ├── DashboardLayout.css
+│       ├── DashboardLayout.jsx
+│       ├── ProtectedRoute.jsx
+│       ├── Sidebar.css
+│       ├── Sidebar.jsx
+│       ├── Topbar.css
+│       └── Topbar.jsx
+├── context
+│   └── AuthContext.jsx
+├── pages
+│   ├── allocations
+│   │   └── Allocations.jsx
+│   ├── auth
+│   │   ├── Login.css
+│   │   └── Login.jsx
+│   ├── branches
+│   │   ├── Branches.css
+│   │   └── Branches.jsx
+│   ├── certificates
+│   │   └── Certificates.jsx
+│   ├── courses
+│   │   └── CoursePool.jsx
+│   ├── dashboard
+│   │   ├── Dashboard.css
+│   │   └── Dashboard.jsx
+│   ├── history
+│   │   └── History.jsx
+│   ├── instructors
+│   │   └── Instructors.jsx
+│   ├── marks
+│   │   └── MarksReview.jsx
+│   └── students
+│       └── Students.jsx
+├── services
+│   └── api.js
+└── styles
+    └── shared.css
+App.css
+App.jsx
+index.css
+main.jsx
+
+------------------------------
+4. web (Client Portals)
+------------------------------
+src
+├── api
+│   ├── authApi.js
+│   ├── courseApi.js
+│   ├── messageApi.js
+│   ├── progressApi.js
+│   └── studentApi.js
+├── assets
+│   └── react.svg
+├── components
+│   ├── layout
+│   │   ├── AdminSidebar.jsx
+│   │   ├── InstructorSidebar.jsx
+│   │   ├── StudentSidebar.jsx
+│   │   └── v2
+│   │       ├── AppShell.jsx
+│   │       ├── InstructorLayout.jsx
+│   │       ├── Sidebar.jsx
+│   │       ├── StudentLayout.jsx
+│   │       └── Topbar.jsx
+│   └── shared
+│       ├── Assessment.jsx
+│       ├── ChatWindow.jsx
+│       ├── CourseCard.jsx
+│       ├── EmptyState.jsx
+│       ├── ReviewCard.jsx
+│       ├── SectionShell.jsx
+│       └── StatCard.jsx
+├── context
+│   ├── AppContext.jsx
+│   ├── AuthContext.jsx
+│   └── ChatContext.jsx
+├── data
+│   └── mockDatabase.js
+├── lib
+│   ├── api.js
+│   └── utils.js
+├── pages
+│   ├── admin
+│   │   ├── AdminDashboard.jsx
+│   │   ├── InstructorVerification.jsx
+│   │   └── UserManagement.jsx
+│   ├── auth
+│   │   ├── InstructorLogin.jsx
+│   │   ├── InstructorSignup.jsx
+│   │   ├── StudentLogin.jsx
+│   │   ├── StudentSignup.jsx
+│   │   └── _AuthPages.jsx
+│   ├── instructor
+│   │   ├── CreateCourse.jsx
+│   │   ├── InstructorChat.jsx
+│   │   ├── InstructorCourses.jsx
+│   │   ├── InstructorDashboard.jsx
+│   │   ├── InstructorProfile.jsx
+│   │   ├── InstructorWaitingRoom.jsx
+│   │   ├── ManageCourse.jsx
+│   │   └── StudentProgress.jsx
+│   ├── LandingPage.jsx
+│   ├── shared
+│   │   └── UniversitySpace.jsx
+│   └── student
+│       ├── Certificate.jsx
+│       ├── CourseDetails.jsx
+│       ├── CoursePlayer.jsx
+│       ├── EnrolledCourses.jsx
+│       ├── ExploreCourses.jsx
+│       ├── FavoriteCourses.jsx
+│       ├── StudentChat.jsx
+│       ├── StudentDashboard.jsx
+│       └── StudentProfile.jsx
+App.jsx
+main.jsx
+index.css
+theme.js
+
+
+============================================================
+Part 2: Comprehensive Workflow (Instructor - Student - Admin)
+============================================================
+
+EduForge operates seamlessly, transitioning between a standard public environment {"Normal Portal"} and an isolated institutional environment {"University Space"}. Below is the workflow breakdown.
+
+--------------------------------------------------
+Section A: The Normal Portal (Public Base Platform)
+--------------------------------------------------
+This defines the everyday, global functions of the platform.
+- Instructors: Once registered, instructors jump straight into a "Waiting Room" pending verification from the general Platform Admin (Tier 1). Upon approval, they unlock the classic studio to construct and publish public courses universally available to the student body globally.
+- Students: Regular students can make basic accounts, log in, browse the public platform offerings, track their independent progress loops naturally. They can message general instructors on the site publicly via generic shared tools.
+
+--------------------------------------------------
+Section B: Enhancement — The University Space
+--------------------------------------------------
+EduForge scales higher natively through specific institutional networks titled roughly as the "University Spaces." Students entering registered universities unlock an entirely segmented internal network operating under these structural dynamics:
+
+The Three Tier Structure:
+1. Tier 1 — EduForge Platform Admin: Operates the entire system. Focuses on onboarding public Instructors, plus spawning macro University structures (delivering "Join Codes" and logins to the individual Universities).
+2. Tier 2 — University Admin Portal: Acts via a distinctly isolated standalone codebase (`uni-admin`). Tier 2 assigns Branches, Sections, maps students mapped, and importantly curates and allocates approved institutional courses cleanly via an internal semester pool.
+3. Tier 3 — Instructors and Students: Interact actively via their pre-built default web portals, newly granted localized "University Space" tabs if they registered with corresponding recognized Colleges.
+
+The comprehensive plan for implementing this enhancement phases sequentially:
+
+Phase 1 — University Foundation & Onboarding
+- First-Time Binding: If a designated student/instructor logged into their web frontend presses the University module, the system explicitly queries onboard details (University Join Code, Section, GitHub username, Emp Id natively bridging them inward to their university space).
+- Mapping matrix: The Tier-2 Admin reviews precisely mapped user records filtered aggressively by Branch/Section arrays.
+
+Phase 2 — University Courses & Semester Allocation
+- Dynamic Courses: Instructors design university-tier courses appending precise weightages dynamically mapped (Tests: 30%, Lecture Completion: 10%, Project: 40%). Unlike static generic courses, these are freely edited throughout the instructional cycle.
+- Allocation: Instead of automatic publication, Tier 2 Admins pick courses from the faculty "pool" mapping them explicitly against granular sections, imposing final course semester deadlines inherently.
+
+Phase 3 — Chapter Deadlines, Assessments & Real-Time Marks Engine
+- Automated Marks Integration: Built-to-order logic dynamically maps deadline constraints globally into internal grades for both individual branches and pre-set test structures resulting in live dashboarding capabilities per student and detailed cross-matrices per Instructor mapping.
+
+Phase 4 — Live Tests & Synchronous Interactions
+- Testing Protocol: Allows faculty to spin up synchronised live assessments (notified immediately and powered by responsive web socket pipelines).
+- Broadcast Classrooms: Web-native API integrations leveraging Jitsi allowing ad-hoc real-time broadcasting to enrolled subset branches exclusively.
+
+Phase 5 — Project Space & GitHub Integration
+- Teams Setup: The module permits dynamic selective or random group construction. Teams draft concept specs.
+- GitHub Integration: Leveraging active endpoints the backend invokes internal Github hooks directly via Instructor keys orchestrating bulk repository generations. The codebase automatically scopes in registered Github users natively attaching explicit students as immediate repository collaborators seamlessly tracing PRs internally within the frontend.
+
+Phase 6 — Final Evaluation, Marks Sheet & Certification
+- Rollup Sheets: The platform auto-curates complete metrics based thoroughly upon preset weightages consolidating final evaluation ledgers successfully. Instructors adjust manually pre-submission.
+- Certifications: Emits internally verified visual Certificates dynamically post Tier-2 Admin ledger approvals.
+
+
+============================================================
+Part 3: Progress State & Development Backlog
+============================================================
+
+✅ Completed Features / Done
+1. Monorepo scaffold and project structure defined globally using separate Vite / React stacks.
+2. Complete JWT Authentication backend linking Students, Instructors, and Admin entities.
+3. Student and Instructor platform Signup/Login flows.
+4. Main EduForge Admin Portal (Tier 1) - Ability to view, block, verify, and delete incoming instructors.
+5. Instructor Waiting Room setup redirecting pending instructors correctly and preventing platform abuse.
+6. Scaffolded a bare-bones Uni-Admin Portal (Tier 2) alongside standard components.
+7. Core Backend University-user management endpoints (get students/instructors by university via the UniversityContextService/Controller).
+8. The Instructor University-signup onboarding workflow state issue is resolved, correctly maintaining dual statuses inside both the platform domain and university domain securely.
+
+🚧 To Build Next / Action Items
+1. Complete Integration of Uni-Admin Portal Frontend: Strip mocked data inside React contexts and link `uni-admin` directly with backend GET routes.
+2. Master Data Configuration UI: Give Tier 2 University Admins screens to define Branches, Years, and Sections.
+3. Uni-Course Creation Engine: Build the form for instructors to construct dynamic courses with custom weightages and parameters meant exclusively for university scope.
+4. Course Pool & Allocation Dashboard: Screen for Tier 2 Admins to distribute mapped course modules into designated active semesters for designated sections.
+5. Live Tests / Websocket Engineering: Enable bidirectional realtime communication for synchronized timed assessments.
+6. The Jitsi Meet Integrations: Build interactive classroom modes dynamically spawned per section requirement.
+7. Project Space + GitHub Flow Automation: Require integrations fetching instructor GH credentials via OAuth and issuing bulk repository allocations, along with parsing pull request metadata.
+8. Live Grades Calculation matrix bridging lecture completes/tests passed directly to a realtime viewable React metric view.
+9. Final Marks verification flow and Digital Certificate Engine scaffolding.

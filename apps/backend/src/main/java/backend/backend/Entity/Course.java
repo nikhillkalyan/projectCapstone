@@ -84,6 +84,25 @@ public class Course {
     @Builder.Default
     private Boolean isApprovedByUniAdmin = false;
 
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "weight_tests")
+    @Builder.Default
+    private Integer weightTests = 0;
+
+    @Column(name = "weight_attendance")
+    @Builder.Default
+    private Integer weightAttendance = 0;
+
+    @Column(name = "weight_live_tests")
+    @Builder.Default
+    private Integer weightLiveTests = 0;
+
+    @Column(name = "weight_project")
+    @Builder.Default
+    private Integer weightProject = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
