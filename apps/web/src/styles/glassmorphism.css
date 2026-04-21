@@ -1,0 +1,84 @@
+.glass,
+.glass-sm,
+.glass-lg,
+.glass-panel,
+.glass-card {
+  position: relative;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.glass::before,
+.glass-lg::before,
+.glass-panel::before,
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), transparent 38%);
+  opacity: 0.7;
+}
+
+.glass-sm {
+  background: var(--glass-bg-sm);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-lg,
+.glass-panel {
+  background: var(--glass-bg-lg);
+  border-color: var(--glass-border-strong);
+  backdrop-filter: blur(var(--glass-blur-lg));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+}
+
+.glass-card {
+  overflow: hidden;
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--glass-border-strong);
+  background: var(--glass-hover);
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
+}
+
+.glass-border {
+  border: 1px solid var(--glass-border);
+}
+
+.glass-ring {
+  box-shadow: 0 0 0 1px var(--glass-border), var(--shadow-glass);
+}
+
+.glass-input {
+  border: 1px solid var(--border-subtle);
+  background: rgba(15, 15, 35, 0.62);
+  color: var(--text-primary);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.glass-input::placeholder {
+  color: var(--text-muted);
+}
+
+.glass-input:focus {
+  border-color: var(--border-primary);
+  background: rgba(15, 15, 35, 0.82);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+
+.surface-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+}

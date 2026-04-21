@@ -59,14 +59,14 @@ export default function InstructorCourses() {
           className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"
         >
           <div>
-            <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">My Courses</h1>
-            <p className="text-text-secondary font-dmsans">
+            <h1 className="heading-2 mb-2 text-gradient">My Courses</h1>
+            <p className="text-text-secondary">
               {myCourses.length} course{myCourses.length !== 1 ? 's' : ''} · {totalStudents} total students
             </p>
           </div>
           <button
             onClick={() => navigate('/instructor/create-course')}
-            className="bg-primary-500 hover:bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95 cursor-pointer max-w-fit"
+            className="flex max-w-fit cursor-pointer items-center justify-center gap-2 rounded-lg bg-gradient-primary px-6 py-2.5 font-semibold text-white shadow-glow transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="w-5 h-5 flex-shrink-0" />
             Create New Course
@@ -81,7 +81,7 @@ export default function InstructorCourses() {
             action={
               <button
                 onClick={() => navigate('/instructor/create-course')}
-                className="bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/30 font-semibold flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all active:scale-95 cursor-pointer"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary-400/30 bg-primary-500/10 px-8 py-3 font-semibold text-primary-300 transition-all hover:bg-primary-500/20 active:scale-95"
               >
                 <Plus className="w-5 h-5 flex-shrink-0" />
                 Create Course
@@ -100,14 +100,14 @@ export default function InstructorCourses() {
                   <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate(`/instructor/course/${course.id}`); }}
-                      className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-primary-500 hover:border-primary-400 transition-colors cursor-pointer"
+                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-black/60 text-white backdrop-blur-md transition-colors hover:border-primary-400 hover:bg-primary-500"
                       title="Manage Course"
                     >
                       <Settings className="w-4 h-4" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate(`/instructor/students/${course.id}`); }}
-                      className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-teal-500 hover:border-teal-400 transition-colors cursor-pointer"
+                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-white/20 bg-black/60 text-white backdrop-blur-md transition-colors hover:border-accent-400 hover:bg-accent-500"
                       title="View Students"
                     >
                       <BarChart2 className="w-4 h-4" />

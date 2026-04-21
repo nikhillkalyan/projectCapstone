@@ -4,10 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 
 export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role }) {
-  // Local hover state for desktop auto-expand
   const [isHovered, setIsHovered] = useState(false);
-
-  // Track window width for real-time responsiveness without reloading
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -16,8 +13,6 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // The 'logical' width that AppShell reserves is always 80px on desktop
-  // But the 'visual' width of the Sidebar overlay changes on hover
   const desktopWidth = isHovered ? 280 : 80;
   const isMobile = windowWidth < 1024;
 
@@ -31,19 +26,13 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* 
-        Spacing Placeholder
-        Because the Sidebar becomes absolutely positioned/floating when expanded,
-        we need a rigid 80px block here to prevent the main AppShell content from shifting left.
-      */}
       <div className="hidden lg:block w-[80px] shrink-0 h-screen" />
 
-      {/* Main Sidebar (Floats over content on expand) */}
       <motion.aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -53,11 +42,10 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
           x: isMobileOpen ? 0 : (isMobile ? (isMobileOpen ? 0 : -280) : 0)
         }}
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-        className="fixed top-0 left-0 flex flex-col h-screen bg-[#0E0E11] border-r border-neutral-800 shadow-2xl z-50 overflow-hidden lg:overflow-visible"
+        className="glass-lg fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-glass-border shadow-glass lg:overflow-visible"
       >
-        {/* Brand Header */}
-        <div className="h-20 flex items-center px-5 border-b border-neutral-800/50 shrink-0 select-none">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+        <div className="relative z-10 flex h-20 shrink-0 select-none items-center border-b border-border-subtle px-5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
             <GraduationCap className="text-white h-5 w-5" />
           </div>
 
@@ -68,17 +56,16 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
-                className="ml-4 whitespace-nowrap overflow-hidden"
+                className="ml-4 overflow-hidden whitespace-nowrap"
               >
-                <h1 className="text-xl font-bold tracking-tight text-white">EduForge</h1>
-                <p className="text-xs text-indigo-400 font-medium tracking-wider uppercase">{role} Portal</p>
+                <h1 className="font-display text-xl font-bold tracking-normal text-gradient">EduForge</h1>
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent-400">{role} Portal</p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Navigation */}
-        <div className="flex-1 py-6 px-4 overflow-y-auto hide-scrollbar flex flex-col gap-2">
+        <div className="relative z-10 flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-6 hide-scrollbar">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
@@ -86,14 +73,14 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
               end={link.end}
               onClick={() => setIsMobileOpen(false)}
               className={({ isActive }) =>
-                `flex items-center h-12 rounded-xl transition-all duration-200 group relative select-none cursor-pointer
-                ${isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'}`
+                `group relative flex h-12 cursor-pointer select-none items-center rounded-lg border transition-all duration-200
+                ${isActive ? 'border-primary-400/20 bg-primary-500/12 text-primary-300 shadow-glow' : 'border-transparent text-text-secondary hover:border-border-subtle hover:bg-white/[0.05] hover:text-text-primary'}`
               }
             >
               {({ isActive }) => (
                 <>
                   <div className="w-12 h-12 flex items-center justify-center shrink-0">
-                    <link.icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? 'scale-110 text-indigo-400' : 'group-hover:scale-110'}`} />
+                    <link.icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? 'scale-110 text-primary-300' : 'group-hover:scale-110'}`} />
                   </div>
 
                   <AnimatePresence>
@@ -103,7 +90,7 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.2 }}
-                        className={`font-medium text-sm whitespace-nowrap overflow-hidden pr-4 ${isActive ? 'text-indigo-400 font-semibold' : ''}`}
+                        className={`overflow-hidden whitespace-nowrap pr-4 text-sm font-semibold ${isActive ? 'text-primary-200' : ''}`}
                       >
                         {link.label}
                       </motion.span>
@@ -111,7 +98,7 @@ export default function Sidebar({ navLinks, isMobileOpen, setIsMobileOpen, role 
                   </AnimatePresence>
 
                   {isActive && (
-                    <motion.div layoutId="activeNav" className="absolute left-0 top-1/4 h-1/2 w-1 bg-indigo-500 rounded-r-md" />
+                    <motion.div layoutId="activeNav" className="absolute left-0 top-1/4 h-1/2 w-1 rounded-r-md bg-gradient-primary" />
                   )}
                 </>
               )}

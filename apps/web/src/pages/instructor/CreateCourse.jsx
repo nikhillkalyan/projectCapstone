@@ -39,7 +39,7 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
   };
 
   return (
-    <div className="p-5 md:p-6 bg-bg-elevated/50 border border-border-subtle rounded-2xl mb-4 relative group">
+    <div className="glass-sm group relative mb-4 rounded-lg p-5 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-primary-400 font-syne font-bold text-sm tracking-wide">
           QUESTION {qi + 1}
@@ -47,7 +47,7 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
         {showDelete && (
           <button
             onClick={onDelete}
-            className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            className="w-8 h-8 rounded-lg bg-error-500/10 text-error-500 hover:bg-error-500 hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
             title="Delete Question"
           >
             <Trash2 className="w-4 h-4" />
@@ -60,7 +60,7 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
           type="text"
           value={q.question}
           onChange={e => update('question', e.target.value)}
-          className="w-full bg-bg-surface border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+          className="glass-input w-full rounded-lg px-4 py-3 font-medium text-text-primary outline-none placeholder:text-text-muted"
           placeholder="Enter your question here..."
         />
       </div>
@@ -77,7 +77,7 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
               <button
                 onClick={() => update('correct', oi)}
                 className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isCorrect
-                  ? 'bg-teal-500 border-2 border-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.3)]'
+                  ? 'bg-success-500 border-2 border-success-500 shadow-[0_0_10px_rgba(20,184,166,0.3)]'
                   : 'bg-transparent border-2 border-border-subtle hover:border-primary-500/50'
                   }`}
               >
@@ -88,9 +88,9 @@ function QuestionEditor({ q, qi, onChange, onDelete, showDelete }) {
                 type="text"
                 value={opt}
                 onChange={e => updateOption(oi, e.target.value)}
-                className={`w-full bg-bg-surface border rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition-all ${isCorrect
-                  ? 'border-teal-500/50 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-teal-500/5'
-                  : 'border-border-subtle focus:border-primary-500 focus:ring-1 focus:ring-primary-500'
+                className={`glass-input w-full rounded-lg border px-4 py-2.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted ${isCorrect
+                  ? 'border-success-400/50 bg-success-500/5 focus:border-success-400 focus:ring-1 focus:ring-success-400'
+                  : 'border-border-subtle'
                   }`}
                 placeholder={`Option ${oi + 1}`}
               />
@@ -159,7 +159,7 @@ function ThumbnailUploader({ thumbnail, onChange }) {
         type="text"
         value={thumbnail}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+        className="glass-input w-full rounded-lg px-4 py-3 text-text-primary outline-none"
         placeholder="https://example.com/image.jpg"
       />
       
@@ -179,13 +179,13 @@ function ThumbnailUploader({ thumbnail, onChange }) {
         </label>
       </div>
 
-      {uploadError && <p className="text-red-500 text-xs font-semibold">{uploadError}</p>}
+      {uploadError && <p className="text-error-500 text-xs font-semibold">{uploadError}</p>}
       
       {thumbnail && (
-        <div className="mt-4 relative rounded-xl overflow-hidden border border-border-subtle group max-w-sm">
+        <div className="group relative mt-4 max-w-sm overflow-hidden rounded-lg border border-border-subtle">
            <img src={thumbnail} alt="Thumbnail preview" className="w-full h-48 object-cover" />
            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-             <button onClick={() => onChange('')} className="bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all focus:opacity-100">
+             <button onClick={() => onChange('')} className="bg-error-500/20 text-error-500 hover:bg-error-500 hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all focus:opacity-100">
                 <Trash2 className="w-4 h-4" /> Remove Image
              </button>
            </div>
@@ -200,7 +200,7 @@ function InputGroup({ label, required, children, helperText }) {
   return (
     <div className="flex flex-col gap-1.5 mb-5 w-full">
       <label className="text-sm font-semibold text-text-primary">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-error-500">*</span>}
       </label>
       {children}
       {helperText && <p className="text-xs text-text-muted mt-0.5">{helperText}</p>}
@@ -221,11 +221,11 @@ function Step1({ data, onChange }) {
       exit={{ opacity: 0, x: 10 }}
       className="max-w-3xl"
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500/10">
           <FileText className="w-5 h-5 text-primary-400" />
         </div>
-        <h2 className="text-xl font-bold font-syne text-text-primary">Course Details</h2>
+        <h2 className="font-display text-xl font-bold text-text-primary">Course Details</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
@@ -235,7 +235,7 @@ function Step1({ data, onChange }) {
               type="text"
               value={data.title}
               onChange={e => onChange({ ...data, title: e.target.value })}
-              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-medium"
+              className="glass-input w-full rounded-lg px-4 py-3 font-medium text-text-primary outline-none placeholder:text-text-muted"
               placeholder="e.g. Complete Machine Learning Bootcamp 2024"
             />
           </InputGroup>
@@ -247,7 +247,7 @@ function Step1({ data, onChange }) {
               value={data.description}
               onChange={e => onChange({ ...data, description: e.target.value })}
               rows={2}
-              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all resize-none"
+              className="glass-input w-full resize-none rounded-lg px-4 py-3 text-text-primary outline-none placeholder:text-text-muted"
               placeholder="Write a catchy 1-2 sentence hook..."
             />
           </InputGroup>
@@ -259,7 +259,7 @@ function Step1({ data, onChange }) {
               value={data.longDescription}
               onChange={e => onChange({ ...data, longDescription: e.target.value })}
               rows={5}
-              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+              className="glass-input w-full rounded-lg px-4 py-3 text-text-primary outline-none placeholder:text-text-muted"
               placeholder="What will students learn in this course?"
             />
           </InputGroup>
@@ -270,7 +270,7 @@ function Step1({ data, onChange }) {
             <select
               value={data.category}
               onChange={e => onChange({ ...data, category: e.target.value })}
-              className="w-full appearance-none bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all cursor-pointer font-medium"
+              className="glass-input w-full cursor-pointer appearance-none rounded-lg px-4 py-3 font-medium text-text-primary outline-none"
             >
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -283,7 +283,7 @@ function Step1({ data, onChange }) {
             <select
               value={data.level}
               onChange={e => onChange({ ...data, level: e.target.value })}
-              className="w-full appearance-none bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all cursor-pointer font-medium"
+              className="glass-input w-full cursor-pointer appearance-none rounded-lg px-4 py-3 font-medium text-text-primary outline-none"
             >
               {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
@@ -296,7 +296,7 @@ function Step1({ data, onChange }) {
             type="text"
             value={data.duration}
             onChange={e => onChange({ ...data, duration: e.target.value })}
-            className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+            className="glass-input w-full rounded-lg px-4 py-3 text-text-primary outline-none"
             placeholder="e.g. 24 hours"
           />
         </InputGroup>
@@ -314,7 +314,7 @@ function Step1({ data, onChange }) {
               type="text"
               value={data.tagsRaw}
               onChange={e => onChange({ ...data, tagsRaw: e.target.value })}
-              className="w-full bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+              className="glass-input w-full rounded-lg px-4 py-3 text-text-primary outline-none"
               placeholder="Python, TensorFlow, Deep Learning"
             />
           </InputGroup>
@@ -371,11 +371,11 @@ function Step2({ chapters, onChange }) {
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-            <MonitorPlay className="w-5 h-5 text-teal-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-500/10">
+            <MonitorPlay className="h-5 w-5 text-accent-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold font-syne text-text-primary">Curriculum</h2>
+            <h2 className="font-display text-xl font-bold text-text-primary">Curriculum</h2>
             <p className="text-sm text-text-muted">{chapters.length} Chapter{chapters.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
@@ -395,7 +395,7 @@ function Step2({ chapters, onChange }) {
           return (
             <div
               key={ch.id}
-              className={`border rounded-2xl overflow-hidden transition-all duration-300 ${isExpanded ? 'border-primary-500/50 bg-bg-surface shadow-[0_4px_24px_rgba(0,0,0,0.2)]' : 'border-border-subtle bg-bg-elevated/30 hover:bg-bg-elevated/60'
+              className={`overflow-hidden rounded-lg border transition-all duration-300 ${isExpanded ? 'glass border-primary-400/50 shadow-glow' : 'border-border-subtle bg-bg-elevated/30 hover:bg-bg-elevated/60'
                 }`}
             >
               {/* Accordion Header */}
@@ -427,7 +427,7 @@ function Step2({ chapters, onChange }) {
                   {chapters.length > 1 && (
                     <div
                       onClick={(e) => { e.stopPropagation(); deleteChapter(ci); }}
-                      className="w-8 h-8 rounded-lg text-text-muted hover:bg-red-500/10 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-lg text-text-muted hover:bg-error-500/10 hover:text-error-500 flex items-center justify-center transition-colors cursor-pointer"
                       title="Delete Chapter"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -747,10 +747,10 @@ export default function CreateCourse() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">
+          <h1 className="heading-2 mb-2 text-gradient">
             Create Course
           </h1>
-          <p className="text-text-secondary font-dmsans">Build and publish your course step by step</p>
+          <p className="text-text-secondary">Build and publish your course step by step</p>
         </motion.div>
 
         {/* Custom Tailwind Stepper */}
@@ -767,7 +767,7 @@ export default function CreateCourse() {
 
             return (
               <div key={label} className="flex flex-col items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 z-10 ${isActive ? 'bg-primary-500 text-white shadow-[0_0_15px_rgba(108,127,216,0.4)] scale-110' :
+                <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-all duration-300 ${isActive ? 'scale-110 bg-gradient-primary text-white shadow-glow' :
                   isCompleted ? 'bg-primary-500 text-white' :
                     'bg-bg-elevated text-text-muted border-2 border-border-subtle'
                   }`}>
@@ -783,7 +783,7 @@ export default function CreateCourse() {
         </div>
 
         {/* Content Card */}
-        <div className="bg-bg-surface border border-border-subtle rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+        <div className="glass-lg overflow-hidden rounded-lg shadow-strong">
           <div className="p-6 md:p-8 lg:p-10">
             {/* Form Content Will Go Here */}
             {activeStep === 0 && <Step1 data={courseData} onChange={setCourseData} />}
@@ -791,7 +791,7 @@ export default function CreateCourse() {
             {activeStep === 2 && <Step3 grandAssessment={grandAssessment} onChange={setGrandAssessment} />}
 
             {error && (
-              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl flex items-center gap-2">
+              <div className="mt-6 flex items-center gap-2 rounded-lg border border-error-400/20 bg-error-500/10 p-4 text-error-400">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <p className="text-sm font-medium">{error}</p>
               </div>
@@ -802,7 +802,7 @@ export default function CreateCourse() {
               <button
                 onClick={() => setActiveStep(s => s - 1)}
                 disabled={activeStep === 0}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${activeStep === 0
+                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 font-medium transition-all ${activeStep === 0
                   ? 'opacity-50 cursor-not-allowed text-text-muted bg-bg-elevated/50'
                   : 'text-text-secondary bg-bg-elevated hover:bg-bg-elevated-hover hover:text-text-primary active:scale-95'
                   }`}
@@ -816,7 +816,7 @@ export default function CreateCourse() {
                   <div
                     key={i}
                     className={`h-2 rounded-full transition-all duration-300 ${i === activeStep ? 'w-6 bg-primary-500' :
-                      i < activeStep ? 'w-2 bg-teal-500' : 'w-2 bg-border-subtle'
+                      i < activeStep ? 'w-2 bg-success-500' : 'w-2 bg-border-subtle'
                       }`}
                   />
                 ))}
@@ -825,7 +825,7 @@ export default function CreateCourse() {
               {activeStep < STEPS.length - 1 ? (
                 <button
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95"
+                  className="flex items-center gap-2 rounded-lg bg-gradient-primary px-6 py-2.5 font-semibold text-white shadow-glow transition-all active:scale-95"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4" />
@@ -834,7 +834,7 @@ export default function CreateCourse() {
                 <button
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="flex items-center gap-2 px-7 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-neutral-900 font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-gradient-warning px-7 py-2.5 font-bold text-bg-base shadow-glow transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isPublishing ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <UploadCloud className="w-5 h-5 flex-shrink-0" />}
                   {isPublishing ? 'Publishing...' : 'Publish Course'}

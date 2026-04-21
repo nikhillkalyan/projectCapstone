@@ -1,21 +1,46 @@
-import { createContext, useContext, useState } from 'react';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
+import { createContext, useContext, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, CheckCircle2, Info, X, TriangleAlert } from 'lucide-react';
 import { db } from '../data/mockDatabase';
 import { useAuth } from './AuthContext';
 import { submitReview } from '../api/courseApi';
 
 const AppContext = createContext(null);
 
+const toastStyles = {
+  success: {
+    icon: CheckCircle2,
+    className: 'border-success-400/25 bg-success-500/12 text-success-400',
+  },
+  error: {
+    icon: AlertCircle,
+    className: 'border-error-400/25 bg-error-500/12 text-error-400',
+  },
+  warning: {
+    icon: TriangleAlert,
+    className: 'border-warning-400/25 bg-warning-500/12 text-warning-400',
+  },
+  info: {
+    icon: Info,
+    className: 'border-info-400/25 bg-info-500/12 text-info-400',
+  },
+};
+
 export function AppProvider({ children }) {
   const { user, updateUser } = useAuth();
   const [notification, setNotification] = useState(null);
+  const notificationTimer = useRef(null);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
+    window.clearTimeout(notificationTimer.current);
+    notificationTimer.current = window.setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleClose = () => setNotification(null);
+  const handleClose = () => {
+    window.clearTimeout(notificationTimer.current);
+    setNotification(null);
+  };
 
   const enrollCourse = (courseId) => {
     if (!user || user.role !== 'student') return;
@@ -119,23 +144,40 @@ export function AppProvider({ children }) {
       sendMessage, getMessages, getCourseProgress, db,
     }}>
       {children}
-      <Snackbar
-        open={!!notification}
-        autoHideDuration={3000}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={handleClose}
-          severity={notification?.type || 'success'}
-          variant="standard"
-          sx={{ minWidth: 260, fontWeight: 500 }}
-        >
-          {notification?.message}
-        </Alert>
-      </Snackbar>
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.96 }}
+            className="fixed right-4 top-4 z-[var(--z-toast)] w-[calc(100vw-2rem)] max-w-sm"
+          >
+            <Toast notification={notification} onClose={handleClose} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppContext.Provider>
   );
 }
 
 export const useApp = () => useContext(AppContext);
+
+function Toast({ notification, onClose }) {
+  const config = toastStyles[notification.type] || toastStyles.success;
+  const Icon = config.icon;
+
+  return (
+    <div className={`glass-lg flex items-start gap-3 rounded-lg border p-4 shadow-glass ${config.className}`}>
+      <Icon className="mt-0.5 h-5 w-5 shrink-0" />
+      <p className="flex-1 text-sm font-semibold leading-5 text-text-primary">{notification.message}</p>
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-md p-1 text-text-secondary transition hover:bg-white/[0.06] hover:text-text-primary"
+        aria-label="Close notification"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+}

@@ -82,6 +82,7 @@ src/main/java/backend/backend
 │   ├── StudentController.java
 │   ├── UniversityContextController.java
 │   ├── UniversityController.java
+│   ├── UniversityCourseController.java          [NEW]
 │   ├── UniversityUsersController.java
 │   └── UserController.java
 ├── Dto
@@ -93,6 +94,7 @@ src/main/java/backend/backend
 │   │   ├── CreateReviewRequest.java
 │   │   ├── CreateSectionRequest.java
 │   │   ├── CreateUniversityRequest.java
+│   │   ├── CreateUniversityCourseRequest.java   [NEW]
 │   │   ├── FlagRequest.java
 │   │   ├── InstructorSignupRequest.java
 │   │   ├── JoinUniversityRequest.java
@@ -126,6 +128,7 @@ src/main/java/backend/backend
 │       ├── StudentProgressSummaryResponse.java
 │       ├── StudentSummaryResponse.java
 │       ├── UniAdminDashboardResponse.java
+│       ├── UniversityCourseResponse.java         [NEW]
 │       ├── UniversityLookupResponse.java
 │       ├── UniversityResponse.java
 │       ├── UserProfileResponse.java
@@ -134,7 +137,7 @@ src/main/java/backend/backend
 │   ├── Assessment.java
 │   ├── Branch.java
 │   ├── Chapter.java
-│   ├── Course.java
+│   ├── Course.java                               [UPDATED — added weightTests, weightAttendance, weightLiveTests, weightProject, rejectionReason]
 │   ├── CourseAllocation.java
 │   ├── Enrollment.java
 │   ├── Instructor.java
@@ -162,7 +165,7 @@ src/main/java/backend/backend
 │   ├── BranchRepository.java
 │   ├── ChapterRepository.java
 │   ├── CourseAllocationRepository.java
-│   ├── CourseRepository.java
+│   ├── CourseRepository.java                     [UPDATED — added findByInstructorIdAndIsUniversityCourseTrue, findByUniversityIdAndIsUniversityCourseTrue]
 │   ├── EnrollmentRepository.java
 │   ├── InstructorRepository.java
 │   ├── LiveTestRepository.java
@@ -190,6 +193,7 @@ src/main/java/backend/backend
 │   │   ├── ProgressServiceImpl.java
 │   │   ├── StudentServiceImpl.java
 │   │   ├── UniversityContextServiceImpl.java
+│   │   ├── UniversityCourseServiceImpl.java      [NEW]
 │   │   ├── UniversityServiceImpl.java
 │   │   └── UserServiceImpl.java
 │   ├── AdminService.java
@@ -200,6 +204,7 @@ src/main/java/backend/backend
 │   ├── ProgressService.java
 │   ├── StudentService.java
 │   ├── UniversityContextService.java
+│   ├── UniversityCourseService.java              [NEW]
 │   ├── UniversityService.java
 │   └── UserService.java
 └── Utils
@@ -238,7 +243,7 @@ src
 │   ├── certificates
 │   │   └── Certificates.jsx
 │   ├── courses
-│   │   └── CoursePool.jsx
+│   │   └── CoursePool.jsx                        [UPDATED — fully wired, status tabs, filters, detail modal, approve/reject]
 │   ├── dashboard
 │   │   ├── Dashboard.css
 │   │   └── Dashboard.jsx
@@ -282,14 +287,26 @@ src
 │   │       ├── Sidebar.jsx
 │   │       ├── StudentLayout.jsx
 │   │       └── Topbar.jsx
-│   └── shared
-│       ├── Assessment.jsx
-│       ├── ChatWindow.jsx
-│       ├── CourseCard.jsx
-│       ├── EmptyState.jsx
-│       ├── ReviewCard.jsx
-│       ├── SectionShell.jsx
-│       └── StatCard.jsx
+│   ├── shared
+│   │   ├── Assessment.jsx
+│   │   ├── ChatWindow.jsx
+│   │   ├── CourseCard.jsx
+│   │   ├── EmptyState.jsx
+│   │   ├── ReviewCard.jsx
+│   │   ├── SectionShell.jsx
+│   │   └── StatCard.jsx
+│   └── ui
+│       ├── Badge.jsx
+│       ├── Button.jsx
+│       ├── Card.jsx
+│       ├── Dialog.jsx
+│       ├── Dropdown.jsx
+│       ├── index.js
+│       ├── Input.jsx
+│       ├── Modal.jsx
+│       ├── Skeleton.jsx
+│       ├── Spinner.jsx
+│       └── Tabs.jsx
 ├── context
 │   ├── AppContext.jsx
 │   ├── AuthContext.jsx
@@ -312,6 +329,7 @@ src
 │   │   └── _AuthPages.jsx
 │   ├── instructor
 │   │   ├── CreateCourse.jsx
+│   │   ├── CreateUniversityCourse.jsx            [NEW — university course form with dynamic weightage builder]
 │   │   ├── InstructorChat.jsx
 │   │   ├── InstructorCourses.jsx
 │   │   ├── InstructorDashboard.jsx
@@ -332,6 +350,10 @@ src
 │       ├── StudentChat.jsx
 │       ├── StudentDashboard.jsx
 │       └── StudentProfile.jsx
+├── styles
+│   └── glassmorphism.css
+├── theme
+│   └── design-tokens.js
 App.jsx
 main.jsx
 index.css
@@ -392,22 +414,30 @@ Part 3: Progress State & Development Backlog
 ============================================================
 
 ✅ Completed Features / Done
-1. Monorepo scaffold and project structure defined globally using separate Vite / React stacks.
-2. Complete JWT Authentication backend linking Students, Instructors, and Admin entities.
-3. Student and Instructor platform Signup/Login flows.
-4. Main EduForge Admin Portal (Tier 1) - Ability to view, block, verify, and delete incoming instructors.
-5. Instructor Waiting Room setup redirecting pending instructors correctly and preventing platform abuse.
-6. Scaffolded a bare-bones Uni-Admin Portal (Tier 2) alongside standard components.
-7. Core Backend University-user management endpoints (get students/instructors by university via the UniversityContextService/Controller).
-8. The Instructor University-signup onboarding workflow state issue is resolved, correctly maintaining dual statuses inside both the platform domain and university domain securely.
+1.  Monorepo scaffold and project structure defined globally using separate Vite / React stacks.
+2.  Complete JWT Authentication backend linking Students, Instructors, and Admin entities.
+3.  Student and Instructor platform Signup/Login flows.
+4.  Main EduForge Admin Portal (Tier 1) — Ability to view, block, verify, and delete incoming instructors.
+5.  Instructor Waiting Room setup redirecting pending instructors correctly and preventing platform abuse.
+6.  University creation (Tier 1 Admin) — auto join code generation, university admin credential creation, toggle active/inactive, reset admin password.
+7.  Uni-Admin Portal (Tier 2) — login, dashboard stats (students/instructors/branches/sections counts) fully wired to backend.
+8.  Branch & Section CRUD (Tier 2) — Branches.jsx fully wired; create/delete branches and sections with year grouping.
+9.  Student management (Tier 2) — Students.jsx wired; list all students with branch/year/section filters and search.
+10. Instructor management (Tier 2) — Instructors.jsx wired; list instructors, approve/reject/remove with reason modal.
+11. University Space onboarding (Tier 3) — UniversitySpace.jsx: join code lookup, student form (section/roll number/college/year), instructor form (branch/employee ID). Dual-status maintained correctly.
+12. University Course Creation (Tier 3 Instructor) — CreateUniversityCourse.jsx: title, description, targeting (branch + year), dynamic weightage builder (Tests / Attendance / Live Tests / Project — must sum to 100%). Submitted as PENDING to uni-admin pool. Backend validates instructor is APPROVED and weightages sum to 100.
+13. Course Pool (Tier 2 Uni-Admin) — CoursePool.jsx fully wired: status tabs (All/Pending/Approved/Rejected), branch filter, search, detail modal with full weightage breakdown, inline approve and reject-with-reason actions.
+14. Backend: UniversityCourseController + UniversityCourseService/Impl — create, list (instructor own), pool (admin), approve, reject. Security: instructor must belong to university and be APPROVED; branch must belong to same university; weightages must sum to 100.
 
-🚧 To Build Next / Action Items
-1. Complete Integration of Uni-Admin Portal Frontend: Strip mocked data inside React contexts and link `uni-admin` directly with backend GET routes.
-2. Master Data Configuration UI: Give Tier 2 University Admins screens to define Branches, Years, and Sections.
-3. Uni-Course Creation Engine: Build the form for instructors to construct dynamic courses with custom weightages and parameters meant exclusively for university scope.
-4. Course Pool & Allocation Dashboard: Screen for Tier 2 Admins to distribute mapped course modules into designated active semesters for designated sections.
-5. Live Tests / Websocket Engineering: Enable bidirectional realtime communication for synchronized timed assessments.
-6. The Jitsi Meet Integrations: Build interactive classroom modes dynamically spawned per section requirement.
-7. Project Space + GitHub Flow Automation: Require integrations fetching instructor GH credentials via OAuth and issuing bulk repository allocations, along with parsing pull request metadata.
-8. Live Grades Calculation matrix bridging lecture completes/tests passed directly to a realtime viewable React metric view.
-9. Final Marks verification flow and Digital Certificate Engine scaffolding.
+🚧 To Build Next / Action Items (in priority order)
+1.  Course Allocation Dashboard (Uni-Admin) — Allocations.jsx: uni-admin selects an APPROVED course from pool, assigns it to one or more sections (branch + year + section), sets course completion deadline. Students and instructor get notified.
+2.  Instructor University Course Studio — after allocation, instructor can dynamically add/edit chapters, upload materials, set deadlines per chapter/test, define penalty strategy for late submissions. Unlike public courses, fully editable throughout lifecycle.
+3.  Student University Space Home — students see all courses allocated to their section. Live running internal marks dashboard per course showing scores per category updated in real time.
+4.  Chapter Deadlines & Marks Engine — instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
+5.  Live Tests (WebSocket) — instructor launches timed test, all section students notified simultaneously, test auto-closes after duration, scores fed directly into marks engine.
+6.  Live Classes (Jitsi Integration) — instructor starts session, section students notified, join via Jitsi embed inside platform.
+7.  Project Space + GitHub Integration — group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
+8.  Final Marks Sheet — auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
+9.  Marks Review (Uni-Admin) — MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
+10. Certificate Engine — auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
+11. History Views — past course history for instructors (student list, group compositions, PRs, marks, submitted marks sheet) and for students (marks, team, project repo, PRs, certificate) per completed course.

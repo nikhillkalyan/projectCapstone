@@ -104,13 +104,13 @@ export default function CourseDetails() {
         return (
             <StudentLayout>
                 <div className="flex h-full items-center justify-center min-h-[60vh]">
-                    <div className="flex flex-col items-center p-8 bg-rose-500/5 border border-rose-500/20 rounded-3xl max-w-md text-center">
-                        <AlertCircle className="w-12 h-12 text-rose-400 mb-4" />
-                        <h2 className="text-xl font-syne font-bold text-rose-300 mb-2">Error</h2>
-                        <p className="text-rose-400/80 mb-6">{error || "Course not found."}</p>
+                    <div className="glass flex max-w-md flex-col items-center rounded-lg border-error-400/20 bg-error-500/5 p-8 text-center">
+                        <AlertCircle className="w-12 h-12 text-error-400 mb-4" />
+                        <h2 className="text-xl font-syne font-bold text-error-400 mb-2">Error</h2>
+                        <p className="text-error-400/80 mb-6">{error || "Course not found."}</p>
                         <button 
                             onClick={() => navigate('/student/explore')}
-                            className="px-6 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-bold rounded-xl transition-colors"
+                            className="rounded-lg bg-error-500/10 px-6 py-2.5 font-bold text-error-400 transition-colors hover:bg-error-500/20"
                         >
                             Back to Explore
                         </button>
@@ -125,21 +125,21 @@ export default function CourseDetails() {
         <div className="w-full mb-12 flex flex-col gap-6">
 
             {/* Title */}
-            <h1 className="text-4xl lg:text-5xl font-syne font-bold text-text-primary leading-[1.1] tracking-tight">
+            <h1 className="font-display text-4xl font-bold leading-[1.1] tracking-normal text-gradient lg:text-5xl">
                 {course.title}
             </h1>
 
             {/* Short Description */}
-            <p className="text-lg text-text-secondary max-w-3xl leading-relaxed font-dmsans">
+            <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">
                 {course.description}
             </p>
 
             {/* Badges */}
             <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3 py-1 rounded-full text-[0.75rem] font-syne font-bold border border-primary-500/30 bg-primary-500/10 text-primary-400 tracking-wide">
+                <span className="rounded-full border border-primary-400/30 bg-primary-500/10 px-3 py-1 font-display text-[0.75rem] font-bold tracking-wide text-primary-300">
                     {course.category}
                 </span>
-                <span className="px-3 py-1 rounded-full text-[0.75rem] font-syne font-bold border border-white/10 bg-white/5 text-text-secondary tracking-wide">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-display text-[0.75rem] font-bold tracking-wide text-text-secondary">
                     {course.level} Level
                 </span>
             </div>
@@ -179,10 +179,10 @@ export default function CourseDetails() {
     );
 
     const renderSidebarCTA = () => (
-        <div className="w-full bg-bg-surface border border-border-subtle rounded-2xl p-6 shadow-2xl shadow-black/40 flex flex-col gap-6">
+        <div className="glass flex w-full flex-col gap-6 rounded-lg p-6">
 
             {/* Thumbnail */}
-            <div className="w-full h-44 rounded-xl overflow-hidden relative border border-white/5 bg-bg-base">
+            <div className="relative h-44 w-full overflow-hidden rounded-lg border border-white/5 bg-bg-base">
                 <img
                     src={course.thumbnail || `https://source.unsplash.com/800x600/?education,${course.category}`}
                     alt={course.title}
@@ -192,7 +192,7 @@ export default function CourseDetails() {
 
                 {/* Badge */}
                 <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 rounded-full text-[0.7rem] font-syne font-bold border border-teal-500/30 bg-teal-500/15 text-teal-400 backdrop-blur-md tracking-wide">
+                    <span className="rounded-full border border-success-400/30 bg-success-500/15 px-3 py-1 font-display text-[0.7rem] font-bold tracking-wide text-success-400 backdrop-blur-md">
                         Free Course
                     </span>
                 </div>
@@ -203,7 +203,7 @@ export default function CourseDetails() {
                 {isEnrolled ? (
                     <button
                         onClick={() => navigate(`/student/course/${courseId}/learn`)}
-                        className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(108,127,216,0.15)] relative z-10"
+                        className="relative z-10 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gradient-primary font-bold text-white shadow-glow transition-all hover:scale-[1.02] active:scale-95"
                     >
                         <Play className="w-4 h-4 fill-current" />
                         {courseProgress?.isCompleted || courseProgress?.overallProgress >= 100 ? "Revisit Course" : "Continue Learning"}
@@ -212,7 +212,7 @@ export default function CourseDetails() {
                     <button
                         onClick={handleEnroll}
                         disabled={enrolling}
-                        className="w-full bg-white/[0.03] border border-border-subtle hover:border-primary-500 hover:bg-primary-500/10 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed relative z-10"
+                        className="relative z-10 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-white/[0.03] font-bold text-white transition-all hover:scale-[1.02] hover:border-primary-400/50 hover:bg-primary-500/10 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {enrolling ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -230,8 +230,8 @@ export default function CourseDetails() {
                         onClick={() => { setShowReviewModal(true); setReviewRating(0); setReviewText(''); }}
                         disabled={hasReviewed}
                         className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl transition-all border font-bold text-sm cursor-pointer ${hasReviewed 
-                            ? 'bg-white/5 border-border-subtle text-text-tertiary disabled:cursor-not-allowed'
-                            : 'bg-transparent border-amber-500/50 text-amber-500 hover:bg-amber-500/10 hover:shadow-lg shadow-amber-500/20'
+                            ? 'border-border-subtle bg-white/5 text-text-tertiary disabled:cursor-not-allowed'
+                            : 'border-warning-400/50 bg-transparent text-warning-400 shadow-warning-500/20 hover:bg-warning-500/10 hover:shadow-lg'
                         }`}
                     >
                         <MessageSquare className="w-4 h-4" />
@@ -276,12 +276,12 @@ export default function CourseDetails() {
             {/* Instructor Preview */}
             {(course.instructor || course.instructorName) && (
                 <div className="flex items-center gap-3 pt-1">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-teal-400 flex items-center justify-center shrink-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-accent shadow-glow">
                         <span className="text-white font-bold text-sm">{(course.instructor?.name || course.instructorName)?.charAt(0)}</span>
                     </div>
                     <div>
                         <p className="text-[0.7rem] text-text-secondary uppercase tracking-widest font-bold">Instructor</p>
-                        <p className={`font-syne font-bold text-[0.9rem] leading-tight ${course.instructor?.approvalStatus === 'REMOVED' ? 'text-red-400' : 'text-text-primary'}`}>
+                        <p className={`font-syne font-bold text-[0.9rem] leading-tight ${course.instructor?.approvalStatus === 'REMOVED' ? 'text-error-400' : 'text-text-primary'}`}>
                             {course.instructor?.approvalStatus === 'REMOVED' ? '[Removed Account]' : (course.instructor?.name || course.instructorName)}
                         </p>
                     </div>
@@ -311,11 +311,11 @@ export default function CourseDetails() {
                             <SectionShell
                                 title="About This Course"
                                 icon={Info}
-                                iconColor="text-teal-400"
+                                iconColor="text-success-400"
                                 delay={0.1}
                                 disableAnimation={true}
                             >
-                                <div className="prose prose-invert max-w-none font-dmsans text-text-secondary text-[0.95rem] leading-loose whitespace-pre-line">
+                                <div className="prose prose-invert max-w-none whitespace-pre-line text-[0.95rem] leading-loose text-text-secondary">
                                     {course.longDescription || course.description || "Course description placeholder. This area will focus cleanly on typography."}
                                 </div>
                             </SectionShell>
@@ -328,7 +328,7 @@ export default function CourseDetails() {
                                 delay={0.2}
                                 disableAnimation={true}
                             >
-                                <div className="w-full flex flex-col border border-border-subtle rounded-2xl overflow-hidden bg-bg-surface/30">
+                                <div className="glass-sm flex w-full flex-col overflow-hidden rounded-lg">
                                     {course.chapters?.length > 0 ? (
                                         course.chapters.map((chapter, index) => {
                                             const isExpanded = expandedChapter === chapter.id;
@@ -358,7 +358,7 @@ export default function CourseDetails() {
                                                         <motion.div
                                                             animate={{ rotate: isExpanded ? 180 : 0 }}
                                                             transition={{ duration: 0.2, ease: "easeInOut" }}
-                                                            className="w-8 h-8 rounded-full flex items-center justify-center bg-bg-elevated border border-border-subtle text-text-secondary group-hover:text-primary-400 group-hover:border-primary-500/50 transition-colors"
+                                                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-bg-elevated text-text-secondary transition-colors group-hover:border-primary-400/50 group-hover:text-primary-300"
                                                         >
                                                             <ChevronDown className="w-4 h-4" />
                                                         </motion.div>
@@ -378,7 +378,7 @@ export default function CourseDetails() {
                                                                     {chapter.lessons?.map((lesson, lessonIndex) => (
                                                                         <div
                                                                             key={lesson.id}
-                                                                            className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] transition-colors group cursor-default"
+                                                                            className="flex cursor-default items-center justify-between rounded-lg p-3 transition-colors hover:bg-white/[0.04]"
                                                                         >
                                                                             <div className="flex items-center gap-3">
                                                                                 <div className="w-8 h-8 rounded-lg bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-primary-400 transition-colors">
@@ -439,7 +439,7 @@ export default function CourseDetails() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="w-full flex flex-col items-center justify-center py-12 px-4 border border-border-subtle rounded-2xl bg-bg-surface/30">
+                                    <div className="glass-sm flex w-full flex-col items-center justify-center rounded-lg px-4 py-12">
                                         <div className="w-12 h-12 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-secondary mb-4">
                                             <Star className="w-5 h-5 opacity-50" />
                                         </div>
@@ -482,9 +482,9 @@ export default function CourseDetails() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center cursor-default"
+                            className="glass-lg relative flex w-full max-w-md cursor-default flex-col items-center rounded-lg p-8 text-center shadow-strong"
                         >
-                            <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Review Course</h3>
+                            <h3 className="mb-2 font-display text-2xl font-bold text-text-primary">Review Course</h3>
                             <p className="text-text-secondary font-medium mb-6 line-clamp-1">"{course.title}"</p>
 
                             <div className="flex justify-center gap-2 mb-6 cursor-pointer">
@@ -493,7 +493,7 @@ export default function CourseDetails() {
                                         key={starIndex}
                                         onClick={() => setReviewRating(starIndex)}
                                         className={`w-12 h-12 transition-all hover:scale-110 ${reviewRating >= starIndex
-                                            ? 'fill-[#D4A843] text-[#D4A843]'
+                                            ? 'fill-warning-400 text-warning-400'
                                             : 'fill-white/5 text-white/10'
                                             }`}
                                     />
@@ -505,13 +505,13 @@ export default function CourseDetails() {
                                 placeholder="What did you think of the course? (optional)"
                                 value={reviewText}
                                 onChange={e => setReviewText(e.target.value)}
-                                className="w-full bg-bg-base border border-border-subtle rounded-xl p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 mb-6 resize-none transition-all cursor-text"
+                                className="glass-input mb-6 w-full cursor-text resize-none rounded-lg p-4 text-text-primary outline-none"
                             />
 
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => setShowReviewModal(false)}
-                                    className="flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors cursor-pointer"
+                                    className="flex-1 cursor-pointer rounded-lg border border-border-subtle py-3 font-bold text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary"
                                 >
                                     Cancel
                                 </button>
@@ -526,7 +526,7 @@ export default function CourseDetails() {
                                              return {...prev, reviews: [...(prev.reviews || []), newReview]};
                                         });
                                     }}
-                                    className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-amber-500 to-[#E2D9BE] disabled:opacity-50 disabled:cursor-not-allowed text-[#09090b] font-bold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all font-syne cursor-pointer"
+                                    className="flex-[2] cursor-pointer rounded-lg bg-gradient-warning py-3 font-display font-bold text-bg-base shadow-glow transition-all disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Submit Review
                                 </button>

@@ -26,57 +26,50 @@ export default function Topbar({ user, toggleMobile, onLogout }) {
     };
 
     return (
-        <header className="h-16 w-full flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30 bg-bg-base/80 backdrop-blur-md border-b border-border-subtle shrink-0 transition-all">
+        <header className="glass-sm sticky top-0 z-30 flex h-[var(--topbar-height)] w-full shrink-0 items-center justify-between border-b border-glass-border px-4 transition-all sm:px-6 lg:px-8">
             <div className="flex items-center gap-4">
-                {/* Mobile Menu Toggle */}
                 <button
-                    className="lg:hidden text-text-secondary hover:text-white p-2 -ml-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+                    className="-ml-2 rounded-lg p-2 text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary lg:hidden"
                     onClick={toggleMobile}
                 >
                     <Menu size={20} />
                 </button>
 
-                {/* Sleek Search Bar */}
-                <div className="hidden sm:flex items-center bg-bg-surface border border-border-subtle rounded-full px-4 py-2 w-64 md:w-80 group focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all shadow-inner">
+                <div className="glass-input hidden h-11 w-64 items-center rounded-full px-4 md:w-80 sm:flex">
                     <Search size={16} className="text-text-secondary group-focus-within:text-primary-400 transition-colors" />
                     <input
                         type="text"
                         placeholder="Search courses..."
-                        className="bg-transparent border-none outline-none text-[0.85rem] ml-3 w-full text-text-primary placeholder-text-secondary font-dmsans"
+                        className="ml-3 w-full border-none bg-transparent text-[0.85rem] text-text-primary outline-none placeholder:text-text-secondary"
                     />
                 </div>
             </div>
 
-            {/* Right Controls */}
             <div className="flex items-center gap-3 sm:gap-5">
-                {/* Notification Bell */}
-                <button className="w-9 h-9 rounded-full hover:bg-white/[0.05] flex items-center justify-center text-text-secondary hover:text-white transition-colors relative">
+                <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary">
                     <Bell size={18} />
-                    <span className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-rose-500 ring-2 ring-bg-base"></span>
+                    <span className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-error-500 ring-2 ring-bg-base"></span>
                 </button>
 
-                {/* Vertical Divider */}
                 <div className="h-6 w-px bg-border-subtle hidden sm:block"></div>
 
-                {/* Profile Element Container */}
                 <div className="relative" ref={profileRef}>
                     <button
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
-                        className="flex items-center gap-2.5 pr-2 py-1 pl-1 rounded-full hover:bg-white/[0.03] transition-colors border border-transparent hover:border-border-subtle group outline-none"
+                        className="group flex items-center gap-2.5 rounded-full border border-transparent py-1 pl-1 pr-2 outline-none transition-colors hover:border-border-subtle hover:bg-white/[0.05]"
                     >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary-500 to-teal-400 flex items-center justify-center font-bold text-xs text-white shadow-lg shadow-primary-500/20 ring-2 ring-bg-surface group-hover:ring-border-subtle transition-all">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-accent text-xs font-bold text-white shadow-glow ring-2 ring-bg-surface transition-all group-hover:ring-border-subtle">
                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div className="hidden md:flex items-center gap-2">
                             <div className="text-left">
-                                <p className="text-[0.85rem] font-semibold text-text-primary leading-tight font-syne">{user?.name || 'Guest'}</p>
-                                <p className="text-[0.7rem] text-text-secondary font-medium mt-0.5 capitalize font-dmsans">{user?.role || 'User'}</p>
+                                <p className="font-display text-[0.85rem] font-semibold leading-tight text-text-primary">{user?.name || 'Guest'}</p>
+                                <p className="mt-0.5 text-[0.7rem] font-medium capitalize text-text-secondary">{user?.role || 'User'}</p>
                             </div>
                             <ChevronDown size={14} className={`text-text-secondary transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
                         </div>
                     </button>
 
-                    {/* Animated Dropdown Menu */}
                     <AnimatePresence>
                         {isProfileOpen && (
                             <motion.div
@@ -84,25 +77,24 @@ export default function Topbar({ user, toggleMobile, onLogout }) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                                className="absolute right-0 top-full mt-2 w-56 bg-bg-surface border border-border-subtle rounded-xl shadow-xl py-1.5 z-50 overflow-hidden"
+                                className="glass-lg absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-lg border border-glass-border py-1.5 shadow-strong"
                             >
-                                {/* Mobile-only User Info Header */}
                                 <div className="px-4 py-3 border-b border-border-subtle/50 mb-1 md:hidden">
-                                    <p className="text-[0.85rem] font-semibold text-text-primary leading-tight font-syne">{user?.name || 'Guest'}</p>
-                                    <p className="text-[0.7rem] text-text-secondary font-medium mt-0.5 capitalize font-dmsans">{user?.role || 'User'}</p>
+                                    <p className="font-display text-[0.85rem] font-semibold leading-tight text-text-primary">{user?.name || 'Guest'}</p>
+                                    <p className="mt-0.5 text-[0.7rem] font-medium capitalize text-text-secondary">{user?.role || 'User'}</p>
                                 </div>
 
                                 <div className="px-2">
                                     <button
                                         onClick={() => handleNavigation(`/${user?.role}/profile`)}
-                                        className="w-full flex items-center gap-3 px-3 py-2 text-[0.85rem] text-text-secondary hover:text-text-primary hover:bg-white/[0.05] rounded-lg transition-colors font-dmsans"
+                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[0.85rem] text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary"
                                     >
                                         <UserIcon size={16} />
                                         My Profile
                                     </button>
                                     <button
                                         onClick={() => handleNavigation(`/${user?.role}/settings`)}
-                                        className="w-full flex items-center gap-3 px-3 py-2 text-[0.85rem] text-text-secondary hover:text-text-primary hover:bg-white/[0.05] rounded-lg transition-colors font-dmsans"
+                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[0.85rem] text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary"
                                     >
                                         <Settings size={16} />
                                         Settings
@@ -115,7 +107,7 @@ export default function Topbar({ user, toggleMobile, onLogout }) {
                                             setIsProfileOpen(false);
                                             onLogout && onLogout();
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2 text-[0.85rem] text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors font-dmsans"
+                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[0.85rem] text-error-400 transition-colors hover:bg-error-500/10 hover:text-error-400"
                                     >
                                         <LogOut size={16} />
                                         Log Out

@@ -184,7 +184,7 @@ export default function Certificate() {
             <ArrowLeft className="w-4 h-4" />
             Back to Course
           </button>
-          <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-bold uppercase tracking-wider">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-success-500/10 border border-success-400/20 text-success-400 text-xs font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
             Verified Credential
           </div>
@@ -198,12 +198,12 @@ export default function Certificate() {
           className="w-full relative group"
         >
           {/* Decorative Background Glow (Hidden on print) */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-primary-500/20 to-teal-500/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-75 transition-opacity duration-1000 print:hidden" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-primary-500/20 to-accent-500/20 rounded-lg blur-2xl opacity-50 group-hover:opacity-75 transition-opacity duration-1000 print:hidden" />
 
           {/* Certificate Card */}
           <div
             ref={certRef}
-            className="relative w-full bg-[#0e0e11] border border-border-subtle rounded-[2rem] p-8 sm:p-16 md:p-20 flex flex-col items-center text-center overflow-hidden shadow-2xl print:shadow-none print:border-8 print:border-black print:rounded-none print:bg-white print:text-black"
+            className="relative w-full bg-bg-surface border border-border-subtle rounded-lg p-8 sm:p-16 md:p-20 flex flex-col items-center text-center overflow-hidden shadow-2xl print:shadow-none print:border-8 print:border-black print:rounded-none print:bg-white print:text-black"
           >
             {/* Background Watermark */}
             <Award className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] text-white/[0.02] pointer-events-none print:text-black/[0.03]" />
@@ -245,11 +245,11 @@ export default function Certificate() {
             </div>
 
             {/* Score Block */}
-            <div className="relative z-10 inline-flex items-center gap-4 sm:gap-6 bg-teal-500/5 border border-teal-500/20 px-6 sm:px-8 py-3 sm:py-4 rounded-full mb-16 sm:mb-24 print:bg-gray-100 print:border-gray-300">
+            <div className="relative z-10 inline-flex items-center gap-4 sm:gap-6 bg-success-500/8 border border-success-400/20 px-6 sm:px-8 py-3 sm:py-4 rounded-full mb-16 sm:mb-24 print:bg-gray-100 print:border-gray-300">
               <span className="text-text-secondary text-xs sm:text-sm uppercase tracking-widest font-medium print:text-gray-600">
                 Final Assessment Score
               </span>
-              <span className="font-syne font-extrabold text-2xl sm:text-3xl text-teal-400 print:text-black">
+              <span className="font-syne font-extrabold text-2xl sm:text-3xl text-success-400 print:text-black">
                 {finalScore}%
               </span>
             </div>

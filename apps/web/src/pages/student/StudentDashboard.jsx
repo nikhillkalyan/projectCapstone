@@ -119,7 +119,7 @@ export default function StudentDashboard() {
       {/* Header */}
       <div className="animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <p className="text-[#6C7FD8] text-xs font-semibold tracking-wider mb-1 uppercase drop-shadow-[0_0_8px_rgba(108,127,216,0.3)]">
+          <p className="text-primary-400 text-xs font-semibold tracking-wider mb-1 uppercase drop-shadow-[0_0_8px_rgba(108,127,216,0.3)]">
             {dateStr}
           </p>
           <h1 className="font-syne font-extrabold text-white text-3xl md:text-4xl leading-tight mb-2">
@@ -133,7 +133,7 @@ export default function StudentDashboard() {
         </div>
         <button
           onClick={() => navigate('/student/explore')}
-          className="animate-pulse-glow flex-shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#D4A843] to-[#D4C9A5] text-[#161B27] rounded-xl font-bold font-syne shadow-lg shadow-[#D4A843]/20 hover:shadow-[#D4A843]/40 transition-all hover:-translate-y-0.5 whitespace-nowrap"
+          className="animate-pulse-glow flex-shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-warning-500 to-accent-400 text-bg-base rounded-xl font-bold font-syne shadow-lg shadow-warning-500/20 hover:shadow-warning-500/35 transition-all hover:-translate-y-0.5 whitespace-nowrap"
         >
           <Compass className="w-5 h-5" />
           <span>Explore Courses</span>
@@ -152,7 +152,7 @@ export default function StudentDashboard() {
         <SectionShell
           title="Continue Learning"
           icon={Play}
-          iconColor="text-teal-400 fill-current"
+          iconColor="text-success-400 fill-current"
           delay={2}
           action={
             <button

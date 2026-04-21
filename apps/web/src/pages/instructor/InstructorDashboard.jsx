@@ -70,16 +70,16 @@ export default function InstructorDashboard() {
         className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">
+          <h1 className="heading-2 mb-2 text-gradient">
             Instructor Dashboard
           </h1>
-          <p className="text-text-secondary font-dmsans">
+          <p className="text-text-secondary">
             Welcome back, {user?.name?.split(' ')[0]}! Here's your overview.
           </p>
         </div>
         <button
           onClick={() => navigate('/instructor/create-course')}
-          className="bg-primary-500 hover:bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95 cursor-pointer max-w-fit"
+          className="flex max-w-fit cursor-pointer items-center justify-center gap-2 rounded-lg bg-gradient-primary px-6 py-2.5 font-semibold text-white shadow-glow transition-all hover:-translate-y-0.5 active:scale-95"
         >
           <Plus className="w-5 h-5 flex-shrink-0" />
           Create Course
@@ -117,14 +117,14 @@ export default function InstructorDashboard() {
                 <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/instructor/course/${course.id}`); }}
-                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-primary-500 hover:border-primary-400 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-black/60 text-white backdrop-blur-md transition-colors hover:border-primary-400 hover:bg-primary-500"
                     title="Manage Course"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/instructor/students/${course.id}`); }}
-                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-teal-500 hover:border-teal-400 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-black/60 text-white backdrop-blur-md transition-colors hover:border-accent-400 hover:bg-accent-500"
                     title="View Students"
                   >
                     <BarChart2 className="w-4 h-4" />
@@ -161,7 +161,7 @@ export default function InstructorDashboard() {
           action={
             <button
               onClick={() => navigate('/instructor/create-course')}
-              className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:shadow-[0_8px_24px_rgba(108,127,216,0.25)] transition-all hover:scale-[1.02] flex items-center justify-center gap-2 mt-2"
+              className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-primary px-6 py-2.5 font-semibold text-white shadow-glow transition-all hover:scale-[1.02]"
             >
               <Plus className="w-5 h-5 fill-current" />
               Create Course

@@ -37,7 +37,7 @@ export default function InstructorChat() {
   return (
     <InstructorLayout disablePadding>
       {/* Split Pane Layout */}
-      <div className="flex h-full w-full bg-bg-base overflow-hidden relative">
+      <div className="relative flex h-full w-full overflow-hidden bg-transparent">
 
         {/* Visual Separator Line (Hidden on mobile) */}
         <div className="hidden md:block absolute left-72 xl:left-80 top-0 bottom-0 w-px bg-border-subtle/50 z-10" />
@@ -45,14 +45,14 @@ export default function InstructorChat() {
         {/* Left Pane: Contacts Sidebar */}
         <div className={`
                     absolute md:relative z-20 md:z-auto
-                    w-full md:w-72 xl:w-80 h-full flex flex-col bg-bg-surface/50 border-r border-transparent
+                    w-full md:w-72 xl:w-80 h-full flex flex-col glass-sm border-r border-glass-border
                     transition-transform duration-300
                     ${selectedChat ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
                 `}>
           {/* Header */}
           <div className="p-6 border-b border-border-subtle/50 pb-5">
             <div className="flex items-center gap-3 mb-4">
-              <h1 className="text-xl font-syne font-bold text-text-primary capitalize">Messages</h1>
+              <h1 className="font-display text-xl font-bold capitalize text-text-primary">Messages</h1>
               {totalUnread > 0 && (
                 <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary-500 text-white text-[10px] font-bold">
                   {totalUnread}
@@ -69,7 +69,7 @@ export default function InstructorChat() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search students or courses..."
-                className="w-full bg-bg-elevated border border-border-subtle text-text-primary text-xs rounded-xl pl-9 pr-4 py-2.5 focus:outline-none focus:border-primary-500/50 transition-colors placeholder:text-text-muted/70"
+                className="glass-input w-full rounded-lg py-2.5 pl-9 pr-4 text-xs text-text-primary outline-none placeholder:text-text-muted/70"
               />
             </div>
           </div>
@@ -106,17 +106,17 @@ export default function InstructorChat() {
                         ));
                       }
                     }}
-                    className={`w-full text-left flex items-start gap-4 px-3 py-3 rounded-2xl transition-all border ${isActive
-                      ? 'bg-primary-500/10 border-primary-500/20 shadow-sm'
+                    className={`flex w-full items-start gap-4 rounded-lg border px-3 py-3 text-left transition-all ${isActive
+                      ? 'border-primary-400/20 bg-primary-500/10 shadow-glow'
                       : 'bg-transparent border-transparent hover:bg-white/[0.03] hover:border-border-subtle/50'
                       }`}
                   >
                     {/* Avatar */}
                     <div className="relative shrink-0 w-11 h-11">
                       {c.avatarUrl ? (
-                         <img src={c.avatarUrl} alt={c.userName} className="w-11 h-11 rounded-[1.2rem] object-cover shadow-sm" />
+                         <img src={c.avatarUrl} alt={c.userName} className="h-11 w-11 rounded-lg object-cover shadow-sm" />
                       ) : (
-                         <div className="w-11 h-11 rounded-[1.2rem] bg-gradient-to-tr from-accent2-main to-teal-400 flex items-center justify-center text-white font-syne font-bold shadow-sm">
+                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-accent font-display font-bold text-white shadow-glow">
                            {initials}
                          </div>
                       )}
@@ -130,11 +130,11 @@ export default function InstructorChat() {
                     {/* Text Info */}
                     <div className="flex-1 min-w-0 pt-0.5">
                       <div className="flex items-center justify-between mb-0.5">
-                        <h3 className={`font-syne text-sm font-bold truncate ${c.unreadCount > 0 ? 'text-text-primary' : (isActive ? 'text-primary-400' : 'text-text-primary')}`}>
+                        <h3 className={`truncate font-display text-sm font-bold ${c.unreadCount > 0 ? 'text-text-primary' : (isActive ? 'text-primary-300' : 'text-text-primary')}`}>
                           {c.userName}
                         </h3>
                       </div>
-                      <p className={`text-xs truncate pr-2 font-dmsans ${c.unreadCount > 0 ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>
+                      <p className={`truncate pr-2 text-xs ${c.unreadCount > 0 ? 'font-medium text-text-primary' : 'text-text-secondary'}`}>
                         {c.courseTitle}
                       </p>
                     </div>
@@ -148,7 +148,7 @@ export default function InstructorChat() {
         {/* Right Pane: Main Chat Area */}
         <div className={`
                     absolute md:relative z-10 md:z-auto
-                    w-full h-full flex flex-col bg-bg-base
+                    w-full h-full flex flex-col bg-transparent
                     transition-transform duration-300
                     ${selectedChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
                 `}>
@@ -162,7 +162,7 @@ export default function InstructorChat() {
               >
                 <ChevronLeft size={20} />
               </button>
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent2-main to-teal-400 flex items-center justify-center text-white font-syne font-bold shadow-sm mr-3 shrink-0 overflow-hidden">
+              <div className="mr-3 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-accent font-display font-bold text-white shadow-glow">
                 {selectedChat.avatarUrl ? (
                    <img src={selectedChat.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -170,7 +170,7 @@ export default function InstructorChat() {
                 )}
               </div>
               <div className="min-w-0 mr-2 flex-1">
-                <div className="font-syne font-bold text-sm truncate text-text-primary">
+                <div className="truncate font-display text-sm font-bold text-text-primary">
                   {selectedChat.userName}
                 </div>
                 <div className="text-[10px] text-text-secondary truncate mt-0.5">
@@ -191,7 +191,7 @@ export default function InstructorChat() {
           ) : (
             <div className="hidden md:flex h-full flex-col items-center justify-center text-center opacity-40">
               <MessageSquare className="w-16 h-16 text-text-secondary mb-4" />
-              <h2 className="font-syne text-xl text-text-primary font-bold mb-2">Your Messages</h2>
+              <h2 className="mb-2 font-display text-xl font-bold text-text-primary">Your Messages</h2>
               <p className="text-sm text-text-secondary max-w-xs">
                 Select a conversation from the sidebar to start chatting with your students.
               </p>

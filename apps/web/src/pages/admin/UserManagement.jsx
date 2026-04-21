@@ -26,20 +26,20 @@ function UserManagement() {
   );
 
   return (
-    <div className="flex bg-slate-950 min-h-screen text-white">
+    <div className="mesh-bg flex min-h-screen text-text-primary">
       <AdminSidebar />
-      <main className="flex-1 ml-64 p-8">
-        <h1 className="text-3xl font-bold mb-8">User Management</h1>
+      <main className="ml-64 flex-1 p-8">
+        <h1 className="heading-2 mb-8 text-gradient">User Management</h1>
         
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="glass rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Registered Users</h2>
+            <h2 className="font-display text-xl font-semibold">Registered Users</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-slate-400" size={20} />
+              <Search className="absolute left-3 top-2.5 text-text-secondary" size={20} />
               <input 
                 type="text" 
                 placeholder="Search users..." 
-                className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-white w-64"
+                className="glass-input w-64 rounded-lg py-2 pl-10 pr-4 text-text-primary outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -49,7 +49,7 @@ function UserManagement() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400">
+                <tr className="border-b border-border-subtle text-text-secondary">
                   <th className="pb-3 font-semibold">Name</th>
                   <th className="pb-3 font-semibold">Email</th>
                   <th className="pb-3 font-semibold">Role</th>
@@ -59,22 +59,22 @@ function UserManagement() {
               </thead>
               <tbody>
                 {filteredUsers.map(user => (
-                  <tr key={user.id} className="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors">
+                  <tr key={user.id} className="border-b border-border-subtle/60 transition-colors hover:bg-white/[0.04]">
                     <td className="py-4 font-medium">{user.name}</td>
-                    <td className="py-4 text-slate-300">{user.email}</td>
+                    <td className="py-4 text-text-secondary">{user.email}</td>
                     <td className="py-4">
-                      <span className={`px-2 py-1 rounded text-xs ${user.role === 'INSTRUCTOR' ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-300'}`}>
+                      <span className={`rounded px-2 py-1 text-xs ${user.role === 'INSTRUCTOR' ? 'bg-primary-500/15 text-primary-300' : 'bg-accent-500/15 text-accent-400'}`}>
                         {user.role}
                       </span>
                     </td>
                     <td className="py-4">
-                      <span className={`flex items-center space-x-1 text-sm ${user.active ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className={`flex items-center gap-1 text-sm ${user.active ? 'text-success-400' : 'text-error-400'}`}>
                         {user.active ? <UserCheck size={16} /> : <UserX size={16} />}
                         <span>{user.active ? 'Active' : 'Suspended'}</span>
                       </span>
                     </td>
                     <td className="py-4">
-                      <button className="text-slate-400 hover:text-white underline text-sm transition-colors">
+                      <button className="text-sm text-text-secondary underline transition-colors hover:text-text-primary">
                         {user.active ? 'Suspend' : 'Activate'}
                       </button>
                     </td>

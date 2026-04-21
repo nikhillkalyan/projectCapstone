@@ -106,14 +106,14 @@ export function EnrolledCourses() {
           className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"
         >
           <div>
-            <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">My Courses</h1>
-            <p className="text-text-secondary font-dmsans">
+            <h1 className="heading-2 mb-2 text-gradient">My Courses</h1>
+            <p className="text-text-secondary">
               {enrolled.length} course{enrolled.length !== 1 ? 's' : ''} enrolled
             </p>
           </div>
           <button
             onClick={() => navigate('/student/explore')}
-            className="bg-primary-500 hover:bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 active:scale-95 cursor-pointer max-w-fit"
+            className="flex max-w-fit cursor-pointer items-center justify-center gap-2 rounded-lg bg-gradient-primary px-6 py-2.5 font-semibold text-white shadow-glow transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <Compass className="w-5 h-5" />
             Explore More
@@ -128,7 +128,7 @@ export function EnrolledCourses() {
             action={
               <button
                 onClick={() => navigate('/student/explore')}
-                className="bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/30 font-semibold flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all active:scale-95 cursor-pointer"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary-400/30 bg-primary-500/10 px-8 py-3 font-semibold text-primary-300 transition-all hover:bg-primary-500/20 active:scale-95"
               >
                 <Compass className="w-5 h-5" />
                 Explore Courses
@@ -197,11 +197,11 @@ export function FavoriteCourses() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2 flex flex-row items-center gap-3">
-            <Heart className="w-8 h-8 text-rose-500 fill-rose-500/20" />
+          <h1 className="heading-2 mb-2 flex flex-row items-center gap-3 text-gradient">
+            <Heart className="h-8 w-8 fill-error-500/20 text-error-400" />
             Favorite Courses
           </h1>
-          <p className="text-text-secondary font-dmsans">
+          <p className="text-text-secondary">
             {favorites.length} course{favorites.length !== 1 ? 's' : ''} saved
           </p>
         </motion.div>
@@ -214,7 +214,7 @@ export function FavoriteCourses() {
             action={
               <button
                 onClick={() => navigate('/student/explore')}
-                className="bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/30 font-semibold flex items-center justify-center gap-2 px-8 py-3 rounded-xl transition-all active:scale-95 cursor-pointer"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary-400/30 bg-primary-500/10 px-8 py-3 font-semibold text-primary-300 transition-all hover:bg-primary-500/20 active:scale-95"
               >
                 <Compass className="w-5 h-5" />
                 Explore Courses

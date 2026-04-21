@@ -12,10 +12,10 @@ const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 const sortOptions = ['Most Popular', 'Highest Rated', 'Newest'];
 
 const catStyles = {
-  AIML: 'bg-primary-900/30 text-primary-400 border-primary-500/30',
-  Cloud: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
-  DataScience: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  Cybersecurity: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  AIML: 'bg-primary-500/12 text-primary-300 border-primary-400/30',
+  Cloud: 'bg-accent-500/12 text-accent-400 border-accent-400/30',
+  DataScience: 'bg-warning-500/12 text-warning-400 border-warning-400/30',
+  Cybersecurity: 'bg-error-500/12 text-error-400 border-error-400/30',
 };
 
 const CustomSelect = ({ label, value, options, onChange }) => {
@@ -34,13 +34,13 @@ const CustomSelect = ({ label, value, options, onChange }) => {
 
   return (
     <div ref={ref} className="relative w-full">
-      <label className="block text-[0.7rem] font-bold text-text-secondary uppercase tracking-widest mb-1.5 px-1 font-syne">
+      <label className="mb-1.5 block px-1 font-display text-[0.7rem] font-bold uppercase tracking-wide text-text-secondary">
         {label}
       </label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 sm:py-2.5 bg-bg-surface/50 border border-border-subtle rounded-xl text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 hover:bg-white/[0.03] transition-all cursor-pointer"
+        className="glass-input flex w-full cursor-pointer items-center justify-between rounded-lg px-4 py-3 text-sm text-text-primary transition-all sm:py-2.5"
       >
         <span className="truncate">{value === 'All' && label !== 'Sort' ? (label === 'Category' ? 'All Categories' : `All ${label}s`) : value}</span>
         <ChevronDown className={`w-4 h-4 text-text-secondary transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -53,13 +53,13 @@ const CustomSelect = ({ label, value, options, onChange }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 bg-bg-surface border border-border-subtle rounded-xl shadow-xl shadow-black/50 overflow-hidden py-1 backdrop-blur-xl"
+            className="glass-lg absolute z-50 mt-2 w-full overflow-hidden rounded-lg py-1 shadow-strong"
           >
             {options.map(opt => (
               <button
                 key={opt}
                 onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`w-full text-left px-4 py-2.5 sm:py-2 text-sm transition-colors hover:bg-white/[0.05] cursor-pointer ${value === opt ? 'text-primary-400 font-bold bg-primary-500/10' : 'text-text-primary'}`}
+                className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/[0.06] sm:py-2 ${value === opt ? 'bg-primary-500/10 font-bold text-primary-300' : 'text-text-primary'}`}
               >
                 {opt === 'All' && label !== 'Sort' ? (label === 'Category' ? 'All Categories' : `All ${label}s`) : opt}
               </button>
@@ -175,11 +175,11 @@ export default function ExploreCourses() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">Explore Courses</h1>
+          <h1 className="heading-2 mb-2 text-gradient">Explore Courses</h1>
           {loading ? (
-             <p className="text-text-secondary font-dmsans">Searching courses...</p>
+             <p className="text-text-secondary">Searching courses...</p>
           ) : (
-            <p className="text-text-secondary font-dmsans">
+            <p className="text-text-secondary">
               {courses.length} course{courses.length !== 1 ? 's' : ''} found{search && ` for "${search}"`}
             </p>
           )}
@@ -190,12 +190,12 @@ export default function ExploreCourses() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative z-30 mb-10 w-full rounded-2xl bg-[#09090b]/60 backdrop-blur-xl border border-border-subtle p-4 md:p-6 shadow-2xl overflow-visible"
+          className="glass relative z-30 mb-10 w-full overflow-visible rounded-lg p-4 md:p-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
             {/* Search Bar - Larger */}
             <div className="md:col-span-5 relative w-full">
-              <label className="block text-[0.7rem] font-bold text-text-secondary uppercase tracking-widest mb-1.5 px-1 font-syne">
+              <label className="mb-1.5 block px-1 font-display text-[0.7rem] font-bold uppercase tracking-wide text-text-secondary">
                 Search
               </label>
               <div className="relative flex items-center w-full group">
@@ -205,7 +205,7 @@ export default function ExploreCourses() {
                   placeholder="Search courses, topics, instructors..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-11 pr-10 py-3 sm:py-2.5 bg-bg-surface/50 border border-border-subtle rounded-xl text-text-primary text-sm focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all placeholder:text-text-secondary/50"
+                  className="glass-input w-full rounded-lg py-3 pl-11 pr-10 text-sm text-text-primary outline-none placeholder:text-text-secondary/50 sm:py-2.5"
                 />
                 {search && (
                   <button
@@ -245,7 +245,7 @@ export default function ExploreCourses() {
                   </div>
                 )}
                 {level !== 'All' && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-amber-500/10 text-amber-500 border-amber-500/30 text-xs font-syne font-bold">
+                  <div className="flex items-center gap-1.5 rounded-full border border-warning-400/30 bg-warning-500/10 px-2.5 py-1 font-display text-xs font-bold text-warning-400">
                     {level}
                     <button onClick={() => setLevel('All')} className="hover:text-white hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer">
                       <X className="w-3 h-3" />
@@ -254,7 +254,7 @@ export default function ExploreCourses() {
                 )}
                 <button
                   onClick={() => { setCategory('All'); setLevel('All'); setSearch(''); }}
-                  className="text-xs text-text-secondary hover:text-white border border-border-subtle hover:bg-white/5 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+                  className="cursor-pointer rounded-full border border-border-subtle px-2.5 py-1 text-xs text-text-secondary transition-colors hover:bg-white/5 hover:text-white"
                 >
                   Clear all
                 </button>
@@ -272,8 +272,8 @@ export default function ExploreCourses() {
               exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
               className="mb-12"
             >
-              <h2 className="text-xl font-syne font-bold text-text-primary mb-6 flex items-center gap-2">
-                <span className="text-amber-400">⚡</span> Based on Your Interests
+              <h2 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-text-primary">
+                <span className="text-warning-400">Featured</span> Based on Your Interests
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {recommended.map(course => (
@@ -291,7 +291,7 @@ export default function ExploreCourses() {
 
         {/* All Courses Grid */}
         <div className="w-full">
-          <h2 className="text-xl font-syne font-bold text-text-primary mb-6">
+          <h2 className="mb-6 font-display text-xl font-bold text-text-primary">
             {search ? 'Search Results' : category !== 'All' ? `${category} Courses` : 'All Courses'}
           </h2>
 
@@ -299,11 +299,11 @@ export default function ExploreCourses() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 bg-rose-500/5 border border-rose-500/20 rounded-2xl"
+              className="glass flex flex-col items-center justify-center rounded-lg border-error-400/20 bg-error-500/5 py-20"
             >
-              <AlertCircle className="text-rose-400 w-10 h-10 mb-4" />
-              <h3 className="text-xl font-syne font-bold text-rose-300 mb-2">Error</h3>
-              <p className="text-rose-400/80">{fetchError}</p>
+              <AlertCircle className="mb-4 h-10 w-10 text-error-400" />
+              <h3 className="mb-2 font-display text-xl font-bold text-error-400">Error</h3>
+              <p className="text-error-400/80">{fetchError}</p>
             </motion.div>
           ) : loading ? (
              <motion.div
@@ -318,14 +318,14 @@ export default function ExploreCourses() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 bg-bg-surface/30 border border-border-subtle rounded-2xl"
+              className="glass flex flex-col items-center justify-center rounded-lg py-20"
             >
               <div className="text-5xl mb-4 opacity-50">🔍</div>
-              <h3 className="text-xl font-syne font-bold text-text-primary mb-2">No courses found</h3>
+              <h3 className="mb-2 font-display text-xl font-bold text-text-primary">No courses found</h3>
               <p className="text-text-secondary">Try adjusting your search or filters to find what you're looking for.</p>
               <button
                 onClick={() => { setSearch(''); setCategory('All'); setLevel('All'); }}
-                className="mt-6 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-border-subtle hover:border-text-secondary text-text-primary rounded-xl transition-all cursor-pointer font-medium active:scale-95"
+                className="mt-6 cursor-pointer rounded-lg border border-border-subtle bg-white/5 px-6 py-2.5 font-medium text-text-primary transition-all hover:border-text-secondary hover:bg-white/10 active:scale-95"
               >
                 Clear all filters
               </button>

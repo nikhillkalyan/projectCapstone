@@ -140,28 +140,27 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
   const initials = otherName?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <div className="flex flex-col h-full bg-bg-base relative overflow-hidden">
-      {/* Header Sticky */}
-      <div className="flex-none px-6 py-4 border-b border-border-subtle/50 bg-bg-surface/80 backdrop-blur-md z-10 hidden md:flex items-center gap-4">
-        <div className="w-10 h-10 rounded-[1.2rem] bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-syne font-bold shadow-sm overflow-hidden">
+    <div className="relative flex h-full flex-col overflow-hidden bg-transparent">
+      <div className="glass-sm z-10 hidden flex-none items-center gap-4 border-b border-border-subtle/50 px-6 py-4 md:flex">
+        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-gradient-accent font-display font-bold text-white shadow-glow">
           {otherAvatar ? <img src={otherAvatar} alt="" className="w-full h-full object-cover" /> : initials}
         </div>
         <div>
-          <h2 className="font-syne font-bold text-text-primary text-base">{otherName}</h2>
+          <h2 className="font-display text-base font-bold text-text-primary">{otherName}</h2>
           <p className="text-text-secondary text-xs">{courseTitle}</p>
         </div>
       </div>
 
       {isRemoved && (
-          <div className="bg-red-500/10 border-b border-red-500/20 px-6 py-3 flex items-center justify-center text-center backdrop-blur-md z-10 shrink-0">
-            <p className="text-red-400 text-xs font-medium uppercase tracking-wider">
+          <div className="z-10 flex shrink-0 items-center justify-center border-b border-error-400/20 bg-error-500/10 px-6 py-3 text-center backdrop-blur-md">
+            <p className="text-xs font-medium uppercase tracking-wide text-error-400">
                This instructor has been removed from the platform. Chat is read-only.
             </p>
           </div>
       )}
 
       {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth custom-scrollbar">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-4 py-6 scroll-smooth sm:px-6">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
             <Loader2 className="w-10 h-10 animate-spin text-text-secondary mb-4" />
@@ -201,20 +200,20 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
                     <div className={`flex items-end gap-3 max-w-[85%] sm:max-w-[75%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                       {/* Avatar */}
                       {!isMine && (
-                        <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-200 flex items-center justify-center text-black font-syne font-bold text-xs shadow-sm mb-1 hidden sm:flex overflow-hidden">
+                        <div className="mb-1 hidden h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-accent font-display text-xs font-bold text-white shadow-glow sm:flex">
                           {msg.senderAvatar ? <img src={msg.senderAvatar} alt="" className="w-full h-full object-cover" /> : msg.senderName.charAt(0).toUpperCase()}
                         </div>
                       )}
 
                       {/* Message Bubble */}
-                      <div className={`relative px-5 py-3.5 group break-all ${isMine
-                        ? 'bg-primary-500/10 border border-primary-500/20 text-text-primary rounded-2xl rounded-br-sm'
-                        : 'bg-bg-surface border border-border-subtle text-text-primary rounded-2xl rounded-bl-sm'
+                      <div className={`group relative break-all px-5 py-3.5 ${isMine
+                        ? 'rounded-lg rounded-br-sm border border-primary-400/20 bg-primary-500/12 text-text-primary shadow-glow'
+                        : 'glass-sm rounded-lg rounded-bl-sm text-text-primary'
                         } ${msg.isDeleted ? 'opacity-70 bg-transparent border-transparent italic' : 'group-hover:shadow-md transition-shadow'}`}>
                         
                         {/* Render Reply Snippet inside Bubble */}
                         {msg.replyToId && !msg.isDeleted && (
-                          <div className={`mb-2 pr-4 pl-3 py-2 border-l-2 rounded-r-md text-xs relative ${isMine ? 'bg-bg-surface/50 border-primary-500/50 text-text-secondary w-fit' : 'bg-bg-base/50 border-border-subtle text-text-secondary w-fit'}`}>
+                          <div className={`relative mb-2 w-fit rounded-r-md border-l-2 py-2 pl-3 pr-4 text-xs ${isMine ? 'border-primary-400/50 bg-bg-surface/50 text-text-secondary' : 'border-border-subtle bg-bg-base/50 text-text-secondary'}`}>
                             <div className="flex items-center gap-1.5 font-bold mb-0.5 max-w-full">
                                <CornerDownRight size={12}/>
                                {msg.replyToSenderName}
@@ -223,7 +222,7 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
                           </div>
                         )}
 
-                        <div className="text-[0.9rem] leading-relaxed whitespace-pre-wrap font-dmsans">
+                        <div className="whitespace-pre-wrap text-[0.9rem] leading-relaxed">
                           {msg.isDeleted ? '*This message was deleted.*' : msg.messageText}
                         </div>
                         
@@ -239,30 +238,30 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
                           <div className={`absolute top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 hidden sm:flex z-10 ${isMine ? '-left-12' : '-right-12'}`}>
                             <button
                               onClick={(e) => { e.stopPropagation(); initiateReply(msg); }}
-                              className="p-1.5 rounded-md hover:bg-bg-surface border border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary transition-all bg-bg-base shadow-sm"
+                              className="rounded-md border border-transparent bg-bg-base p-1.5 text-text-secondary shadow-sm transition-all hover:border-border-subtle hover:bg-bg-surface hover:text-text-primary"
                               title="Reply"
                             >
                               <Reply className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(msg.messageText, msg.id); }}
-                              className="p-1.5 rounded-md hover:bg-bg-surface border border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary transition-all bg-bg-base shadow-sm"
+                              className="rounded-md border border-transparent bg-bg-base p-1.5 text-text-secondary shadow-sm transition-all hover:border-border-subtle hover:bg-bg-surface hover:text-text-primary"
                               title="Copy text"
                             >
-                              {copiedId === msg.id ? <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedId === msg.id ? <CheckCircle2 className="w-3.5 h-3.5 text-success-500" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                             {isMine && (
                                 <>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); initiateEdit(msg); }}
-                                    className="p-1.5 rounded-md hover:bg-bg-surface border border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary transition-all bg-bg-base shadow-sm"
+                                    className="rounded-md border border-transparent bg-bg-base p-1.5 text-text-secondary shadow-sm transition-all hover:border-border-subtle hover:bg-bg-surface hover:text-text-primary"
                                     title="Edit label"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleDelete(msg.id); }}
-                                    className="p-1.5 rounded-md hover:bg-red-500/10 border border-transparent hover:border-red-500/30 text-text-secondary hover:text-red-400 transition-all bg-bg-base shadow-sm"
+                                    className="rounded-md border border-transparent bg-bg-base p-1.5 text-text-secondary shadow-sm transition-all hover:border-error-400/30 hover:bg-error-500/10 hover:text-error-400"
                                     title="Delete"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -283,17 +282,17 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
       </div>
 
       {/* Sticky Input Dock */}
-      <div className="flex-none p-4 sm:p-6 bg-gradient-to-t from-bg-base via-bg-base/95 to-transparent relative z-10 w-full pt-12 mt-auto">
+      <div className="relative z-10 mt-auto w-full flex-none bg-gradient-to-t from-bg-base via-bg-base/95 to-transparent p-4 pt-12 sm:p-6">
         <div className="max-w-3xl mx-auto w-full relative">
           
           {/* Action State Banner (Edit / Reply Preview) */}
           {(replyingTo || editingMessage) && (
-             <div className="absolute -top-12 left-0 right-0 bg-bg-surface/80 backdrop-blur-md border border-border-subtle p-3 rounded-xl flex items-center shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-300 z-20">
+             <div className="glass-sm animate-in fade-in slide-in-from-bottom-2 absolute -top-12 left-0 right-0 z-20 flex items-center rounded-lg p-3 shadow-glass duration-300">
                 <div className="flex items-center space-x-3 flex-1 overflow-hidden">
                    {replyingTo ? (
                      <Reply className="text-secondary-400 w-4 h-4 shrink-0" />
                    ) : (
-                     <Pencil className="text-accent2-main w-4 h-4 shrink-0" />
+                     <Pencil className="h-4 w-4 shrink-0 text-accent-400" />
                    )}
                    <div className="border-l-2 border-border-subtle pl-3 min-w-0">
                       <p className="text-xs font-bold text-text-primary font-syne truncate">
@@ -313,7 +312,7 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
              </div>
           )}
 
-          <div className="relative flex items-end gap-3 bg-bg-surface/60 backdrop-blur-xl border border-border-subtle rounded-3xl p-2 pl-4 focus-within:ring-1 focus-within:ring-primary-500/50 focus-within:border-primary-500/50 transition-all shadow-lg">
+          <div className="glass-input relative flex items-end gap-3 rounded-lg p-2 pl-4 transition-all focus-within:border-primary-400/50 focus-within:ring-1 focus-within:ring-primary-500/50">
             <textarea
               ref={textareaRef}
               value={input}
@@ -322,12 +321,12 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
               disabled={isRemoved}
               placeholder={isRemoved ? "Chat is read-only" : (editingMessage ? "Edit message..." : "Message...")}
               rows={1}
-              className="flex-1 max-h-32 bg-transparent text-text-primary text-[0.95rem] placeholder-text-secondary outline-none resize-none py-3 custom-scrollbar disabled:cursor-not-allowed"
+              className="custom-scrollbar max-h-32 flex-1 resize-none bg-transparent py-3 text-[0.95rem] text-text-primary outline-none placeholder:text-text-secondary disabled:cursor-not-allowed"
             />
             <button
               onClick={handleSend}
               disabled={isRemoved || !input.trim() || (editingMessage && input.trim() === editingMessage.messageText)}
-              className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center transition-all bg-primary-500 text-white shadow-md hover:shadow-primary-500/25 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed mb-0.5 mr-0.5"
+              className="mb-0.5 mr-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-primary text-white shadow-glow transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
             >
               {editingMessage ? <CheckCircle2 className="w-5 h-5 ml-0.5" /> : <Send className="w-4 h-4 ml-0.5" />}
             </button>

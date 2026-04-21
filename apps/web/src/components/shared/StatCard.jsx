@@ -35,7 +35,7 @@ export default function StatCard({ icon: Icon, label, value, color, delay = 0 })
                 delay: delay * 0.1,
                 ease: [0.22, 1, 0.36, 1]
             }}
-            className="bg-bg-surface border border-border-subtle rounded-[1.75rem] p-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-white/10"
+            className="glass-card group relative overflow-hidden rounded-lg p-6"
             style={{ '--glow-color': color }}
         >
             {/* Background soft glow on active hover */}
@@ -44,17 +44,17 @@ export default function StatCard({ icon: Icon, label, value, color, delay = 0 })
                 style={{ backgroundColor: 'var(--glow-color)' }}
             />
 
-            <div className="flex justify-between items-center mb-4 relative z-10">
+            <div className="relative z-10 mb-4 flex items-center justify-between">
                 <span className="text-text-secondary text-sm font-medium">{label}</span>
                 <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-inner"
+                    className="flex h-10 w-10 items-center justify-center rounded-lg shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
                     style={{ backgroundColor: `${color}18`, color: color }}
                 >
                     <Icon size={20} />
                 </div>
             </div>
 
-            <h3 className="font-syne font-bold text-3xl text-text-primary relative z-10 tracking-tight">
+            <h3 className="relative z-10 font-display text-3xl font-bold tracking-normal text-text-primary">
                 {isNumeric ? <motion.span>{displayValue}</motion.span> : value}
             </h3>
         </motion.div>

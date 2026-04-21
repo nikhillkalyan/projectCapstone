@@ -7,9 +7,9 @@ import { ArrowLeft, Users, Star, MessageSquare, BarChart, Clock, Play, FileText,
 
 const categoryColors = {
   AIML: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
-  Cloud: { bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/20' },
+  Cloud: { bg: 'bg-success-500/10', text: 'text-success-400', border: 'border-success-400/20' },
   DataScience: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  Cybersecurity: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+  Cybersecurity: { bg: 'bg-error-500/10', text: 'text-error-400', border: 'border-error-400/20' },
 };
 
 function StarRating({ rating, size = 16, className = "" }) {
@@ -102,10 +102,10 @@ export default function ManageCourse() {
   });
 
   const stats = [
-    { icon: Users, label: 'Students', value: course.totalEnrollments || 0, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+    { icon: Users, label: 'Students', value: course.totalEnrollments || 0, color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
     { icon: Star, label: 'Rating', value: course.rating?.toFixed(1) || '—', color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
     { icon: MessageSquare, label: 'Reviews', value: course.reviews?.length || 0, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-    { icon: BarChart, label: 'Chapters', value: course.chapters?.length || 0, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
+    { icon: BarChart, label: 'Chapters', value: course.chapters?.length || 0, color: 'text-error-400', bg: 'bg-error-500/10', border: 'border-error-400/20' },
   ];
 
   return (

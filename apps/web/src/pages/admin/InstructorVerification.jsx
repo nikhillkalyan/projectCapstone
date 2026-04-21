@@ -28,41 +28,40 @@ function InstructorVerification() {
   };
 
   return (
-    <div className="flex bg-slate-950 min-h-screen text-white">
+    <div className="mesh-bg flex min-h-screen text-text-primary">
       <AdminSidebar />
-      <main className="flex-1 ml-64 p-8">
-        <h1 className="text-3xl font-bold mb-8">Instructor Verification Flow</h1>
+      <main className="ml-64 flex-1 p-8">
+        <h1 className="heading-2 mb-8 text-gradient">Instructor Verification Flow</h1>
         
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-xl font-semibold mb-6 border-b border-slate-800 pb-4">Pending Approvals</h2>
+        <div className="glass rounded-lg p-6">
+          <h2 className="mb-6 border-b border-border-subtle pb-4 font-display text-xl font-semibold">Pending Approvals</h2>
           
           {instructors.length === 0 ? (
-            <p className="text-slate-500 text-center py-8">No pending instructors at the moment.</p>
+            <p className="py-8 text-center text-text-tertiary">No pending instructors at the moment.</p>
           ) : (
             <div className="space-y-4">
               {instructors.map(inst => (
-                 <div key={inst.id} className="bg-slate-800 p-4 rounded-xl flex items-center justify-between">
+                 <div key={inst.id} className="glass-sm flex items-center justify-between rounded-lg p-4">
                     <div>
-                      <h3 className="font-bold text-lg">{inst.user?.name}</h3>
-                      <p className="text-slate-400 text-sm">{inst.user?.email}</p>
-                      <div className="mt-2 text-sm text-slate-300">
-                        <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded mr-2">{inst.specialization}</span>
+                      <h3 className="text-lg font-bold">{inst.user?.name}</h3>
+                      <p className="text-sm text-text-secondary">{inst.user?.email}</p>
+                      <div className="mt-2 text-sm text-text-secondary">
+                        <span className="mr-2 rounded bg-primary-500/15 px-2 py-1 text-primary-300">{inst.specialization}</span>
                         <span>{inst.qualification} ({inst.experience})</span>
                       </div>
-                      {/* Fake certificate upload view */}
-                      <button className="text-cyan-400 hover:text-cyan-300 mt-3 text-sm underline">
+                      <button className="mt-3 text-sm text-accent-400 underline hover:text-accent-400">
                         View Uploaded Certificate.pdf
                       </button>
                     </div>
                     
-                    <div className="flex space-x-3">
+                    <div className="flex gap-3">
                       <button 
                         onClick={() => verifyInstructor(inst.id)}
-                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                        className="flex items-center gap-2 rounded-lg bg-success-500/15 px-4 py-2 text-success-400 transition-colors hover:bg-success-500/25">
                         <CheckCircle size={18} />
                         <span>Approve</span>
                       </button>
-                      <button className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                      <button className="flex items-center gap-2 rounded-lg bg-error-500/15 px-4 py-2 text-error-400 transition-colors hover:bg-error-500/25">
                         <XCircle size={18} />
                         <span>Reject</span>
                       </button>

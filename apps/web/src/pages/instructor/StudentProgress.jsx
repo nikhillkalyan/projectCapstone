@@ -107,7 +107,7 @@ export default function StudentProgress() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           {[
             { icon: Users, label: 'Enrolled', value: enrolledStudents.length, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-            { icon: Trophy, label: 'Completed', value: completedCount, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+            { icon: Trophy, label: 'Completed', value: completedCount, color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
             { icon: TrendingUp, label: 'Avg Progress', value: `${avgProgress}%`, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
           ].map((stat, idx) => (
             <div key={idx} className={`bg-bg-surface border border-border-subtle hover:border-border-strong transition-colors rounded-3xl p-6 shadow-xl flex flex-col items-center text-center`}>
@@ -170,7 +170,7 @@ export default function StudentProgress() {
                         <div className="flex items-center gap-3">
                           <div className="flex-1 h-2 rounded-full bg-bg-elevated overflow-hidden border border-border-subtle">
                             <div
-                              className={`h-full rounded-full ${overallPct === 100 ? 'bg-teal-500' : 'bg-primary-500'}`}
+                              className={`h-full rounded-full ${overallPct === 100 ? 'bg-success-500' : 'bg-primary-500'}`}
                               style={{ width: `${overallPct}%` }}
                             />
                           </div>
@@ -180,7 +180,7 @@ export default function StudentProgress() {
                       {chapterScores.map((score, i) => (
                         <td key={i} className="py-4 px-4 text-center">
                           {score !== null ? (
-                            <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-bold border ${score >= 70 ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+                            <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-bold border ${score >= 70 ? 'bg-success-500/10 text-success-400 border-success-400/20' : 'bg-error-500/10 text-error-400 border-error-400/20'}`}>
                               {score}%
                             </span>
                           ) : (
@@ -190,7 +190,7 @@ export default function StudentProgress() {
                       ))}
                       <td className="py-4 px-6 text-center">
                         {grandScore !== undefined && grandScore !== null ? (
-                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg shadow-sm text-xs font-bold border ${grandScore >= 70 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
+                          <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg shadow-sm text-xs font-bold border ${grandScore >= 70 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-error-500/10 text-error-400 border-error-400/20'}`}>
                             {grandScore}%
                           </span>
                         ) : (
@@ -199,7 +199,7 @@ export default function StudentProgress() {
                       </td>
                       <td className="py-4 px-6 text-center">
                         {isCompleted ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 text-xs font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-500/10 text-success-400 border border-success-400/20 text-xs font-bold uppercase tracking-wider">
                             <CheckCircle size={14} /> Done
                           </span>
                         ) : (
@@ -229,7 +229,7 @@ export default function StudentProgress() {
                       </div>
                     </div>
                     {isCompleted ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-success-500/10 text-success-400 border border-success-400/20 text-[10px] font-bold uppercase tracking-wider">
                         Done
                       </span>
                     ) : (
@@ -247,7 +247,7 @@ export default function StudentProgress() {
                       </div>
                       <div className="h-2 w-full rounded-full bg-bg-elevated overflow-hidden border border-border-subtle">
                         <div
-                          className={`h-full rounded-full ${overallPct === 100 ? 'bg-teal-500' : 'bg-primary-500'}`}
+                          className={`h-full rounded-full ${overallPct === 100 ? 'bg-success-500' : 'bg-primary-500'}`}
                           style={{ width: `${overallPct}%` }}
                         />
                       </div>
@@ -256,7 +256,7 @@ export default function StudentProgress() {
                     {grandScore !== undefined && grandScore !== null && (
                       <div className="p-3 rounded-xl bg-bg-elevated border border-border-subtle flex justify-between items-center">
                         <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Grand Test Score</span>
-                        <span className={`font-bold text-sm ${grandScore >= 70 ? 'text-amber-400' : 'text-rose-400'}`}>
+                        <span className={`font-bold text-sm ${grandScore >= 70 ? 'text-amber-400' : 'text-error-400'}`}>
                           {grandScore}%
                         </span>
                       </div>
@@ -267,7 +267,7 @@ export default function StudentProgress() {
                         <div key={i} className="flex flex-col items-center p-2 rounded-xl border border-border-subtle bg-bg-elevated/50">
                           <span className="text-[10px] text-text-muted uppercase tracking-wider mb-1 font-medium">Ch {i + 1}</span>
                           {score !== null ? (
-                            <span className={`text-xs font-bold ${score >= 70 ? 'text-teal-400' : 'text-rose-400'}`}>
+                            <span className={`text-xs font-bold ${score >= 70 ? 'text-success-400' : 'text-error-400'}`}>
                               {score}%
                             </span>
                           ) : (

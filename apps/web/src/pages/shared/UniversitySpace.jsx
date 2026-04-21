@@ -12,7 +12,7 @@ import { TEAL, ACCENT } from '../../theme';
 const InputField = ({ label, type = "text", value, onChange, placeholder, required = false }) => (
   <div className="flex flex-col gap-1.5 w-full">
     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
-      {label} {required && <span className="text-rose-400">*</span>}
+      {label} {required && <span className="text-error-400">*</span>}
     </label>
     <input
       type={type} value={value} onChange={onChange} placeholder={placeholder} required={required}
@@ -83,7 +83,7 @@ export default function UniversitySpace() {
     };
 
     const Layout = isStudent ? StudentLayout : InstructorLayout;
-    const accentGradient = isStudent ? 'from-primary-600 to-indigo-600' : 'from-amber-500 to-rose-400';
+    const accentGradient = isStudent ? 'from-primary-600 to-indigo-600' : 'from-primary-600 to-accent-500';
 
     const allSections = university?.branches?.flatMap(b => b.sections || []) || [];
 
@@ -127,7 +127,7 @@ export default function UniversitySpace() {
                                     </div>
                                     <button 
                                         onClick={() => navigate('/instructor/create-university-course')}
-                                        className="h-12 w-full max-w-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                        className="h-12 w-full max-w-sm bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                     >
                                         <BookOpen className="w-5 h-5" />
                                         Create University Course
@@ -145,7 +145,7 @@ export default function UniversitySpace() {
                     </SectionShell>
                 ) : (
                     /* NOT JOINED YET UI */
-                    <div className="bg-bg-surface/50 border border-border-subtle rounded-[2xl] p-6 sm:p-10 shadow-2xl backdrop-blur-xl animate-fade-in-up max-w-2xl mx-auto">
+                    <div className="bg-bg-surface/50 border border-border-subtle rounded-lg p-6 sm:p-10 shadow-2xl backdrop-blur-xl animate-fade-in-up max-w-2xl mx-auto">
                         
                         {!university ? (
                             <>
@@ -173,7 +173,7 @@ export default function UniversitySpace() {
                                     </div>
                                 </div>
                                 {error && (
-                                    <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+                                    <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
                                         <AlertCircle className="w-4 h-4 shrink-0" /> <span>{error}</span>
                                     </div>
                                 )}
@@ -195,7 +195,7 @@ export default function UniversitySpace() {
                                     <>
                                         <div className="flex flex-col gap-1.5">
                                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
-                                                Your Section <span className="text-rose-400">*</span>
+                                                Your Section <span className="text-error-400">*</span>
                                             </label>
                                             <select
                                                 required
@@ -245,7 +245,7 @@ export default function UniversitySpace() {
                                 )}
 
                                 {error && (
-                                    <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+                                    <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
                                         <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
                                     </div>
                                 )}

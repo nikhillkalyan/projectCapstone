@@ -134,7 +134,7 @@ export default function CoursePlayer() {
 
   if (loading) {
     return (
-        <div className="flex flex-col h-screen w-full bg-bg-base items-center justify-center font-dmsans text-text-primary">
+        <div className="mesh-bg flex h-screen w-full flex-col items-center justify-center text-text-primary">
             <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
             <span className="text-text-secondary">Loading course content...</span>
         </div>
@@ -143,7 +143,7 @@ export default function CoursePlayer() {
 
   if (!course) {
     return (
-        <div className="flex h-screen w-full bg-bg-base items-center justify-center font-dmsans text-text-primary">
+        <div className="mesh-bg flex h-screen w-full items-center justify-center text-text-primary">
             <span className="text-text-secondary">Course not found</span>
         </div>
     );
@@ -265,10 +265,10 @@ export default function CoursePlayer() {
             <button
               key={ch.id}
               onClick={() => { setActiveChapter(ch); setShowAssessment(false); setShowGrandTest(false); setGrandTestDone(false); if (window.innerWidth < 768) setChapterDrawerOpen(false); }}
-              className={`w-full text-left rounded-xl mb-1 px-3 py-3 flex flex-col gap-1 transition-all group cursor-pointer ${isActive ? 'bg-primary-500/10 border border-primary-500/20' : 'bg-transparent border border-transparent hover:bg-white/[0.03]'}`}
+              className={`w-full text-left rounded-lg mb-1 px-3 py-3 flex flex-col gap-1 transition-all group cursor-pointer ${isActive ? 'bg-primary-500/10 border border-primary-500/20' : 'bg-transparent border border-transparent hover:bg-white/[0.03]'}`}
             >
               <div className="flex items-center gap-3 w-full">
-                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${chProg.completed ? 'bg-teal-500/20 text-teal-400' : 'bg-bg-elevated border border-border-subtle text-text-secondary group-hover:text-primary-400 group-hover:border-primary-500/50'}`}>
+                <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${chProg.completed ? 'bg-success-500/20 text-success-400' : 'border border-border-subtle bg-bg-elevated text-text-secondary group-hover:border-primary-400/50 group-hover:text-primary-300'}`}>
                   {chProg.completed
                     ? <CheckCircle2 size={16} />
                     : <span className="font-syne font-bold text-[0.65rem]">{idx + 1}</span>}
@@ -281,7 +281,7 @@ export default function CoursePlayer() {
                   : <FileText size={16} className={isActive ? "text-primary-400 flex-shrink-0" : "text-text-tertiary flex-shrink-0"} />}
               </div>
               {chProg.assessmentScore !== undefined && (
-                <span className="text-teal-400 text-[0.65rem] ml-10 font-bold block mt-1">
+                <span className="text-success-400 text-[0.65rem] ml-10 font-bold block mt-1">
                   Quiz: {chProg.assessmentScore}%
                 </span>
               )}
@@ -291,17 +291,17 @@ export default function CoursePlayer() {
 
         {/* Grand test */}
         {allChaptersComplete && course.grandAssessment && (
-          <div className="mt-4 p-4 rounded-2xl bg-warning/10 border border-warning/20 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-3 rounded-lg border border-warning-400/20 bg-warning-500/10 p-4">
             <div className="flex items-center gap-2">
-              <Trophy size={18} className="text-[#D4A843]" />
-              <span className="font-syne font-bold text-warning text-[0.85rem]">Grand Test</span>
+              <Trophy size={18} className="text-warning-400" />
+              <span className="font-display text-[0.85rem] font-bold text-warning-400">Grand Test</span>
             </div>
             {courseCompleted || (grandScore >= course.grandAssessment.passingScore) ? (
               <>
-                <span className="text-teal-400 text-[0.75rem] font-bold">✓ Passed with {grandScore || '--'}%</span>
+                <span className="flex items-center gap-1.5 text-success-400 text-[0.75rem] font-bold"><CheckCircle2 size={14} /> Passed with {grandScore || '--'}%</span>
                 <button
                   onClick={() => navigate(`/student/certificate/${courseId}`)}
-                  className="cursor-pointer w-full py-2 px-4 bg-gradient-to-br from-[#D4A843] to-[#E2D9BE] text-[#09090b] font-syne font-bold text-sm rounded-lg hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                  className="w-full cursor-pointer rounded-lg bg-gradient-warning px-4 py-2 font-display text-sm font-bold text-bg-base shadow-glow transition-all hover:scale-[1.02] active:scale-95"
                 >
                   View Certificate
                 </button>
@@ -309,7 +309,7 @@ export default function CoursePlayer() {
             ) : (
               <button
                 onClick={() => { setShowGrandTest(true); setShowAssessment(false); setGrandTestDone(false); if (window.innerWidth < 768) setChapterDrawerOpen(false); }}
-                className="cursor-pointer w-full py-2 px-4 bg-gradient-to-br from-[#D4A843] to-[#E2D9BE] text-[#09090b] font-syne font-bold text-sm rounded-lg hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                className="w-full cursor-pointer rounded-lg bg-gradient-warning px-4 py-2 font-display text-sm font-bold text-bg-base shadow-glow transition-all hover:scale-[1.02] active:scale-95"
               >
                 Take Grand Test
               </button>
@@ -321,16 +321,16 @@ export default function CoursePlayer() {
   );
 
   return (
-    <div className="flex h-screen w-full bg-bg-base overflow-hidden font-dmsans text-text-primary">
+    <div className="mesh-bg flex h-screen w-full overflow-hidden text-text-primary">
 
       {/* Left: Main Content Area */}
       <div className="flex-1 flex flex-col h-screen min-w-0 relative">
 
         {/* Top bar (Theatre Mode header) */}
-        <header className="h-[72px] flex-shrink-0 flex items-center justify-between px-4 lg:px-8 bg-bg-base border-b border-border-subtle z-20">
+        <header className="glass-sm z-20 flex h-[72px] flex-shrink-0 items-center justify-between border-b border-glass-border px-4 lg:px-8">
           <div className="flex items-center gap-3 md:gap-4">
             <button
-              className="text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 group p-2 rounded-xl border border-transparent hover:border-border-subtle hover:bg-white/5 cursor-pointer active:scale-95"
+              className="text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 group p-2 rounded-lg border border-transparent hover:border-border-subtle hover:bg-white/5 cursor-pointer active:scale-95"
               onClick={() => navigate(`/student/course/${courseId}`)}
             >
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
@@ -346,14 +346,14 @@ export default function CoursePlayer() {
             {!isEnrolled ? (
               <button
                 onClick={handleEnroll}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-primary-500/50 hover:bg-white/5 text-primary-400 font-bold text-xs transition-all hover:scale-[1.05] active:scale-95 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-primary-500/50 hover:bg-white/5 text-primary-400 font-bold text-xs transition-all hover:scale-[1.05] active:scale-95 cursor-pointer"
               >
                 <BookmarkPlus size={16} />
                 Enroll Free
               </button>
             ) : (
               <div className="hidden md:flex items-center">
-                <div className="px-3 py-1 bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold text-[0.7rem] rounded-full flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 rounded-full border border-success-400/20 bg-success-500/10 px-3 py-1 text-[0.7rem] font-bold text-success-400">
                   ✓ Enrolled
                 </div>
               </div>
@@ -362,14 +362,14 @@ export default function CoursePlayer() {
             <button
               onClick={handleToggleFav}
               title={isFav ? "Remove from Favorites" : "Add to Favorites"}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border ${isFav ? 'bg-danger/10 border-danger/30 text-danger' : 'bg-transparent border-border-subtle hover:bg-white/5 text-text-secondary hover:text-text-primary'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-lg transition-all hover:scale-110 active:scale-95 cursor-pointer border ${isFav ? 'bg-error-500/10 border-error-400/30 text-error-400' : 'bg-transparent border-border-subtle hover:bg-white/5 text-text-secondary hover:text-text-primary'}`}
             >
               {isFav ? <Heart size={18} className="fill-current" /> : <Heart size={18} />}
             </button>
 
             {/* Mobile Sidebar Toggle */}
             <button
-              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 cursor-pointer border border-border-subtle bg-bg-surface text-text-secondary"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg transition-all hover:scale-110 active:scale-95 cursor-pointer border border-border-subtle bg-bg-surface text-text-secondary"
               onClick={() => setChapterDrawerOpen(p => !p)}
             >
               <BookOpen size={16} />
@@ -390,7 +390,7 @@ export default function CoursePlayer() {
                   exit={{ opacity: 0, y: -20 }}
                   className="max-w-[640px] mx-auto"
                 >
-                  <div className="bg-bg-surface/80 backdrop-blur-md border border-border-subtle rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                  <div className="glass-lg relative overflow-hidden rounded-lg p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="font-syne font-bold text-xl text-text-primary">Chapter Assessment</h2>
                       <button
@@ -411,11 +411,11 @@ export default function CoursePlayer() {
                   exit={{ opacity: 0, y: -20 }}
                   className="max-w-[640px] mx-auto"
                 >
-                  <div className="bg-bg-surface/80 backdrop-blur-md border border-warning/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-warning/5 relative overflow-hidden">
+                  <div className="glass-lg relative overflow-hidden rounded-lg border-warning-400/20 p-6 md:p-8">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <Trophy size={28} className="text-[#D4A843]" />
-                        <h2 className="font-syne font-bold text-xl text-text-primary">Grand Assessment</h2>
+                        <Trophy size={28} className="text-warning-400" />
+                        <h2 className="font-display text-xl font-bold text-text-primary">Grand Assessment</h2>
                       </div>
                       <button
                         onClick={() => setShowGrandTest(false)}
@@ -438,14 +438,14 @@ export default function CoursePlayer() {
                   <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="text-[6rem] leading-none mb-6 drop-shadow-2xl"
+                    className="mb-6 text-[6rem] leading-none drop-shadow-2xl"
                   >
                     {grandScore >= (course.grandAssessment.passingScore || 70) ? '🏆' : '📚'}
                   </motion.div>
-                  <h2 className="font-syne font-bold text-3xl md:text-4xl text-text-primary mb-2">
+                  <h2 className="mb-2 font-display text-3xl font-bold text-text-primary md:text-4xl">
                     {grandScore >= (course.grandAssessment.passingScore || 70) ? 'Congratulations!' : 'Almost There!'}
                   </h2>
-                  <div className={`font-syne font-bold text-[5rem] tracking-tighter ${grandScore >= (course.grandAssessment.passingScore || 70) ? 'text-teal-400 drop-shadow-[0_0_20px_rgba(78,205,196,0.3)]' : 'text-primary-400'}`}>
+                  <div className={`font-display text-[5rem] font-bold tracking-normal ${grandScore >= (course.grandAssessment.passingScore || 70) ? 'text-success-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.28)]' : 'text-primary-300'}`}>
                     {grandScore}%
                   </div>
                   <p className="text-text-secondary mb-8 text-lg">
@@ -455,7 +455,7 @@ export default function CoursePlayer() {
                   {grandScore >= (course.grandAssessment.passingScore || 70) ? (
                     <button
                       onClick={() => navigate(`/student/certificate/${courseId}`)}
-                      className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-xl shadow-warning/20 font-bold text-[1.1rem] transition-transform hover:scale-105"
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-warning px-8 py-4 text-[1.1rem] font-bold text-bg-base shadow-glow transition-transform hover:scale-105"
                     >
                       <Award size={20} />
                       Get Certificate
@@ -463,7 +463,7 @@ export default function CoursePlayer() {
                   ) : (
                     <button
                       onClick={() => { setGrandTestDone(false); setShowGrandTest(true); }}
-                      className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-primary-500 hover:bg-primary-600 text-white shadow-xl shadow-primary-500/20 font-bold text-[1.1rem] transition-transform hover:scale-105"
+                      className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-gradient-primary text-white shadow-glow font-bold text-[1.1rem] transition-transform hover:scale-105"
                     >
                       Retake Test
                     </button>
@@ -477,7 +477,7 @@ export default function CoursePlayer() {
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.75rem] font-bold tracking-wide uppercase border ${activeChapter.type === 'video' || activeChapter.videoUrl
                           ? 'bg-primary-500/10 text-primary-400 border-primary-500/20'
-                          : 'bg-warning/10 text-warning border-warning/20'
+                          : 'bg-warning-500/10 text-warning-400 border-warning-400/20'
                           }`}
                       >
                         {activeChapter.type === 'video' || activeChapter.videoUrl ? <Play size={16} /> : <FileText size={16} />}
@@ -495,7 +495,7 @@ export default function CoursePlayer() {
 
                   {/* Video */}
                   {(activeChapter.type === 'video' || activeChapter.videoUrl || (activeChapter.content?.videoUrl)) && (
-                    <div className="w-full rounded-2xl md:rounded-3xl overflow-hidden mb-8 aspect-video bg-black shadow-2xl border border-white/5 relative group">
+                    <div className="group relative mb-8 aspect-video w-full overflow-hidden rounded-lg border border-white/5 bg-black shadow-strong">
                       <iframe src={activeChapter.videoUrl || activeChapter.content?.videoUrl || `https://www.youtube.com/embed/dQw4w9WgXcQ`} title={activeChapter.title}
                         className="w-full h-full absolute inset-0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -505,7 +505,7 @@ export default function CoursePlayer() {
 
                   {/* Text content */}
                   {(activeChapter.textContent || activeChapter.content?.textContent) && (
-                    <div className="bg-bg-surface/50 border border-border-subtle rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 mb-8 backdrop-blur-sm">
+                    <div className="glass mb-8 rounded-lg p-6 md:p-8 lg:p-10">
                       <div className="prose prose-invert max-w-none font-dmsans prose-headings:font-syne prose-headings:font-bold prose-h1:text-[1.8rem] prose-h2:text-[1.4rem] prose-h3:text-[1.2rem] prose-p:text-text-secondary prose-p:leading-relaxed prose-a:text-primary-400 hover:prose-a:text-primary-300 prose-strong:text-text-primary prose-code:text-primary-300 prose-code:bg-primary-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-ul:text-text-secondary prose-li:marker:text-primary-500">
                         <MarkdownRenderer text={activeChapter.textContent || activeChapter.content?.textContent} />
                       </div>
@@ -513,12 +513,12 @@ export default function CoursePlayer() {
                   )}
 
                   {/* Actions & Navigation Controls */}
-                  <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between p-4 rounded-2xl bg-bg-surface border border-border-subtle mt-10">
+                  <div className="glass mt-10 flex flex-col items-stretch justify-between gap-4 rounded-lg p-4 sm:flex-row sm:items-center">
                     <div className="flex flex-wrap items-center gap-3">
                       {!chapterProgress.completed && isEnrolled && (
                         <button
                           onClick={handleMarkComplete}
-                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-primary-500/50 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-primary-500/50 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         >
                           <CheckCheck size={18} className="transition-transform group-hover:scale-110" />
                           Mark Complete
@@ -528,7 +528,7 @@ export default function CoursePlayer() {
                       {activeChapter.assessment && isEnrolled && !chapterProgress.assessmentCompleted && (
                         <button
                           onClick={() => setShowAssessment(true)}
-                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group shadow-lg shadow-primary-500/20 focus:ring-2 focus:ring-primary-400 focus:outline-none"
+                          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-primary text-white font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group shadow-glow focus:ring-2 focus:ring-primary-400 focus:outline-none"
                         >
                           <HelpCircle size={18} className="transition-transform group-hover:-rotate-6 group-hover:scale-110" />
                           Take Chapter Quiz
@@ -536,7 +536,7 @@ export default function CoursePlayer() {
                       )}
 
                       {chapterProgress.assessmentCompleted && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold text-[0.85rem] cursor-default">
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success-500/10 border border-success-400/20 text-success-400 font-bold text-[0.85rem] cursor-default">
                           <CheckCircle2 size={18} />
                           Quiz Passed ({chapterProgress.assessmentScore || 100}%)
                         </div>
@@ -547,7 +547,7 @@ export default function CoursePlayer() {
                       {nextChapter && (
                         <button
                           onClick={() => { setActiveChapter(nextChapter); setShowAssessment(false); }}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-bg-base font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-white focus:outline-none"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-white hover:bg-white/90 text-bg-base font-bold text-[0.85rem] transition-all cursor-pointer active:scale-95 hover:scale-[1.02] group focus:ring-2 focus:ring-white focus:outline-none"
                         >
                           Next Chapter
                           <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -556,7 +556,7 @@ export default function CoursePlayer() {
                       {allChaptersComplete && !courseCompleted && !nextChapter && course.grandAssessment && (
                         <button
                           onClick={() => setShowGrandTest(true)}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] text-[#09090b] shadow-lg shadow-warning/20 font-bold text-[0.85rem] transition-transform hover:scale-[1.02] cursor-pointer active:scale-95 group focus:ring-2 focus:ring-warning focus:outline-none"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-warning text-bg-base shadow-glow font-bold text-[0.85rem] transition-transform hover:scale-[1.02] cursor-pointer active:scale-95 group focus:ring-2 focus:ring-warning-400 focus:outline-none"
                         >
                           <Trophy size={18} className="transition-transform group-hover:scale-110" />
                           Take Grand Test
@@ -568,7 +568,7 @@ export default function CoursePlayer() {
               ) : (
                 // Course overview (Not Started state)
                 <div className="max-w-[800px] mx-auto">
-                  <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden relative mb-8 shadow-2xl border border-white/5 group">
+                  <div className="group relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-lg border border-white/5 shadow-strong">
                     <img src={course.thumbnail || `https://source.unsplash.com/1200x500/?education,course`} alt={course.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-bg-base/60 to-transparent flex flex-col justify-end p-6 md:p-10">
                       <h2 className="font-syne font-bold text-[2rem] md:text-[2.5rem] text-text-primary leading-tight mb-2 tracking-tight">
@@ -582,7 +582,7 @@ export default function CoursePlayer() {
                     </div>
                   </div>
 
-                  <div className="bg-bg-surface/50 border border-border-subtle rounded-3xl p-8 md:p-10 backdrop-blur-sm">
+                  <div className="glass rounded-lg p-8 md:p-10">
                     <h3 className="font-syne font-bold text-lg mb-4 text-text-primary">About this course</h3>
                     <p className="font-dmsans text-text-secondary text-[0.95rem] leading-relaxed">
                       {course.longDescription || course.description}
@@ -604,7 +604,7 @@ export default function CoursePlayer() {
             animate={{ width: 340, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden md:block flex-shrink-0 h-screen border-l border-border-subtle bg-bg-surface z-30 overflow-hidden relative"
+            className="glass-lg relative z-30 hidden h-screen flex-shrink-0 overflow-hidden border-l border-glass-border md:block"
           >
             <div className="w-[340px] h-full absolute top-0 left-0 right-0 bottom-0">
               {ChapterList}
@@ -625,7 +625,7 @@ export default function CoursePlayer() {
             <motion.aside
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-[85%] max-w-[340px] h-screen bg-bg-surface border-l border-border-subtle z-50 md:hidden shadow-2xl overflow-hidden"
+              className="glass-lg fixed right-0 top-0 z-50 h-screen w-[85%] max-w-[340px] overflow-hidden border-l border-glass-border shadow-strong md:hidden"
             >
               {ChapterList}
             </motion.aside>
@@ -649,7 +649,7 @@ export default function CoursePlayer() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center"
+              className="glass-lg relative flex w-full max-w-md flex-col items-center rounded-lg p-8 text-center shadow-strong"
             >
               <h3 className="font-syne font-bold text-2xl text-text-primary mb-2">Rate This Course</h3>
               <p className="text-text-secondary font-medium mb-6">How was your learning experience?</p>
@@ -659,8 +659,8 @@ export default function CoursePlayer() {
                   <Star
                     key={starIndex}
                     onClick={() => setRatingGiven(starIndex)}
-                    className={`w-12 h-12 transition-all hover:scale-110 ${ratingGiven >= starIndex
-                      ? 'fill-[#D4A843] text-[#D4A843]'
+                  className={`w-12 h-12 transition-all hover:scale-110 ${ratingGiven >= starIndex
+                      ? 'fill-warning-400 text-warning-400'
                       : 'fill-white/5 text-white/10'
                       }`}
                   />
@@ -672,20 +672,20 @@ export default function CoursePlayer() {
                 placeholder="Write your review (optional)..."
                 value={review}
                 onChange={e => setReview(e.target.value)}
-                className="w-full bg-bg-base border border-border-subtle rounded-xl p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 mb-6 resize-none transition-all"
+                className="glass-input w-full rounded-lg p-4 text-text-primary placeholder:text-text-tertiary focus:outline-none mb-6 resize-none transition-all"
               />
 
               <div className="flex gap-3 w-full">
                 <button
                   onClick={() => setShowRating(false)}
-                  className="cursor-pointer flex-1 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors"
+                  className="cursor-pointer flex-1 py-3 rounded-lg border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-colors"
                 >
                   Skip
                 </button>
                 <button
                   disabled={!ratingGiven}
                   onClick={() => handleRateSubmit(ratingGiven)}
-                  className="cursor-pointer disabled:cursor-not-allowed flex-[2] py-3 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] disabled:opacity-50 text-[#09090b] font-bold shadow-lg shadow-warning/10 hover:shadow-warning/20 transition-all font-syne"
+                  className="flex-[2] cursor-pointer rounded-lg bg-gradient-warning py-3 font-display font-bold text-bg-base shadow-glow transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Submit Review
                 </button>

@@ -17,22 +17,24 @@ export default function SectionShell({
             transition={{ delay: delay * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className={`mb-10 w-full ${className}`}
         >
-            {/* Header Container */}
             {(title || action) && (
-                <div className="flex items-center justify-between mb-5">
-                    <h2 className="font-syne font-bold text-xl text-text-primary flex items-center gap-2">
-                        {Icon && <Icon className={`w-5 h-5 ${iconColor}`} />}
+                <div className="mb-5 flex items-center justify-between gap-4">
+                    <h2 className="flex items-center gap-3 font-display text-xl font-bold text-text-primary">
+                        {Icon && (
+                            <span className="glass-sm flex h-9 w-9 items-center justify-center rounded-lg">
+                                <Icon className={`h-5 w-5 ${iconColor}`} />
+                            </span>
+                        )}
                         {title}
                     </h2>
                     {action && (
-                        <div className="flex-shrink-0 ml-4">
+                        <div className="ml-4 shrink-0">
                             {action}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Content Area */}
             <div className="w-full">
                 {children}
             </div>

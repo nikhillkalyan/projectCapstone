@@ -13,9 +13,9 @@ import {
 
 const specializationList = [
   { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
   { key: 'DataScience', label: 'Data Science', icon: '📊', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', color: 'text-error-400', bg: 'bg-error-500/10', border: 'border-error-400/20' },
 ];
 
 // Custom Input Field Wrapper
@@ -31,7 +31,7 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, disabl
         placeholder={placeholder}
         disabled={disabled}
         rows={4}
-        className="w-full bg-bg-surface/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+        className="glass-input w-full resize-none rounded-lg px-4 py-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-text-secondary/50"
       />
     ) : (
       <input
@@ -40,7 +40,7 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, disabl
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full h-11 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-text-secondary/50"
+        className="glass-input h-11 w-full rounded-lg px-4 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-text-secondary/50"
       />
     )}
   </div>
@@ -101,7 +101,7 @@ export default function InstructorProfile() {
         <div className="animate-fade-in-up grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10" style={{ animationDelay: '0.1s' }}>
           {[
             { icon: Library, label: 'Courses Created', value: myCourses.length, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-            { icon: Users, label: 'Total Students', value: totalStudents, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/20' },
+            { icon: Users, label: 'Total Students', value: totalStudents, color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
             { icon: Star, label: 'Average Rating', value: avgRating, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
           ].map((stat, idx) => (
             <div key={idx} className="bg-bg-surface border border-border-subtle rounded-3xl p-6 shadow-xl flex flex-col items-center text-center">
@@ -125,10 +125,10 @@ export default function InstructorProfile() {
             {/* 2. Avatar Block */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 border-b border-border-subtle/50 pb-10">
               <div className="relative group cursor-pointer">
-                <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-tr from-amber-500 to-rose-400 flex items-center justify-center text-3xl font-syne font-bold text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
+                <div className="w-28 h-28 rounded-lg bg-gradient-to-tr from-primary-600 to-accent-500 flex items-center justify-center text-3xl font-syne font-bold text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
                   {initials}
                 </div>
-                <div className="absolute inset-0 rounded-[2rem] bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <Camera className="w-8 h-8 text-white/90" />
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function InstructorProfile() {
 
                 {/* Save Success Overlay */}
                 <div
-                  className={`absolute inset-0 bg-teal-500 rounded-xl flex items-center justify-center gap-2 text-white font-bold transition-all duration-300 ${saved ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+                  className={`absolute inset-0 bg-success-500 rounded-xl flex items-center justify-center gap-2 text-white font-bold transition-all duration-300 ${saved ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   <span>Saved!</span>

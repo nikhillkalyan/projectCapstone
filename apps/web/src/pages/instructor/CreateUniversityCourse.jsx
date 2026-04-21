@@ -15,13 +15,13 @@ function InputGroup({ label, required, children, helperText, error }) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       <label className="text-sm font-semibold text-text-primary">
-        {label} {required && <span className="text-rose-400">*</span>}
+        {label} {required && <span className="text-error-400">*</span>}
       </label>
       {children}
       {helperText && !error && (
         <p className="text-xs text-text-muted mt-0.5">{helperText}</p>
       )}
-      {error && <p className="text-xs text-rose-400 mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-error-400 mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -99,7 +99,7 @@ function WeightageBuilder({ weights, onChange }) {
           ? 'bg-emerald-500/10 border-emerald-500/20'
           : remaining > 0
           ? 'bg-amber-500/10 border-amber-500/20'
-          : 'bg-rose-500/10 border-rose-500/20'
+          : 'bg-error-500/10 border-error-400/20'
       }`}>
         <div className="flex items-center gap-2">
           {isValid
@@ -345,7 +345,7 @@ export default function CreateUniversityCourse() {
               className="bg-bg-surface border border-border-subtle rounded-2xl p-6 md:p-8"
             >
               <div className="flex items-center gap-3 mb-6">
-                <GitBranch className="w-5 h-5 text-teal-400" />
+                <GitBranch className="w-5 h-5 text-success-400" />
                 <h2 className="text-lg font-bold font-syne text-text-primary">Targeting</h2>
               </div>
 
@@ -411,7 +411,7 @@ export default function CreateUniversityCourse() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl"
+                  className="flex items-center gap-3 p-4 bg-error-500/10 border border-error-400/20 text-error-400 rounded-xl"
                 >
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <p className="text-sm font-medium">{error}</p>
@@ -436,7 +436,7 @@ export default function CreateUniversityCourse() {
               <button
                 type="submit"
                 disabled={submitting || !isWeightValid}
-                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-500 hover:to-accent-400 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-primary-500/25 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
               >
                 {submitting
                   ? <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>

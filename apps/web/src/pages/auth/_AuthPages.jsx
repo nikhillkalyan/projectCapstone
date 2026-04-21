@@ -22,16 +22,16 @@ import {
 
 const interestList = [
   { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', desc: 'Neural networks, deep learning, NLP', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', desc: 'AWS, Azure, GCP, DevOps', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', desc: 'AWS, Azure, GCP, DevOps', color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
   { key: 'DataScience', label: 'Data Science', icon: '📊', desc: 'Analytics, visualization, statistics', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', desc: 'Ethical hacking, network security', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', desc: 'Ethical hacking, network security', color: 'text-error-400', bg: 'bg-error-500/10', border: 'border-error-400/20' },
 ];
 
 const specializationList = [
   { key: 'AIML', label: 'AI & ML', icon: '🤖', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-  { key: 'Cloud', label: 'Cloud', icon: '☁️', color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  { key: 'Cloud', label: 'Cloud', icon: '☁️', color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
   { key: 'DataScience', label: 'Data Science', icon: '📊', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-  { key: 'Cybersecurity', label: 'Security', icon: '🔒', color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+  { key: 'Cybersecurity', label: 'Security', icon: '🔒', color: 'text-error-400', bg: 'bg-error-500/10', border: 'border-error-400/20' },
 ];
 
 const years = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Post Graduate'];
@@ -40,7 +40,7 @@ const years = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Post Graduate'];
 const InputField = ({ label, type = "text", value, onChange, placeholder, required = false, endAdornment, multiline = false, autoFocus = false }) => (
   <div className="flex flex-col gap-1.5 w-full">
     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
-      {label} {required && <span className="text-rose-400">*</span>}
+      {label} {required && <span className="text-error-400">*</span>}
     </label>
     <div className="relative">
       {multiline ? (
@@ -50,7 +50,7 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, requir
           placeholder={placeholder}
           required={required}
           rows={3}
-          className="w-full bg-bg-surface/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all resize-none placeholder:text-text-secondary/50"
+          className="glass-input w-full rounded-lg px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-secondary/50"
         />
       ) : (
         <input
@@ -60,7 +60,7 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, requir
           placeholder={placeholder}
           required={required}
           autoFocus={autoFocus}
-          className="w-full h-12 bg-bg-surface/50 border border-border-subtle rounded-xl pl-4 pr-12 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all placeholder:text-text-secondary/50"
+          className="glass-input h-12 w-full rounded-lg pl-4 pr-12 text-sm text-text-primary outline-none placeholder:text-text-secondary/50"
         />
       )}
       {endAdornment && (
@@ -76,11 +76,11 @@ const InputField = ({ label, type = "text", value, onChange, placeholder, requir
 const UploadBox = ({ label, required, type, uploading, error, fileUrl, fileName, onUpload, onRemove }) => (
   <div className="flex flex-col gap-1.5 w-full">
     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
-      {label} {required && <span className="text-rose-400">*</span>}
+      {label} {required && <span className="text-error-400">*</span>}
     </label>
     
     {!fileUrl ? (
-      <div className={`relative w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all ${error ? 'border-rose-500/50 bg-rose-500/5 text-rose-400' : 'border-border-subtle hover:border-amber-500/50 bg-bg-surface/50 text-text-secondary'}`}>
+      <div className={`relative flex h-32 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed transition-all ${error ? 'border-error-400/50 bg-error-500/5 text-error-400' : 'border-border-subtle bg-bg-surface/50 text-text-secondary hover:border-primary-400/50'}`}>
         <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => onUpload(e, type)} disabled={uploading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
         {uploading ? (
            <div className="flex flex-col items-center gap-2">
@@ -96,7 +96,7 @@ const UploadBox = ({ label, required, type, uploading, error, fileUrl, fileName,
         )}
       </div>
     ) : (
-      <div className="w-full bg-bg-surface/50 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
+      <div className="glass-sm flex w-full items-center justify-between rounded-lg border-success-400/30 p-4">
          <div className="flex items-center gap-3">
            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
              <FileText className="w-5 h-5 text-emerald-400" />
@@ -109,12 +109,12 @@ const UploadBox = ({ label, required, type, uploading, error, fileUrl, fileName,
              </div>
            </div>
          </div>
-         <button type="button" onClick={() => onRemove(type)} className="p-2 text-text-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors">
+         <button type="button" onClick={() => onRemove(type)} className="p-2 text-text-muted hover:text-error-400 hover:bg-error-500/10 rounded-lg transition-colors">
            <X className="w-4 h-4" />
          </button>
       </div>
     )}
-    {error && <span className="text-xs text-rose-400 font-bold ml-1">{error}</span>}
+    {error && <span className="text-xs text-error-400 font-bold ml-1">{error}</span>}
   </div>
 );
 
@@ -141,12 +141,12 @@ function JoinCodeStep({ isStudent, joinCode, setJoinCode, university, setUnivers
 
   const accentGradient = isStudent
     ? 'from-primary-600 to-indigo-600'
-    : 'from-amber-500 to-rose-400';
+    : 'from-primary-600 to-accent-500';
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-6">
       {/* Info Card */}
-      <div className="bg-bg-base border border-border-subtle rounded-2xl p-5 flex gap-4">
+      <div className="glass-sm flex gap-4 rounded-lg p-5">
         <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${accentGradient} flex items-center justify-center shrink-0 mt-0.5`}>
           <KeyRound className="w-5 h-5 text-white" />
         </div>
@@ -171,7 +171,7 @@ function JoinCodeStep({ isStudent, joinCode, setJoinCode, university, setUnivers
             onChange={e => { setJoinCode(e.target.value.toUpperCase()); setUniversity(null); setError(''); }}
             placeholder="e.g. UNI-A3K7X"
             maxLength={10}
-            className="flex-1 h-12 bg-bg-surface/50 border border-border-subtle rounded-xl px-4 text-sm font-mono text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all placeholder:text-text-secondary/50 tracking-widest"
+          className="glass-input h-12 flex-1 rounded-lg px-4 font-mono text-sm tracking-widest text-text-primary outline-none placeholder:text-text-secondary/50"
           />
           <button
             type="button"
@@ -185,7 +185,7 @@ function JoinCodeStep({ isStudent, joinCode, setJoinCode, university, setUnivers
 
         {/* Error */}
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 mt-1">
+          <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 mt-1">
             <AlertCircle className="w-4 h-4 shrink-0" /> <span>{error}</span>
           </div>
         )}
@@ -215,7 +215,7 @@ function JoinCodeStep({ isStudent, joinCode, setJoinCode, university, setUnivers
         <button
           type="button"
           onClick={onSkip}
-          className="w-full h-12 bg-bg-base border border-border-subtle text-text-secondary rounded-xl font-bold hover:text-text-primary hover:bg-bg-elevated transition-colors"
+          className="glass-sm h-12 w-full rounded-lg font-bold text-text-secondary transition-colors hover:text-text-primary"
         >
           Skip — I'm registering independently
         </button>
@@ -232,27 +232,27 @@ function AuthLayout({ children, title, subtitle, isStudent = true }) {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex bg-bg-base overflow-hidden selection:bg-primary-500/30">
+    <div className="mesh-bg flex min-h-screen w-full overflow-hidden selection:bg-primary-500/30">
 
       {/* LEFT PANEL */}
-      <div className={`hidden lg:flex lg:w-[45%] xl:w-1/2 flex-col justify-between p-12 relative overflow-hidden bg-gradient-to-br ${isStudent ? 'from-bg-surface to-bg-base' : 'from-bg-surface to-bg-elevated'}`}>
+      <div className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex lg:w-[45%] xl:w-1/2">
 
         <div className="absolute inset-0 z-0">
           <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-30 blur-[100px] pointer-events-none ${isStudent ? 'bg-primary-600/40' : 'bg-amber-600/30'}`} />
-          <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-20 blur-[100px] pointer-events-none ${isStudent ? 'bg-teal-600/40' : 'bg-indigo-600/30'}`} />
+          <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-20 blur-[100px] pointer-events-none ${isStudent ? 'bg-accent-500/25' : 'bg-indigo-600/30'}`} />
         </div>
 
         <div className="relative z-10">
           <Link to="/" className="inline-flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isStudent ? 'bg-gradient-to-br from-primary-500 to-teal-400 shadow-primary-500/20' : 'bg-gradient-to-br from-amber-500 to-rose-400 shadow-amber-500/20'}`}>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-syne font-bold text-xl tracking-tight text-white">EduForge</span>
+            <span className="font-display text-xl font-bold tracking-normal text-gradient">EduForge</span>
           </Link>
         </div>
 
         <div className="relative z-10 max-w-lg">
-          <h1 className="font-syne font-extrabold text-4xl xl:text-5xl text-white mb-6 leading-tight">
+          <h1 className="mb-6 font-display text-4xl font-extrabold leading-tight text-white xl:text-5xl">
             {isStudent ? "Master the tools defining tomorrow." : "Equip the next generation of builders."}
           </h1>
           <p className="text-text-secondary text-lg leading-relaxed mb-12">
@@ -261,7 +261,7 @@ function AuthLayout({ children, title, subtitle, isStudent = true }) {
               : "Share your expertise with an eager community. Build courses, track progress, and shape careers."}
           </p>
           <div className="flex items-center gap-4 text-sm font-bold text-text-muted">
-            <CheckCircle2 className={`w-5 h-5 ${isStudent ? 'text-teal-400' : 'text-amber-400'}`} />
+            <CheckCircle2 className={`w-5 h-5 ${isStudent ? 'text-success-400' : 'text-amber-400'}`} />
             <span>Trusted by top universities & tech companies</span>
           </div>
         </div>
@@ -271,10 +271,10 @@ function AuthLayout({ children, title, subtitle, isStudent = true }) {
       <div className="w-full lg:w-[55%] xl:w-1/2 flex items-center justify-center p-6 sm:p-12 h-screen overflow-y-auto relative no-scrollbar">
         <div className="w-full max-w-[480px] animate-fade-in-up">
           <div className="text-center lg:text-left mb-8">
-            <h2 className="font-syne font-bold text-3xl text-white mb-2">{title}</h2>
+            <h2 className="mb-2 font-display text-3xl font-bold text-white">{title}</h2>
             <p className="text-text-secondary">{subtitle}</p>
           </div>
-          <div className="bg-bg-surface/50 border border-border-subtle rounded-[2rem] p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl">
+          <div className="glass-lg rounded-lg p-6 shadow-strong sm:p-8 md:p-10">
             {children}
           </div>
         </div>
@@ -290,7 +290,7 @@ function StepProgress({ step, total, isStudent }) {
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} className="flex-1 h-1.5 rounded-full bg-border-subtle overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${isStudent ? 'bg-gradient-to-r from-primary-500 to-teal-400' : 'bg-gradient-to-r from-amber-500 to-rose-400'}`}
+            className={`h-full rounded-full transition-all duration-500 ${isStudent ? 'bg-gradient-to-r from-primary-500 to-accent-400' : 'bg-gradient-to-r from-primary-600 to-accent-500'}`}
             style={{ width: step > i ? '100%' : '0%' }}
           />
         </div>
@@ -338,7 +338,7 @@ export function StudentLoginPage() {
         />
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-fade-in-up">
+          <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-fade-in-up">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -356,7 +356,7 @@ export function StudentLoginPage() {
           onClick={() => setForm({ email: 'john@example.com', password: 'password123' })}
           className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary rounded-xl font-bold tracking-wide hover:bg-bg-elevated transition-colors flex items-center justify-center gap-2"
         >
-          <Beaker className="w-4 h-4 text-teal-400" />
+          <Beaker className="w-4 h-4 text-success-400" />
           Use Demo Account
         </button>
 
@@ -523,7 +523,7 @@ export function StudentSignupPage() {
 
           <div>
             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1 block mb-2">
-              Interests <span className="text-rose-400">*</span> <span className="text-text-muted font-normal normal-case">(select all that apply)</span>
+              Interests <span className="text-error-400">*</span> <span className="text-text-muted font-normal normal-case">(select all that apply)</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               {interestList.map(int => {
@@ -548,7 +548,7 @@ export function StudentSignupPage() {
           />
 
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+            <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
             </div>
           )}
@@ -559,7 +559,7 @@ export function StudentSignupPage() {
             </button>
             <button
               disabled={!step3Valid} onClick={handleSubmit}
-              className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-teal-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold shadow-lg shadow-accent-500/20 hover:shadow-accent-500/35 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               🚀 Start Learning!
             </button>
@@ -609,14 +609,14 @@ export function InstructorLoginPage() {
         />
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+          <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
           </div>
         )}
 
         <button
           type="submit" disabled={loading}
-          className="w-full h-12 mt-2 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center"
+          className="w-full h-12 mt-2 bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-primary-500/20 hover:shadow-primary-500/35 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center"
         >
           {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
         </button>
@@ -768,7 +768,7 @@ export function InstructorSignupPage() {
             <button onClick={() => setStep(1)} className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary"><ArrowLeft className="w-5 h-5" /></button>
             <button
               disabled={!step2Valid} onClick={() => step2Valid && setStep(3)}
-              className="flex-1 h-12 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 h-12 bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold shadow-lg shadow-primary-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -785,7 +785,7 @@ export function InstructorSignupPage() {
 
           <div>
             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1 block mb-2">
-              Primary Specialization <span className="text-rose-400">*</span>
+              Primary Specialization <span className="text-error-400">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               {specializationList.map(s => {
@@ -829,7 +829,7 @@ export function InstructorSignupPage() {
           <InputField label="Bio (Optional)" multiline value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} placeholder="Tell students about your expertise..." />
 
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+            <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
             </div>
           )}
@@ -838,7 +838,7 @@ export function InstructorSignupPage() {
             <button onClick={() => setStep(2)} className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary"><ArrowLeft className="w-5 h-5" /></button>
             <button
               disabled={!step3Valid} onClick={() => step3Valid && setStep(4)}
-              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -859,7 +859,7 @@ export function InstructorSignupPage() {
           )}
 
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+            <div className="bg-error-500/10 border border-error-400/20 text-error-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
             </div>
           )}
@@ -868,7 +868,7 @@ export function InstructorSignupPage() {
             <button onClick={() => setStep(3)} className="px-5 py-3 rounded-xl border border-border-subtle hover:bg-bg-base flex items-center justify-center text-text-secondary"><ArrowLeft className="w-5 h-5" /></button>
             <button
               disabled={!step4Valid} onClick={handleSubmit}
-              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-rose-400 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-accent-500 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               🎓 Join as Instructor!
             </button>

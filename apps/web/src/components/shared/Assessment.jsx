@@ -9,10 +9,11 @@ import {
   ChevronLeft 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Button from '../ui/Button';
 
 function ScoreRing({ score }) {
   const isPass = score >= 70;
-  const strokeColor = isPass ? '#2DD4BF' : '#FB7185'; // teal-400 or rose-400
+  const strokeColor = isPass ? '#22d3ee' : '#f87171';
   const circumference = 2 * Math.PI * 52; // r=52
   const strokeDashoffset = Math.max(0, circumference - (score / 100) * circumference);
 
@@ -66,12 +67,9 @@ export default function Assessment({ assessment, onComplete, onClose }) {
         <BookOpen className="w-16 h-16 text-text-tertiary mx-auto mb-4 opacity-50" />
         <h3 className="text-xl font-syne font-bold text-text-primary mb-2">No Questions Found</h3>
         <p className="text-text-secondary mb-8">This assessment does not have any questions configured.</p>
-        <button
-          onClick={onClose}
-          className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-text-primary font-bold rounded-xl transition-all cursor-pointer"
-        >
+        <Button onClick={onClose} variant="secondary">
           Go Back
-        </button>
+        </Button>
       </div>
     );
   }
@@ -130,22 +128,22 @@ export default function Assessment({ assessment, onComplete, onClose }) {
             return (
               <div 
                 key={i} 
-                className={`p-4 rounded-2xl border ${isCorrect ? 'bg-teal-500/10 border-teal-500/30' : 'bg-rose-500/10 border-rose-500/30'}`}
+                className={`rounded-lg border p-4 ${isCorrect ? 'border-success-400/30 bg-success-500/10' : 'border-error-400/30 bg-error-500/10'}`}
               >
                 <div className="flex gap-3">
                   <div className="mt-0.5 flex-shrink-0">
                     {isCorrect ? (
-                      <CheckCircle2 className="w-5 h-5 text-teal-400" />
+                      <CheckCircle2 className="w-5 h-5 text-success-400" />
                     ) : (
-                      <XOctagon className="w-5 h-5 text-rose-400" />
+                      <XOctagon className="w-5 h-5 text-error-400" />
                     )}
                   </div>
                   <div>
                     <p className="text-text-primary text-sm font-medium mb-1.5">{q.questionText || q.question}</p>
-                    <p className={`text-xs flex flex-col gap-1 ${isCorrect ? 'text-teal-300' : 'text-rose-300'}`}>
+                    <p className={`text-xs flex flex-col gap-1 ${isCorrect ? 'text-success-400' : 'text-error-400'}`}>
                       <span>Your answer: <strong className="font-bold">{getOptText(q.options?.[answers[i]]) || 'No answer'}</strong></span>
                       {!isCorrect && q.options?.[correctIdx] && (
-                        <span className="text-teal-400">Correct: <strong className="font-bold">{getOptText(q.options[correctIdx])}</strong></span>
+                        <span className="text-success-400">Correct: <strong className="font-bold">{getOptText(q.options[correctIdx])}</strong></span>
                       )}
                     </p>
                   </div>
@@ -158,13 +156,13 @@ export default function Assessment({ assessment, onComplete, onClose }) {
         <div className="flex gap-4">
           <button 
             onClick={handleReset}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border-subtle hover:bg-white/5 text-text-secondary font-bold transition-all cursor-pointer"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border-subtle py-3 font-bold text-text-secondary transition-all hover:bg-white/[0.06] hover:text-text-primary"
           >
             <RotateCcw className="w-4 h-4" /> Try Again
           </button>
           <button 
             onClick={onClose}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all cursor-pointer text-bg-base ${passed ? 'bg-teal-400 hover:bg-teal-500' : 'bg-primary-500 hover:bg-primary-600 text-white'}`}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-3 font-bold transition-all ${passed ? 'bg-gradient-success text-bg-base' : 'bg-gradient-primary text-white shadow-glow'}`}
           >
             Continue <ChevronRight className="w-4 h-4" />
           </button>
@@ -180,22 +178,22 @@ export default function Assessment({ assessment, onComplete, onClose }) {
         <span className="text-text-secondary text-sm">
           Question <strong className="text-text-primary text-base">{current + 1}</strong> of {totalQ}
         </span>
-        <div className="px-3 py-1 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold rounded-full">
+        <div className="rounded-full border border-primary-400/20 bg-primary-500/10 px-3 py-1 text-xs font-bold text-primary-300">
           {answeredCount}/{totalQ} Answered
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mb-6">
+      <div className="mb-6 h-2 w-full overflow-hidden rounded-full bg-white/5">
         <div 
-          className="h-full bg-primary-500 transition-all duration-300 ease-out rounded-full"
+          className="h-full rounded-full bg-gradient-primary transition-all duration-300 ease-out"
           style={{ width: `${((current + 1) / totalQ) * 100}%` }}
         />
       </div>
 
       {/* Question Text */}
-      <div className="p-6 rounded-3xl bg-bg-elevated border border-border-subtle mb-6 shadow-inner">
-        <h3 className="font-syne font-bold text-lg md:text-xl text-text-primary leading-relaxed">
+      <div className="glass-sm mb-6 rounded-lg p-6 shadow-inner">
+        <h3 className="font-display text-lg font-bold leading-relaxed text-text-primary md:text-xl">
           {currentQ.questionText || currentQ.question}
         </h3>
       </div>
@@ -208,10 +206,10 @@ export default function Assessment({ assessment, onComplete, onClose }) {
             <button
               key={i}
               onClick={() => selectAnswer(current, i)}
-              className={`flex items-center gap-4 p-4 rounded-2xl border transition-all text-left cursor-pointer group ${isSelected ? 'bg-primary-500/10 border-primary-500/50' : 'bg-transparent border-border-subtle hover:border-primary-500/30 hover:bg-white/[0.02]'}`}
+              className={`group flex cursor-pointer items-center gap-4 rounded-lg border p-4 text-left transition-all ${isSelected ? 'border-primary-400/50 bg-primary-500/12 shadow-glow' : 'border-border-subtle bg-white/[0.015] hover:border-primary-400/30 hover:bg-white/[0.04]'}`}
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? 'bg-primary-500 text-white' : 'bg-white/5 text-text-secondary group-hover:text-text-primary'}`}>
-                <span className="font-syne font-bold text-sm">
+              <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-gradient-primary text-white' : 'bg-white/5 text-text-secondary group-hover:text-text-primary'}`}>
+                <span className="font-display text-sm font-bold">
                   {String.fromCharCode(65 + i)}
                 </span>
               </div>
@@ -228,7 +226,7 @@ export default function Assessment({ assessment, onComplete, onClose }) {
         <button
           onClick={() => setCurrent(c => Math.max(0, c - 1))}
           disabled={current === 0}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-transparent hover:border-border-subtle disabled:opacity-30 disabled:hover:border-transparent text-text-secondary hover:text-text-primary transition-all font-bold text-sm cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg border border-transparent px-4 py-2.5 text-sm font-bold text-text-secondary transition-all hover:border-border-subtle hover:text-text-primary disabled:opacity-30 disabled:hover:border-transparent"
         >
           <ChevronLeft className="w-4 h-4" /> Prev
         </button>
@@ -248,7 +246,7 @@ export default function Assessment({ assessment, onComplete, onClose }) {
         {current < totalQ - 1 ? (
           <button
             onClick={() => setCurrent(c => Math.min(totalQ - 1, c + 1))}
-            className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-text-primary font-bold text-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-lg bg-white/10 px-6 py-2.5 text-sm font-bold text-text-primary transition-all hover:bg-white/20"
           >
             Next <ChevronRight className="w-4 h-4" />
           </button>
@@ -256,7 +254,7 @@ export default function Assessment({ assessment, onComplete, onClose }) {
           <button
             onClick={handleSubmit}
             disabled={answeredCount < totalQ}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning to-[#E2D9BE] disabled:opacity-50 disabled:grayscale text-[#09090b] font-bold text-sm transition-all cursor-pointer shadow-lg hover:shadow-warning/20 transform active:scale-95"
+            className="flex items-center gap-2 rounded-lg bg-gradient-warning px-6 py-2.5 text-sm font-bold text-bg-base shadow-glow transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
           >
             <Trophy className="w-4 h-4" /> Submit
           </button>

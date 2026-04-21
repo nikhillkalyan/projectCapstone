@@ -142,7 +142,7 @@ function ApprovalCelebration({ name, onRedirect }) {
                 transition={{ type: 'spring', bounce: 0.32, duration: 0.7, delay: 0.1 }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                <div className="bg-[#0d0d14]/98 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(52,211,153,0.18)]">
+                <div className="bg-bg-surface/95 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(52,211,153,0.18)]">
                     <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
                     <div className="p-10 text-center">
                         {/* Checkmark */}
@@ -260,7 +260,7 @@ function ReinstateCelebration({ name, targetStatus, onDone }) {
                 transition={{ type: 'spring', bounce: 0.3, duration: 0.65, delay: 0.1 }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                <div className="bg-[#0d0d14]/98 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(99,102,241,0.2)]">
+                <div className="bg-bg-surface/95 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(99,102,241,0.2)]">
                     <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
                     <div className="p-10 text-center">
                         <div className="flex justify-center mb-7">
@@ -328,7 +328,7 @@ function RemovalNotice({ onAcknowledge }) {
                 transition={{ type: 'spring', bounce: 0.28, duration: 0.65, delay: 0.1 }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                <div className="bg-[#0d0d14]/98 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(239,68,68,0.15)]">
+                <div className="bg-bg-surface/95 border border-white/10 rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(239,68,68,0.15)]">
                     <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-red-500 to-transparent" />
                     <div className="p-10 text-center">
                         <div className="flex justify-center mb-7">
@@ -337,20 +337,20 @@ function RemovalNotice({ onAcknowledge }) {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: 'spring', bounce: 0.4, duration: 0.6, delay: 0.2 }}
-                                    className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center"
+                                    className="w-20 h-20 rounded-2xl bg-error-500/10 border border-error-400/25 flex items-center justify-center"
                                 >
-                                    <ShieldX className="w-9 h-9 text-red-400" strokeWidth={1.4} />
+                                    <ShieldX className="w-9 h-9 text-error-400" strokeWidth={1.4} />
                                 </motion.div>
                                 <motion.div
                                     animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
                                     transition={{ duration: 2, repeat: 2, ease: 'easeOut' }}
-                                    className="absolute inset-0 rounded-2xl border border-red-400/25"
+                                    className="absolute inset-0 rounded-2xl border border-error-400/25"
                                 />
                             </div>
                         </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                            <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.15em]">Access Revoked</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-500/10 border border-error-400/20 mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-error-400" />
+                            <span className="text-[10px] font-bold text-error-400 uppercase tracking-[0.15em]">Access Revoked</span>
                         </div>
                         <h2 className="text-2xl font-bold text-white tracking-tight mb-3 leading-tight"
                             style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
@@ -362,7 +362,7 @@ function RemovalNotice({ onAcknowledge }) {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
                             className="flex items-center justify-center gap-3 mb-4"
                         >
-                            <motion.div className="h-0.5 rounded-full bg-red-500/40"
+                            <motion.div className="h-0.5 rounded-full bg-error-500/40"
                                 initial={{ width: 0 }} animate={{ width: 140 }}
                                 transition={{ duration: 5, ease: 'linear' }}
                             />
@@ -399,7 +399,7 @@ function LockedSidebar({ userName, onLogout, navigate }) {
             animate={{ width: hovered ? 260 : 80 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.38 }}
             style={{ minWidth: 80 }}
-            className="fixed top-0 left-0 h-screen bg-[#0E0E11] border-r border-neutral-800 z-50 overflow-hidden flex flex-col"
+            className="fixed top-0 left-0 h-screen bg-bg-base border-r border-neutral-800 z-50 overflow-hidden flex flex-col"
         >
             <div className="w-[260px] flex flex-col h-full">
                 {/* Brand */}
@@ -417,7 +417,7 @@ function LockedSidebar({ userName, onLogout, navigate }) {
                 <motion.div variants={lv} animate={hovered ? 'visible' : 'hidden'}
                     className="mx-4 mt-4 p-3 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex items-center gap-3 shrink-0"
                 >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-[#0a0800] shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-bg-base shrink-0">
                         {initials}
                     </div>
                     <div className="overflow-hidden">
@@ -434,7 +434,7 @@ function LockedSidebar({ userName, onLogout, navigate }) {
                         >
                             <div className="w-12 h-12 flex items-center justify-center shrink-0 relative">
                                 <Icon className="h-5 w-5 text-neutral-500" />
-                                <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-[#0E0E11] flex items-center justify-center">
+                                <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-bg-base flex items-center justify-center">
                                     <Lock className="w-2 h-2 text-neutral-600" />
                                 </div>
                             </div>
@@ -490,13 +490,13 @@ function LockedSidebar({ userName, onLogout, navigate }) {
                     </motion.div>
 
                     <button onClick={onLogout}
-                        className="flex items-center h-11 rounded-xl w-full group transition-all duration-200 hover:bg-rose-500/10 overflow-hidden"
+                        className="flex items-center h-11 rounded-xl w-full group transition-all duration-200 hover:bg-error-500/10 overflow-hidden"
                     >
                         <div className="w-12 h-11 flex items-center justify-center shrink-0">
-                            <LogOut size={18} className="text-rose-500/70 group-hover:text-rose-400 transition-colors" />
+                            <LogOut size={18} className="text-error-400/70 group-hover:text-error-400 transition-colors" />
                         </div>
                         <motion.span variants={lv} animate={hovered ? 'visible' : 'hidden'}
-                            className="text-sm font-medium text-rose-500/70 group-hover:text-rose-400 whitespace-nowrap transition-colors"
+                            className="text-sm font-medium text-error-400/70 group-hover:text-error-400 whitespace-nowrap transition-colors"
                         >
                             Logout
                         </motion.span>
@@ -521,7 +521,7 @@ function LockedTopbar({ user, onLogout, navigate }) {
     }, []);
 
     return (
-        <header className="h-16 w-full flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30 bg-[#09090b]/80 backdrop-blur-md border-b border-neutral-800/60 shrink-0">
+        <header className="h-16 w-full flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30 bg-bg-base/80 backdrop-blur-md border-b border-neutral-800/60 shrink-0">
             <div className="hidden sm:flex items-center bg-neutral-900 border border-neutral-800 rounded-full px-4 py-2 w-64 md:w-80 opacity-40 cursor-not-allowed">
                 <Search size={15} className="text-neutral-600" />
                 <span className="ml-3 text-sm text-neutral-600 select-none">Search courses...</span>
@@ -529,7 +529,7 @@ function LockedTopbar({ user, onLogout, navigate }) {
             <div className="flex items-center gap-4">
                 <button className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-600 cursor-not-allowed opacity-40 relative" tabIndex={-1}>
                     <Bell size={18} />
-                    <span className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-neutral-700 ring-2 ring-[#09090b]" />
+                    <span className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-neutral-700 ring-2 ring-bg-base" />
                 </button>
                 <div className="h-6 w-px bg-neutral-800/60 hidden sm:block" />
                 <div className="relative" ref={dropdownRef}>
@@ -554,7 +554,7 @@ function LockedTopbar({ user, onLogout, navigate }) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                                className="absolute right-0 top-full mt-2 w-52 bg-[#0E0E11] border border-neutral-800 rounded-2xl shadow-2xl shadow-black/60 py-1.5 z-50 overflow-hidden"
+                                className="absolute right-0 top-full mt-2 w-52 bg-bg-base border border-neutral-800 rounded-2xl shadow-2xl shadow-black/60 py-1.5 z-50 overflow-hidden"
                             >
                                 <div className="px-4 py-3 border-b border-neutral-800/60 mb-1">
                                     <p className="text-sm font-semibold text-neutral-200 leading-tight">{user?.name}</p>
@@ -581,7 +581,7 @@ function LockedTopbar({ user, onLogout, navigate }) {
                                 </div>
                                 <div className="mt-1 px-2 pt-1 border-t border-neutral-800/60">
                                     <button onClick={() => { setDropdownOpen(false); onLogout(); }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-error-400/80 hover:text-error-400 hover:bg-error-500/10 rounded-xl transition-colors"
                                     >
                                         <LogOut size={15} />
                                         Log Out
@@ -650,7 +650,7 @@ function PendingOverlay({ name, lastChecked }) {
         <motion.div initial={{ opacity: 0, scale: 0.96, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', bounce: 0.22, duration: 0.65 }} className="w-full max-w-md"
         >
-            <div className="bg-[#0d0d12]/96 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
+            <div className="bg-bg-surface/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
                 <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
                 <div className="p-8">
                     <div className="flex justify-center mb-6">
@@ -711,28 +711,28 @@ function RejectedOverlay({ profile }) {
         <motion.div initial={{ opacity: 0, scale: 0.96, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', bounce: 0.22, duration: 0.65 }} className="w-full max-w-md"
         >
-            <div className="bg-[#0d0d12]/96 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
+            <div className="bg-bg-surface/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
                 <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
                 <div className="p-8">
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-                            <ShieldX className="w-9 h-9 text-rose-400" strokeWidth={1.3} />
+                        <div className="w-20 h-20 rounded-2xl bg-error-500/10 border border-error-400/20 flex items-center justify-center">
+                            <ShieldX className="w-9 h-9 text-error-400" strokeWidth={1.3} />
                         </div>
                     </div>
                     <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 mb-4">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-[0.15em]">Application Declined</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-500/10 border border-error-400/20 mb-4">
+                            <span className="w-1.5 h-1.5 rounded-full bg-error-400" />
+                            <span className="text-[10px] font-bold text-error-400 uppercase tracking-[0.15em]">Application Declined</span>
                         </div>
                         <h2 className="text-[1.6rem] font-bold text-white tracking-tight mb-2 leading-tight"
                             style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>Access not granted</h2>
                         <p className="text-sm text-neutral-400 leading-relaxed">We were unable to approve your instructor application at this time.</p>
                     </div>
                     {profile.rejectionReason && (
-                        <div className="bg-rose-500/5 border border-rose-500/15 rounded-2xl p-4 mb-6 relative overflow-hidden">
+                        <div className="bg-error-500/8 border border-error-400/15 rounded-2xl p-4 mb-6 relative overflow-hidden">
                             <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-rose-500/80 to-transparent rounded-l-2xl" />
-                            <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-2 pl-3">Admin Feedback</p>
-                            <p className="text-sm text-rose-200/70 leading-relaxed pl-3 italic">"{profile.rejectionReason}"</p>
+                            <p className="text-[10px] font-semibold text-error-400 uppercase tracking-wider mb-2 pl-3">Admin Feedback</p>
+                            <p className="text-sm text-error-400/75 leading-relaxed pl-3 italic">"{profile.rejectionReason}"</p>
                         </div>
                     )}
                     <a href="mailto:support@eduforge.com"
@@ -752,7 +752,7 @@ function FlaggedOverlay({ profile }) {
         <motion.div initial={{ opacity: 0, scale: 0.96, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', bounce: 0.22, duration: 0.65 }} className="w-full max-w-md"
         >
-            <div className="bg-[#0d0d12]/96 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
+            <div className="bg-bg-surface/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.75)] backdrop-blur-2xl">
                 <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
                 <div className="p-8">
                     <div className="flex justify-center mb-6">
@@ -790,7 +790,7 @@ function FlaggedOverlay({ profile }) {
                         </div>
                     )}
                     <a href="mailto:admin@eduforge.com"
-                        className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-amber-400 text-[#1c1000] text-sm font-bold hover:bg-amber-300 active:scale-[0.98] transition-all shadow-lg shadow-amber-500/20"
+                        className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-amber-400 text-bg-base text-sm font-bold hover:bg-amber-300 active:scale-[0.98] transition-all shadow-lg shadow-primary-500/20"
                     >
                         <Mail size={15} /> Resolve via email
                     </a>
@@ -815,7 +815,7 @@ function RemovedOverlay() {
             transition={{ type: 'spring', bounce: 0.22, duration: 0.65 }}
             className="w-full max-w-md"
         >
-            <div className="bg-[#0d0d12]/96 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(239,68,68,0.12),0_0_0_1px_rgba(239,68,68,0.08)] backdrop-blur-2xl relative">
+            <div className="bg-bg-surface/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-[0_40px_100px_rgba(239,68,68,0.12),0_0_0_1px_rgba(239,68,68,0.08)] backdrop-blur-2xl relative">
                 {/* Shimmer sweep */}
                 <motion.div
                     initial={{ x: '-100%' }}
@@ -843,7 +843,7 @@ function RemovedOverlay() {
                                 initial={{ scale: 0, rotate: -30 }}
                                 animate={{ scale: 1, rotate: 0 }}
                                 transition={{ type: 'spring', bounce: 0.35, duration: 0.6, delay: 0.2 }}
-                                className="w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center relative overflow-hidden"
+                                className="w-20 h-20 rounded-2xl bg-error-500/10 border border-error-400/25 flex items-center justify-center relative overflow-hidden"
                             >
                                 {/* Inner glow sweep */}
                                 <motion.div
@@ -852,7 +852,7 @@ function RemovedOverlay() {
                                     className="absolute inset-0 pointer-events-none"
                                     style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.15), transparent)', width: '60%' }}
                                 />
-                                <ShieldX className="w-9 h-9 text-red-400 relative z-10" strokeWidth={1.3} />
+                                <ShieldX className="w-9 h-9 text-error-400 relative z-10" strokeWidth={1.3} />
                             </motion.div>
 
                             {/* Pulsing rings — same pattern as Pending/Flagged */}
@@ -862,7 +862,7 @@ function RemovedOverlay() {
                                     initial={{ scale: 1, opacity: 0 }}
                                     animate={{ scale: [1, 1.6 + i * 0.3], opacity: [0.5, 0] }}
                                     transition={{ duration: 2.2, delay: 0.6 + delay, repeat: Infinity, ease: 'easeOut' }}
-                                    className="absolute inset-0 rounded-2xl border border-red-500/30"
+                                    className="absolute inset-0 rounded-2xl border border-error-400/30"
                                 />
                             ))}
                         </div>
@@ -875,13 +875,13 @@ function RemovedOverlay() {
                         transition={{ delay: 0.35, duration: 0.45 }}
                         className="text-center mb-7"
                     >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-500/10 border border-error-400/20 mb-4">
                             <motion.span
                                 animate={{ opacity: [1, 0.3, 1] }}
                                 transition={{ duration: 2, repeat: Infinity }}
-                                className="w-1.5 h-1.5 rounded-full bg-red-400 block"
+                                className="w-1.5 h-1.5 rounded-full bg-error-400 block"
                             />
-                            <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.15em]">Account Suspended</span>
+                            <span className="text-[10px] font-bold text-error-400 uppercase tracking-[0.15em]">Account Suspended</span>
                         </div>
                         <h2
                             className="text-[1.6rem] font-bold text-white tracking-tight mb-2 leading-tight"
@@ -899,7 +899,7 @@ function RemovedOverlay() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 0.4 }}
-                        className="space-y-2.5 mb-7 bg-red-500/[0.04] border border-red-500/10 rounded-2xl p-4"
+                        className="space-y-2.5 mb-7 bg-error-500/[0.04] border border-error-400/10 rounded-2xl p-4"
                     >
                         {REMOVED_TIMELINE.map((item, i) => (
                             <motion.div
@@ -910,7 +910,7 @@ function RemovedOverlay() {
                                 className="flex items-center gap-3"
                             >
                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${item.revoked
-                                        ? 'bg-red-500/20 border border-red-500/40'
+                                        ? 'bg-error-500/20 border border-error-400/40'
                                         : 'bg-neutral-800/80 border border-neutral-700/50'
                                     }`}>
                                     {item.revoked ? (
@@ -918,18 +918,18 @@ function RemovedOverlay() {
                                             animate={{ rotate: [0, 5, -5, 0] }}
                                             transition={{ duration: 0.4, delay: 0.9 }}
                                         >
-                                            <ShieldX className="w-3 h-3 text-red-400" />
+                                            <ShieldX className="w-3 h-3 text-error-400" />
                                         </motion.div>
                                     ) : (
                                         <CheckCircle2 className="w-3.5 h-3.5 text-neutral-600" />
                                     )}
                                 </div>
-                                <span className={`text-sm flex-1 ${item.revoked ? 'text-red-300 font-semibold' : 'text-neutral-600'
+                                <span className={`text-sm flex-1 ${item.revoked ? 'text-error-400 font-semibold' : 'text-neutral-600'
                                     }`}>
                                     {item.label}
                                 </span>
                                 {item.revoked && (
-                                    <span className="text-[9px] font-mono text-red-500/60 uppercase tracking-wider">revoked</span>
+                                    <span className="text-[9px] font-mono text-error-400/60 uppercase tracking-wider">revoked</span>
                                 )}
                             </motion.div>
                         ))}
@@ -952,14 +952,14 @@ function RemovedOverlay() {
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)'; }}
                     >
-                        <div className="w-8 h-8 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
-                            <Mail size={14} className="text-red-400" />
+                        <div className="w-8 h-8 rounded-xl bg-error-500/15 flex items-center justify-center shrink-0">
+                            <Mail size={14} className="text-error-400" />
                         </div>
                         <div className="text-left">
-                            <div className="text-[13px] font-semibold text-red-200 leading-tight">Contact support</div>
-                            <div className="text-[11px] text-red-400/60 font-normal">support@eduforge.com</div>
+                            <div className="text-[13px] font-semibold text-error-400 leading-tight">Contact support</div>
+                            <div className="text-[11px] text-error-400/60 font-normal">support@eduforge.com</div>
                         </div>
-                        <ArrowRight size={14} className="text-red-500/50 ml-auto transition-transform group-hover:translate-x-0.5" />
+                        <ArrowRight size={14} className="text-error-400/50 ml-auto transition-transform group-hover:translate-x-0.5" />
                     </motion.a>
                 </div>
             </div>
@@ -1067,7 +1067,7 @@ export default function InstructorWaitingRoom() {
     const displayStatus = currentStatus ?? (user.profile?.approvalStatus || 'PENDING');
 
     return (
-        <div className="flex h-screen w-full bg-[#09090b] text-neutral-50 overflow-hidden font-sans">
+        <div className="flex h-screen w-full bg-bg-base text-neutral-50 overflow-hidden font-sans">
             <LockedSidebar userName={user.name} onLogout={handleLogout} navigate={navigate} />
             <div className="hidden lg:block w-[80px] shrink-0" />
 
@@ -1081,7 +1081,7 @@ export default function InstructorWaitingRoom() {
                     >
                         <GhostDashboard />
                     </div>
-                    <div className="absolute inset-0 bg-[#09090b]/60" />
+                    <div className="absolute inset-0 bg-bg-base/60" />
 
                     {/* Status card */}
                     <div className="absolute inset-0 flex items-center justify-center p-4 z-10">
