@@ -88,6 +88,7 @@ src/main/java/backend/backend
 ├── Dto
 │   ├── Request
 │   │   ├── CreateAssessmentRequest.java
+│   │   ├── CreateUniversityCourseAllocationRequest.java [NEW]
 │   │   ├── CreateBranchRequest.java
 │   │   ├── CreateChapterRequest.java
 │   │   ├── CreateCourseRequest.java
@@ -114,6 +115,7 @@ src/main/java/backend/backend
 │       ├── BranchResponse.java
 │       ├── ChapterResponse.java
 │       ├── ContactResponse.java
+│       ├── CourseAllocationResponse.java         [NEW]
 │       ├── CourseProgressResponse.java
 │       ├── CourseResponse.java
 │       ├── EnrollmentResponse.java
@@ -233,7 +235,8 @@ src
 │   └── AuthContext.jsx
 ├── pages
 │   ├── allocations
-│   │   └── Allocations.jsx
+│   │   ├── Allocations.css                      [NEW]
+│   │   └── Allocations.jsx                      [UPDATED — fully wired allocations dashboard, grouped cards, allocate/remove dialogs]
 │   ├── auth
 │   │   ├── Login.css
 │   │   └── Login.jsx
@@ -391,7 +394,7 @@ Phase 1 — University Foundation & Onboarding
 
 Phase 2 — University Courses & Semester Allocation
 - Dynamic Courses: Instructors design university-tier courses appending precise weightages dynamically mapped (Tests: 30%, Lecture Completion: 10%, Project: 40%). Unlike static generic courses, these are freely edited throughout the instructional cycle.
-- Allocation: Instead of automatic publication, Tier 2 Admins pick courses from the faculty "pool" mapping them explicitly against granular sections, imposing final course semester deadlines inherently.
+- Allocation: Instead of automatic publication, Tier 2 Admins now use the dedicated Allocations dashboard to pick APPROVED courses from the faculty pool, map them explicitly to one or more sections, review current allocations grouped by course, remove section allocations when needed, and impose final course completion deadlines.
 
 Phase 3 — Chapter Deadlines, Assessments & Real-Time Marks Engine
 - Automated Marks Integration: Built-to-order logic dynamically maps deadline constraints globally into internal grades for both individual branches and pre-set test structures resulting in live dashboarding capabilities per student and detailed cross-matrices per Instructor mapping.
@@ -427,13 +430,14 @@ Part 3: Progress State & Development Backlog
 11. University Space onboarding (Tier 3) — UniversitySpace.jsx: join code lookup, student form (section/roll number/college/year), instructor form (branch/employee ID). Dual-status maintained correctly.
 12. University Course Creation (Tier 3 Instructor) — CreateUniversityCourse.jsx: title, description, targeting (branch + year), dynamic weightage builder (Tests / Attendance / Live Tests / Project — must sum to 100%). Submitted as PENDING to uni-admin pool. Backend validates instructor is APPROVED and weightages sum to 100.
 13. Course Pool (Tier 2 Uni-Admin) — CoursePool.jsx fully wired: status tabs (All/Pending/Approved/Rejected), branch filter, search, detail modal with full weightage breakdown, inline approve and reject-with-reason actions.
-14. Backend: UniversityCourseController + UniversityCourseService/Impl — create, list (instructor own), pool (admin), approve, reject. Security: instructor must belong to university and be APPROVED; branch must belong to same university; weightages must sum to 100.
+14. Course Allocation Dashboard (Tier 2 Uni-Admin) — Allocations.jsx + Allocations.css fully wired: fetch approved courses and sections, allocate one course to multiple sections, set final deadline, list existing allocations grouped by course, remove section-level allocations, and improved responsive modal styling aligned with the uni-admin theme.
+15. Backend: UniversityCourseController + UniversityCourseService/Impl — create, list (instructor own), pool (admin), approve, reject, fetch sections, list allocations, create allocations, and remove allocations. Security: instructor must belong to university and be APPROVED; branch/sections must belong to same university; weightages must sum to 100; only APPROVED university courses can be allocated by the university admin.
 
 🚧 To Build Next / Action Items (in priority order)
-1.  Course Allocation Dashboard (Uni-Admin) — Allocations.jsx: uni-admin selects an APPROVED course from pool, assigns it to one or more sections (branch + year + section), sets course completion deadline. Students and instructor get notified.
-2.  Instructor University Course Studio — after allocation, instructor can dynamically add/edit chapters, upload materials, set deadlines per chapter/test, define penalty strategy for late submissions. Unlike public courses, fully editable throughout lifecycle.
-3.  Student University Space Home — students see all courses allocated to their section. Live running internal marks dashboard per course showing scores per category updated in real time.
-4.  Chapter Deadlines & Marks Engine — instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
+1.  Instructor University Course Studio — after allocation, instructor can dynamically add/edit chapters, upload materials, set deadlines per chapter/test, define penalty strategy for late submissions. Unlike public courses, fully editable throughout lifecycle.
+2.  Student University Space Home — students see all courses allocated to their section. Live running internal marks dashboard per course showing scores per category updated in real time.
+3.  Chapter Deadlines & Marks Engine — instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
+4.  Student + Instructor Notifications for Allocation Events — on successful allocation/removal, relevant users receive in-app updates about assigned university courses and deadline changes.
 5.  Live Tests (WebSocket) — instructor launches timed test, all section students notified simultaneously, test auto-closes after duration, scores fed directly into marks engine.
 6.  Live Classes (Jitsi Integration) — instructor starts session, section students notified, join via Jitsi embed inside platform.
 7.  Project Space + GitHub Integration — group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.

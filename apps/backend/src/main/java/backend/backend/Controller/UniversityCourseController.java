@@ -1,7 +1,10 @@
 package backend.backend.Controller;
 
+import backend.backend.Dto.Request.CreateUniversityCourseAllocationRequest;
 import backend.backend.Dto.Request.CreateUniversityCourseRequest;
 import backend.backend.Dto.Request.RejectRequest;
+import backend.backend.Dto.Response.CourseAllocationResponse;
+import backend.backend.Dto.Response.SectionResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 import backend.backend.Dto.Response.BranchResponse;
 import backend.backend.Entity.User;
@@ -66,8 +69,9 @@ public class UniversityCourseController {
     @GetMapping("/pool")
     @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
     public ResponseEntity<List<UniversityCourseResponse>> getCoursePool(
-            @AuthenticationPrincipal UserDetails principal) {
-        return ResponseEntity.ok(universityCourseService.getCoursePool(principal.getUsername()));
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(universityCourseService.getCoursePool(principal.getUsername(), status));
     }
 
     @PutMapping("/{id}/approve")
@@ -85,5 +89,43 @@ public class UniversityCourseController {
             @PathVariable UUID id,
             @RequestBody RejectRequest request) {
         return ResponseEntity.ok(universityCourseService.rejectCourse(principal.getUsername(), id, request));
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ALLOCATIONS & SECTIONS
+    // ══════════════════════════════════════════════════════════════
+
+    @GetMapping("/allocations")
+    @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
+    public ResponseEntity<List<CourseAllocationResponse>> getAllocations(
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+            universityCourseService.getAllocations(principal.getUsername()));
+    }
+
+    @PostMapping("/allocations")
+    @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
+    public ResponseEntity<List<CourseAllocationResponse>> allocateCourse(
+            @RequestBody CreateUniversityCourseAllocationRequest req,
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+            universityCourseService.allocateCourse(req, principal.getUsername()));
+    }
+
+    @DeleteMapping("/allocations/{allocationId}")
+    @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
+    public ResponseEntity<Void> removeAllocation(
+            @PathVariable UUID allocationId,
+            @AuthenticationPrincipal UserDetails principal) {
+        universityCourseService.removeAllocation(allocationId, principal.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/sections")
+    @PreAuthorize("hasRole('UNIVERSITY_ADMIN')")
+    public ResponseEntity<List<SectionResponse>> getSectionsForAdmin(
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+            universityCourseService.getSectionsForAdmin(principal.getUsername()));
     }
 }

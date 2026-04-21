@@ -1,9 +1,13 @@
 package backend.backend.Service.Impl;
 
 import backend.backend.Dto.Request.CreateUniversityCourseRequest;
+import backend.backend.Dto.Request.CreateUniversityCourseAllocationRequest;
 import backend.backend.Dto.Request.RejectRequest;
+import backend.backend.Dto.Response.CourseAllocationResponse;
+import backend.backend.Dto.Response.SectionResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 import backend.backend.Entity.*;
+import java.util.ArrayList;
 import backend.backend.Exceptions.BadRequestException;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
@@ -27,6 +31,8 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
     private final InstructorRepository instructorRepository;
     private final BranchRepository branchRepository;
     private final UserRepository userRepository;
+    private final SectionRepository sectionRepository;
+    private final CourseAllocationRepository courseAllocationRepository;
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -159,11 +165,12 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UniversityCourseResponse> getCoursePool(String adminEmail) {
+    public List<UniversityCourseResponse> getCoursePool(String adminEmail, String status) {
         User admin = resolveAdmin(adminEmail);
         return courseRepository.findByUniversityIdAndIsUniversityCourseTrue(admin.getUniversity().getId())
                 .stream()
                 .map(this::mapToResponse)
+                .filter(res -> status == null || status.isBlank() || res.getApprovalStatus().equalsIgnoreCase(status))
                 .collect(Collectors.toList());
     }
 
@@ -207,5 +214,137 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
         if (course.getUniversity() == null || !course.getUniversity().getId().equals(universityId))
             throw new UnauthorizedException("This course does not belong to your university");
         return course;
+    }
+
+    // ── Allocations ─────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public List<CourseAllocationResponse> allocateCourse(
+            CreateUniversityCourseAllocationRequest req, String email) {
+
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        University university = admin.getUniversity();
+        if (university == null) throw new BadRequestException("Admin has no university");
+
+        Course course = courseRepository.findById(req.getCourseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        if (!Boolean.TRUE.equals(course.getIsUniversityCourse()))
+            throw new BadRequestException("Not a university course");
+        if (!Boolean.TRUE.equals(course.getIsApprovedByUniAdmin()))
+            throw new BadRequestException("Course is not approved yet");
+        if (!university.getId().equals(course.getUniversity().getId()))
+            throw new UnauthorizedException("Course does not belong to your university");
+
+        List<CourseAllocationResponse> results = new ArrayList<>();
+
+        for (UUID sectionId : req.getSectionIds()) {
+            Section section = sectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
+
+            if (!university.getId().equals(section.getBranch().getUniversity().getId()))
+                throw new UnauthorizedException("Section does not belong to your university");
+
+            // prevent duplicate allocation
+            boolean alreadyAllocated = courseAllocationRepository
+                    .findByCourseId(req.getCourseId())
+                    .stream()
+                    .anyMatch(a -> a.getSection().getId().equals(sectionId));
+
+            if (alreadyAllocated) continue;
+
+            CourseAllocation allocation = CourseAllocation.builder()
+                    .course(course)
+                    .section(section)
+                    .finalDeadline(req.getFinalDeadline())
+                    .build();
+
+            allocation = courseAllocationRepository.save(allocation);
+            results.add(mapToAllocationResponse(allocation));
+        }
+
+        return results;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseAllocationResponse> getAllocations(String email) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        University university = admin.getUniversity();
+        if (university == null) return List.of();
+
+        List<Course> uniCourses = courseRepository
+                .findByUniversityIdAndIsUniversityCourseTrue(university.getId());
+
+        return uniCourses.stream()
+                .flatMap(c -> courseAllocationRepository.findByCourseId(c.getId()).stream())
+                .map(this::mapToAllocationResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void removeAllocation(UUID allocationId, String email) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        CourseAllocation allocation = courseAllocationRepository.findById(allocationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Allocation not found"));
+
+        University university = admin.getUniversity();
+        if (!university.getId().equals(
+                allocation.getCourse().getUniversity().getId()))
+            throw new UnauthorizedException("Not your university's allocation");
+
+        courseAllocationRepository.delete(allocation);
+    }
+
+    private CourseAllocationResponse mapToAllocationResponse(CourseAllocation a) {
+        Instructor instructor = a.getCourse().getInstructor();
+        String instructorName = instructor != null
+                ? instructor.getUser().getName()
+                : "Unknown";
+
+        return CourseAllocationResponse.builder()
+                .id(a.getId())
+                .courseId(a.getCourse().getId())
+                .courseTitle(a.getCourse().getTitle())
+                .instructorName(instructorName)
+                .targetBranch(a.getCourse().getTargetBranch() != null
+                        ? a.getCourse().getTargetBranch().getName() : null)
+                .targetYear(a.getCourse().getTargetYear())
+                .sectionId(a.getSection().getId())
+                .sectionName(a.getSection().getName())
+                .finalDeadline(a.getFinalDeadline())
+                .allocatedAt(a.getAllocatedAt())
+                .build();
+    }
+
+    // ── Sections ─────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SectionResponse> getSectionsForAdmin(String email) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+        University university = admin.getUniversity();
+        if (university == null) return List.of();
+
+        return branchRepository.findByUniversityId(university.getId())
+                .stream()
+                .flatMap(b -> sectionRepository.findByBranchId(b.getId()).stream())
+                .map(s -> SectionResponse.builder()
+                        .id(s.getId())
+                        .name(s.getName())
+                        .year(s.getYear())
+                        .branchId(s.getBranch().getId())
+                        .branchName(s.getBranch().getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
