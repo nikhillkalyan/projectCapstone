@@ -766,6 +766,7 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [courseSettings, setCourseSettings] = useState({
     defaultPenaltyPerDay: course?.defaultPenaltyPerDay ?? 0,
     penaltyDescription: course?.penaltyDescription || '',
@@ -844,17 +845,49 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
           <FolderOpen className="w-4 h-4 text-primary-400" />
           Curriculum <span className="text-text-muted font-normal">({chapters.length} chapters)</span>
         </h3>
-        {!showAdd && (
-          <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold rounded-xl hover:bg-primary-500/20 transition-all active:scale-95">
-            <Plus className="w-3.5 h-3.5" /> Add Chapter
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowProgress(v => !v)}
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl border transition-all ${
+              showProgress
+                ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400'
+                : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border-strong hover:text-text-secondary'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Student Progress
           </button>
-        )}
+          {!showAdd && (
+            <button onClick={() => setShowAdd(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold rounded-xl hover:bg-primary-500/20 transition-all active:scale-95">
+              <Plus className="w-3.5 h-3.5" /> Add Chapter
+            </button>
+          )}
+        </div>
       </div>
 
       <AnimatePresence>
         {showAdd && (
           <AddChapterForm courseId={courseId} onAdded={handleAdded} onCancel={() => setShowAdd(false)} nextOrder={chapters.length + 1} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showProgress && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-5 bg-bg-surface border border-indigo-500/20 rounded-2xl">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="w-4 h-4 text-indigo-400" />
+                <span className="text-sm font-bold text-indigo-400">Student Progress</span>
+              </div>
+              <StudentProgressTable courseId={courseId} />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -1395,6 +1428,330 @@ function StudentCoursesTabV2({ allocations, loading, navigate }) {
   );
 }
 
+const MARK_CATS = [
+  { key: 'attendanceWeighted', rawKey: 'attendanceScore', wKey: 'weightAttendance', label: 'Lecture Completion', color: '#4ECDC4' },
+  { key: 'testsWeighted', rawKey: 'testsScore', wKey: 'weightTests', label: 'Chapter Tests', color: '#6C7FD8' },
+  { key: 'liveTestsWeighted', rawKey: 'liveTestsScore', wKey: 'weightLiveTests', label: 'Live Tests', color: '#F7B731' },
+  { key: 'projectWeighted', rawKey: 'projectScore', wKey: 'weightProject', label: 'Project', color: '#FC5C7D' },
+];
+
+const gradeColor = (grade) => ({
+  S: 'text-emerald-400',
+  A: 'text-emerald-400',
+  B: 'text-indigo-400',
+  C: 'text-amber-400',
+  D: 'text-orange-400',
+  F: 'text-red-400',
+}[grade] || 'text-text-muted');
+
+function CourseMarksCard({ courseId, courseTitle }) {
+  const [marks, setMarks] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get(`/marks/student/course/${courseId}`)
+      .then(response => setMarks(response.data))
+      .catch(() => setMarks(null))
+      .finally(() => setLoading(false));
+  }, [courseId]);
+
+  if (loading) {
+    return <div className="h-40 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />;
+  }
+
+  if (!marks) {
+    return null;
+  }
+
+  const activeCats = MARK_CATS.filter(cat => marks[cat.wKey] > 0);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-bg-surface border border-border-subtle rounded-2xl overflow-hidden"
+    >
+      <div className="flex items-center justify-between p-5 border-b border-border-subtle">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
+            <BarChart2 className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="min-w-0">
+            <h4 className="text-sm font-bold text-text-primary truncate">{courseTitle}</h4>
+            <div className="text-xs text-text-muted mt-0.5">
+              {marks.completedChapters}/{marks.totalChapters} chapters done
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center shrink-0 ml-4">
+          <div className={`text-3xl font-bold font-syne ${gradeColor(marks.grade)}`}>
+            {marks.grade}
+          </div>
+          <div className="text-xs text-text-muted">Grade</div>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-3">
+        {activeCats.map(cat => {
+          const raw = marks[cat.rawKey] || 0;
+          const weighted = marks[cat.key] || 0;
+          const weight = marks[cat.wKey] || 0;
+
+          return (
+            <div key={cat.key}>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: cat.color }} />
+                  <span className="text-xs text-text-secondary">{cat.label}</span>
+                  <span className="text-[10px] text-text-muted bg-bg-elevated px-1.5 py-0.5 rounded-full border border-border-subtle">
+                    {weight}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-text-muted">{raw.toFixed(1)} raw</span>
+                  <span className="text-xs font-bold" style={{ color: cat.color }}>
+                    +{weighted.toFixed(1)}
+                  </span>
+                </div>
+              </div>
+              <div className="w-full h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${raw}%`, background: cat.color }}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {marks.totalPenalty > 0 && (
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-red-400" />
+              <span className="text-xs text-red-400">Penalty Deduction</span>
+            </div>
+            <span className="text-xs font-bold text-red-400">-{marks.totalPenalty.toFixed(1)}</span>
+          </div>
+        )}
+
+        <div className="pt-3 border-t border-border-subtle">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-text-primary">Final Score</span>
+            <span className={`text-lg font-bold font-syne ${gradeColor(marks.grade)}`}>
+              {marks.finalScore.toFixed(1)} / 100
+            </span>
+          </div>
+          <div className="w-full h-2.5 bg-bg-elevated rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${marks.finalScore}%`,
+                background: marks.finalScore >= 70
+                  ? 'linear-gradient(90deg, #10b981, #34d399)'
+                  : marks.finalScore >= 50
+                    ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                    : 'linear-gradient(90deg, #ef4444, #f87171)',
+              }}
+            />
+          </div>
+          {marks.penaltyDescription && marks.totalPenalty > 0 && (
+            <p className="text-[10px] text-red-400/60 mt-1.5">{marks.penaltyDescription}</p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function StudentMarksTab({ allocations, loading }) {
+  if (loading) return (
+    <div className="space-y-3 py-4">
+      {[1, 2].map(i => <div key={i} className="h-40 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />)}
+    </div>
+  );
+
+  if (allocations.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-primary-500/8 border border-primary-500/20 flex items-center justify-center mb-4">
+        <Award className="w-8 h-8 text-primary-400" />
+      </div>
+      <h3 className="text-lg font-bold font-syne text-text-primary mb-2">No marks yet</h3>
+      <p className="text-text-secondary text-sm max-w-xs">
+        Marks will appear here once your courses are allocated and you start completing chapters.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 py-2">
+      <div className="flex items-start gap-3 p-4 bg-indigo-500/8 border border-indigo-500/20 rounded-xl">
+        <TrendingUp className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-indigo-300 leading-relaxed">
+          Marks are calculated live from your chapter completions, quiz scores, and any late penalties.
+          Live test and project scores will appear once those are graded.
+        </p>
+      </div>
+      {allocations.map(allocation => (
+        <CourseMarksCard
+          key={allocation.courseId}
+          courseId={allocation.courseId}
+          courseTitle={allocation.courseTitle}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StudentProgressTable({ courseId }) {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sortKey, setSortKey] = useState('finalScore');
+  const [sortDir, setSortDir] = useState('desc');
+
+  useEffect(() => {
+    api.get(`/marks/instructor/course/${courseId}/students`)
+      .then(response => setRows(response.data || []))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
+  }, [courseId]);
+
+  const sorted = [...rows].sort((a, b) => {
+    const aVal = a[sortKey] ?? 0;
+    const bVal = b[sortKey] ?? 0;
+    return sortDir === 'desc' ? bVal - aVal : aVal - bVal;
+  });
+
+  const toggleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(direction => direction === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const SortBtn = ({ k, label }) => (
+    <button
+      onClick={() => toggleSort(k)}
+      className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
+        sortKey === k ? 'text-primary-400' : 'text-text-muted hover:text-text-secondary'
+      }`}
+    >
+      {label} {sortKey === k ? (sortDir === 'desc' ? '↓' : '↑') : ''}
+    </button>
+  );
+
+  if (loading) return (
+    <div className="space-y-2">
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="h-12 bg-bg-elevated rounded-xl animate-pulse" />
+      ))}
+    </div>
+  );
+
+  if (rows.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border-subtle rounded-2xl">
+      <Users className="w-10 h-10 text-text-muted mb-3 opacity-30" />
+      <p className="text-text-secondary text-sm font-bold mb-1">No students enrolled yet</p>
+      <p className="text-text-muted text-xs">Students are auto-enrolled when the course is allocated to a section.</p>
+    </div>
+  );
+
+  const avg = rows.length ? (rows.reduce((sum, row) => sum + (row.finalScore || 0), 0) / rows.length).toFixed(1) : 0;
+  const passing = rows.filter(row => (row.finalScore || 0) >= 50).length;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'Students', val: rows.length, color: 'text-primary-400', bg: 'bg-primary-500/10 border-primary-500/20' },
+          { label: 'Class Average', val: `${avg}%`, color: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20' },
+          { label: 'Passing', val: `${passing}/${rows.length}`, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+        ].map(stat => (
+          <div key={stat.label} className={`p-3 rounded-xl border text-center ${stat.bg}`}>
+            <div className={`text-xl font-bold font-syne ${stat.color}`}>{stat.val}</div>
+            <div className={`text-[10px] font-semibold mt-0.5 ${stat.color} opacity-70`}>{stat.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-4 px-1">
+        <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Sort by:</span>
+        <SortBtn k="finalScore" label="Final Score" />
+        <SortBtn k="attendanceScore" label="Attendance" />
+        <SortBtn k="testsScore" label="Tests" />
+        <SortBtn k="overallProgress" label="Progress" />
+      </div>
+
+      <div className="space-y-2">
+        {sorted.map((row, index) => {
+          const grade = row.grade || 'F';
+          const gc = gradeColor(grade);
+
+          return (
+            <motion.div
+              key={row.studentId}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="flex items-center gap-4 p-4 bg-bg-surface border border-border-subtle rounded-xl hover:border-border-strong transition-all"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {row.studentName?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-text-primary truncate">{row.studentName}</div>
+                <div className="flex items-center gap-2 mt-0.5 text-xs text-text-muted">
+                  {row.rollNumber && <span>{row.rollNumber}</span>}
+                  {row.sectionName && <><span>·</span><span>Sec {row.sectionName}</span></>}
+                </div>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-3">
+                {[
+                  { label: 'Att', val: row.attendanceScore, color: '#4ECDC4' },
+                  { label: 'Test', val: row.testsScore, color: '#6C7FD8' },
+                ].map(cat => (
+                  <div key={cat.label} className="text-center w-10">
+                    <div className="text-[10px] font-bold" style={{ color: cat.color }}>{cat.val?.toFixed(0) || 0}%</div>
+                    <div className="text-[9px] text-text-muted">{cat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block w-24">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-text-muted">{row.completedChapters}/{row.totalChapters}</span>
+                  <span className="text-[10px] font-bold text-text-secondary">{Math.round(row.overallProgress || 0)}%</span>
+                </div>
+                <div className="w-full h-1 bg-bg-elevated rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary-600 to-accent-500"
+                    style={{ width: `${row.overallProgress || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {row.totalPenalty > 0 && (
+                <div className="text-xs font-bold text-red-400 shrink-0">
+                  -{row.totalPenalty.toFixed(1)}
+                </div>
+              )}
+
+              <div className="text-right shrink-0 w-16">
+                <div className={`text-base font-bold font-syne ${gc}`}>{row.finalScore?.toFixed(1)}</div>
+                <div className={`text-xs font-bold ${gc} opacity-70`}>{grade}</div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function UniversitySpace() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -1455,6 +1812,7 @@ export default function UniversitySpace() {
   const studentTabs = [
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'courses', label: 'My Courses', icon: BookOpen },
+    { id: 'marks', label: 'My Marks', icon: Award },
   ];
   const tabs = isStudent ? studentTabs : instructorTabs;
 
@@ -1471,6 +1829,7 @@ export default function UniversitySpace() {
       switch (activeTab) {
         case 'overview': return <StudentOverviewTabV2 user={user} allocations={allocations} />;
         case 'courses': return <StudentCoursesTabV2 allocations={allocations} loading={loading} navigate={navigate} />;
+        case 'marks': return <StudentMarksTab allocations={allocations} loading={loading} />;
         default: return null;
       }
     }
