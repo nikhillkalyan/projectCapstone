@@ -34,4 +34,8 @@ public interface UniversityCourseService {
 
     /** Sections */
     List<SectionResponse> getSectionsForAdmin(String email);
+
+    List<UniversityCourseResponse> getMyUniversityCourses(String email);
+    List<CourseAllocationResponse> getStudentAllocatedCourses(String email);
+    void deletePendingCourse(UUID courseId, String email);
 }

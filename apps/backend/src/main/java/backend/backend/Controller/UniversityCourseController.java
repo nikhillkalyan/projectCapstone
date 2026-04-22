@@ -52,6 +52,23 @@ public class UniversityCourseController {
         return ResponseEntity.ok(universityCourseService.getMyCourses(principal.getUsername()));
     }
 
+    @GetMapping("/my-courses")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<List<UniversityCourseResponse>> getMyUniversityCourses(
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+            universityCourseService.getMyUniversityCourses(principal.getUsername()));
+    }
+
+    @DeleteMapping("/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<Void> deletePendingCourse(
+            @PathVariable UUID courseId,
+            @AuthenticationPrincipal UserDetails principal) {
+        universityCourseService.deletePendingCourse(courseId, principal.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/branches")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<List<BranchResponse>> getBranchesForInstructor(
@@ -127,5 +144,13 @@ public class UniversityCourseController {
             @AuthenticationPrincipal UserDetails principal) {
         return ResponseEntity.ok(
             universityCourseService.getSectionsForAdmin(principal.getUsername()));
+    }
+
+    @GetMapping("/student/allocated")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<CourseAllocationResponse>> getStudentAllocatedCourses(
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+            universityCourseService.getStudentAllocatedCourses(principal.getUsername()));
     }
 }

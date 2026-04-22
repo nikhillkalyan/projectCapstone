@@ -416,32 +416,36 @@ Phase 6 — Final Evaluation, Marks Sheet & Certification
 Part 3: Progress State & Development Backlog
 ============================================================
 
-✅ Completed Features / Done
+Completed Features / Done
 1.  Monorepo scaffold and project structure defined globally using separate Vite / React stacks.
 2.  Complete JWT Authentication backend linking Students, Instructors, and Admin entities.
 3.  Student and Instructor platform Signup/Login flows.
-4.  Main EduForge Admin Portal (Tier 1) — Ability to view, block, verify, and delete incoming instructors.
+4.  Main EduForge Admin Portal (Tier 1) - Ability to view, block, verify, and delete incoming instructors.
 5.  Instructor Waiting Room setup redirecting pending instructors correctly and preventing platform abuse.
-6.  University creation (Tier 1 Admin) — auto join code generation, university admin credential creation, toggle active/inactive, reset admin password.
-7.  Uni-Admin Portal (Tier 2) — login, dashboard stats (students/instructors/branches/sections counts) fully wired to backend.
-8.  Branch & Section CRUD (Tier 2) — Branches.jsx fully wired; create/delete branches and sections with year grouping.
-9.  Student management (Tier 2) — Students.jsx wired; list all students with branch/year/section filters and search.
-10. Instructor management (Tier 2) — Instructors.jsx wired; list instructors, approve/reject/remove with reason modal.
-11. University Space onboarding (Tier 3) — UniversitySpace.jsx: join code lookup, student form (section/roll number/college/year), instructor form (branch/employee ID). Dual-status maintained correctly.
-12. University Course Creation (Tier 3 Instructor) — CreateUniversityCourse.jsx: title, description, targeting (branch + year), dynamic weightage builder (Tests / Attendance / Live Tests / Project — must sum to 100%). Submitted as PENDING to uni-admin pool. Backend validates instructor is APPROVED and weightages sum to 100.
-13. Course Pool (Tier 2 Uni-Admin) — CoursePool.jsx fully wired: status tabs (All/Pending/Approved/Rejected), branch filter, search, detail modal with full weightage breakdown, inline approve and reject-with-reason actions.
-14. Course Allocation Dashboard (Tier 2 Uni-Admin) — Allocations.jsx + Allocations.css fully wired: fetch approved courses and sections, allocate one course to multiple sections, set final deadline, list existing allocations grouped by course, remove section-level allocations, and improved responsive modal styling aligned with the uni-admin theme.
-15. Backend: UniversityCourseController + UniversityCourseService/Impl — create, list (instructor own), pool (admin), approve, reject, fetch sections, list allocations, create allocations, and remove allocations. Security: instructor must belong to university and be APPROVED; branch/sections must belong to same university; weightages must sum to 100; only APPROVED university courses can be allocated by the university admin.
+6.  University creation (Tier 1 Admin) - auto join code generation, university admin credential creation, toggle active/inactive, reset admin password.
+7.  Uni-Admin Portal (Tier 2) - login, dashboard stats (students/instructors/branches/sections counts) fully wired to backend.
+8.  Branch & Section CRUD (Tier 2) - Branches.jsx fully wired; create/delete branches and sections with year grouping.
+9.  Student management (Tier 2) - Students.jsx wired; list all students with branch/year/section filters and search.
+10. Instructor management (Tier 2) - Instructors.jsx wired; list instructors, approve/reject/remove with reason modal.
+11. University Space onboarding (Tier 3) - UniversitySpace.jsx: join code lookup, student form (section/roll number/college/year), instructor form (branch/employee ID). Dual-status maintained correctly.
+12. University Course Creation (Tier 3 Instructor) - university course authoring flow completed with title, description, targeting (branch + year), and dynamic weightage builder (Tests / Attendance / Live Tests / Project must sum to 100%). Submission enters the uni-admin pool as PENDING, and backend validation enforces instructor approval plus valid total weightage.
+13. Course Pool (Tier 2 Uni-Admin) - CoursePool.jsx fully wired: status tabs (All/Pending/Approved/Rejected), branch filter, search, detail modal with full weightage breakdown, inline approve and reject-with-reason actions.
+14. Course Allocation Dashboard (Tier 2 Uni-Admin) - Allocations.jsx + Allocations.css fully wired: fetch approved courses and sections, allocate one course to multiple sections, set final deadline, list existing allocations grouped by course, remove section-level allocations, and improved responsive modal styling aligned with the uni-admin theme.
+15. University Space Hub (Tier 3 Shared Web Portal) - UniversitySpace.jsx is now a complete internal university hub instead of a dead-end linked screen. Instructor view includes Overview, My Courses, inline Create Course, and Studio tabs. Student view includes Overview and My Courses for allocated section courses and deadlines.
+16. Instructor University Course Management (Tier 3 Instructor) - inside UniversitySpace, instructors can view all of their university courses with approval badges, rejection reasons, open approved courses in Studio, and delete PENDING courses directly from the hub.
+17. University Course Studio (Tier 3 Instructor) - approved university courses now open into an inline Studio inside UniversitySpace where instructors can load chapters and add new chapter content/materials using the existing chapter APIs. This is the first editable post-allocation university course-management flow.
+18. Student Allocated Course View (Tier 3 Student) - students can now see courses allocated to their section from inside UniversitySpace, including instructor, branch/year targeting, and deadline visibility with expired-state cues.
+19. Backend: UniversityCourseController + UniversityCourseService/Impl - university-course backend now supports create, instructor own listings, instructor my-courses, uni-admin course pool, approve, reject, instructor delete for pending courses, instructor branch lookup, admin sections, allocations list/create/remove, and student allocated-course retrieval. Security rules remain enforced: instructor must belong to university and be APPROVED; branch/sections must belong to same university; weightages must sum to 100; only APPROVED university courses can be allocated by the university admin.
 
-🚧 To Build Next / Action Items (in priority order)
-1.  Instructor University Course Studio — after allocation, instructor can dynamically add/edit chapters, upload materials, set deadlines per chapter/test, define penalty strategy for late submissions. Unlike public courses, fully editable throughout lifecycle.
-2.  Student University Space Home — students see all courses allocated to their section. Live running internal marks dashboard per course showing scores per category updated in real time.
-3.  Chapter Deadlines & Marks Engine — instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
-4.  Student + Instructor Notifications for Allocation Events — on successful allocation/removal, relevant users receive in-app updates about assigned university courses and deadline changes.
-5.  Live Tests (WebSocket) — instructor launches timed test, all section students notified simultaneously, test auto-closes after duration, scores fed directly into marks engine.
-6.  Live Classes (Jitsi Integration) — instructor starts session, section students notified, join via Jitsi embed inside platform.
-7.  Project Space + GitHub Integration — group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
-8.  Final Marks Sheet — auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
-9.  Marks Review (Uni-Admin) — MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
-10. Certificate Engine — auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
-11. History Views — past course history for instructors (student list, group compositions, PRs, marks, submitted marks sheet) and for students (marks, team, project repo, PRs, certificate) per completed course.
+To Build Next / Action Items (in priority order)
+1.  Student Internal Marks Dashboard - inside UniversitySpace, show live running marks per allocated course across tests, attendance, live tests, and project categories.
+2.  Studio Expansion - extend the new inline university Studio to support chapter edit/delete flows, per-chapter deadlines, assessment authoring, and richer material management beyond the current add-and-view workflow.
+3.  Chapter Deadlines & Marks Engine - instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
+4.  Student + Instructor Notifications for Allocation Events - on successful allocation/removal, relevant users receive in-app updates about assigned university courses and deadline changes.
+5.  Live Tests (WebSocket) - instructor launches timed test, all section students notified simultaneously, test auto-closes after duration, scores fed directly into marks engine.
+6.  Live Classes (Jitsi Integration) - instructor starts session, section students notified, join via Jitsi embed inside platform.
+7.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
+8.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
+9.  Marks Review (Uni-Admin) - MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
+10. Certificate Engine - auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
+11. History Views - past course history for instructors (student list, group compositions, PRs, marks, submitted marks sheet) and for students (marks, team, project repo, PRs, certificate) per completed course.

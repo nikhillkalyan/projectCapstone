@@ -7,9 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface InstructorRepository extends JpaRepository<Instructor, UUID> {
+
+    Optional<Instructor> findByUserId(UUID userId);
 
     List<Instructor> findByApprovalStatusOrderByRegisteredAtDesc(ApprovalStatus status);
 

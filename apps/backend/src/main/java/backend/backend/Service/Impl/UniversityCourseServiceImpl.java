@@ -33,6 +33,7 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
     private final UserRepository userRepository;
     private final SectionRepository sectionRepository;
     private final CourseAllocationRepository courseAllocationRepository;
+    private final StudentRepository studentRepository;
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -346,5 +347,49 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
                         .branchName(s.getBranch().getName())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UniversityCourseResponse> getMyUniversityCourses(String email) {
+        return getMyCourses(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseAllocationResponse> getStudentAllocatedCourses(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Student student = studentRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+        if (student.getSection() == null) return List.of();
+
+        return courseAllocationRepository.findBySectionId(student.getSection().getId())
+                .stream()
+                .map(this::mapToAllocationResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deletePendingCourse(UUID courseId, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        if (!course.getInstructor().getId().equals(instructor.getId()))
+            throw new UnauthorizedException("Not your course");
+
+        if (Boolean.TRUE.equals(course.getIsApprovedByUniAdmin()))
+            throw new BadRequestException("Cannot delete an approved course");
+
+        courseRepository.delete(course);
     }
 }
