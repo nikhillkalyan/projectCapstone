@@ -3,6 +3,7 @@ package backend.backend.Service;
 import backend.backend.Dto.Request.CreateUniversityCourseAllocationRequest;
 import backend.backend.Dto.Request.CreateUniversityCourseRequest;
 import backend.backend.Dto.Request.RejectRequest;
+import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
@@ -38,4 +39,5 @@ public interface UniversityCourseService {
     List<UniversityCourseResponse> getMyUniversityCourses(String email);
     List<CourseAllocationResponse> getStudentAllocatedCourses(String email);
     void deletePendingCourse(UUID courseId, String email);
+    UniversityCourseResponse updateCourseSettings(String instructorEmail, UUID courseId, UpdateUniversityCourseSettingsRequest request);
 }

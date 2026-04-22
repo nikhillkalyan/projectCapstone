@@ -7,11 +7,18 @@ import backend.backend.Dto.Response.AssessmentResponse;
 import backend.backend.Dto.Response.ChapterResponse;
 import backend.backend.Dto.Response.OptionResponse;
 import backend.backend.Dto.Response.QuestionResponse;
-import backend.backend.Entity.*;
+import backend.backend.Entity.Assessment;
+import backend.backend.Entity.Chapter;
+import backend.backend.Entity.Course;
+import backend.backend.Entity.Option;
+import backend.backend.Entity.Question;
+import backend.backend.Entity.User;
 import backend.backend.Exceptions.BadRequestException;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
-import backend.backend.Repository.*;
+import backend.backend.Repository.AssessmentRepository;
+import backend.backend.Repository.ChapterRepository;
+import backend.backend.Repository.CourseRepository;
 import backend.backend.Service.ChapterService;
 import backend.backend.Utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -32,40 +39,30 @@ public class ChapterServiceImpl implements ChapterService {
     private final AssessmentRepository assessmentRepository;
     private final SecurityUtils securityUtils;
 
-    // ─── Get Chapters ─────────────────────────────────────────
     @Override
     @Transactional(readOnly = true)
     public List<ChapterResponse> getChaptersByCourse(UUID courseId) {
         courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Course not found with id: " + courseId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         return chapterRepository.findByCourseIdOrderByChapterOrderAsc(courseId)
                 .stream()
                 .map(this::mapToChapterResponse)
                 .collect(Collectors.toList());
     }
 
-    // ─── Add Chapter ──────────────────────────────────────────
     @Override
     @Transactional
     public ChapterResponse addChapter(UUID courseId, CreateChapterRequest request) {
         User currentUser = securityUtils.getCurrentUser();
-
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Course not found with id: " + courseId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         if (!course.getInstructor().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("You are not authorized to add chapters to this course");
         }
-
-        // Auto assign order if not provided
         Integer order = request.getChapterOrder();
         if (order == null) {
             order = chapterRepository.findByCourseIdOrderByChapterOrderAsc(courseId).size() + 1;
         }
-
         Chapter chapter = Chapter.builder()
                 .course(course)
                 .title(request.getTitle())
@@ -75,107 +72,119 @@ public class ChapterServiceImpl implements ChapterService {
                 .textContent(request.getTextContent())
                 .description(request.getDescription())
                 .chapterOrder(order)
+                .deadline(request.getDeadline())
+                .penaltyPerDay(request.getPenaltyPerDay() != null ? request.getPenaltyPerDay() : 0.0)
+                .isPublished(true)
                 .build();
-
         chapterRepository.save(chapter);
         return mapToChapterResponse(chapter);
     }
 
-    // ─── Update Chapter ───────────────────────────────────────
     @Override
     @Transactional
-    public ChapterResponse updateChapter(UUID courseId, UUID chapterId,
-                                         UpdateChapterRequest request) {
+    public ChapterResponse updateChapter(UUID courseId, UUID chapterId, UpdateChapterRequest request) {
         User currentUser = securityUtils.getCurrentUser();
-
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Course not found with id: " + courseId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         if (!course.getInstructor().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("You are not authorized to update this chapter");
         }
-
         Chapter chapter = chapterRepository.findById(chapterId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Chapter not found with id: " + chapterId));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id: " + chapterId));
 
-        if (request.getTitle() != null) chapter.setTitle(request.getTitle());
-        if (request.getDuration() != null) chapter.setDuration(request.getDuration());
-        if (request.getType() != null) chapter.setType(request.getType());
-        if (request.getVideoUrl() != null) chapter.setVideoUrl(request.getVideoUrl());
-        if (request.getTextContent() != null) chapter.setTextContent(request.getTextContent());
-        if (request.getDescription() != null) chapter.setDescription(request.getDescription());
-        if (request.getChapterOrder() != null) chapter.setChapterOrder(request.getChapterOrder());
+        if (request.getTitle() != null) {
+            chapter.setTitle(request.getTitle());
+        }
+        if (request.getDuration() != null) {
+            chapter.setDuration(request.getDuration());
+        }
+        if (request.getType() != null) {
+            chapter.setType(request.getType());
+        }
+        if (request.getVideoUrl() != null) {
+            chapter.setVideoUrl(request.getVideoUrl());
+        }
+        if (request.getTextContent() != null) {
+            chapter.setTextContent(request.getTextContent());
+        }
+        if (request.getDescription() != null) {
+            chapter.setDescription(request.getDescription());
+        }
+        if (request.getChapterOrder() != null) {
+            chapter.setChapterOrder(request.getChapterOrder());
+        }
+        if (request.getDeadline() != null) {
+            chapter.setDeadline(request.getDeadline());
+        }
+        if (request.getPenaltyPerDay() != null) {
+            chapter.setPenaltyPerDay(request.getPenaltyPerDay());
+        }
+        if (request.getIsPublished() != null) {
+            chapter.setIsPublished(request.getIsPublished());
+        }
 
         chapterRepository.save(chapter);
         return mapToChapterResponse(chapter);
     }
 
-    // ─── Add Chapter Assessment ───────────────────────────────
     @Override
     @Transactional
-    public AssessmentResponse addChapterAssessment(UUID courseId, UUID chapterId,
-                                                   CreateAssessmentRequest request) {
+    public void deleteChapter(UUID courseId, UUID chapterId) {
         User currentUser = securityUtils.getCurrentUser();
-
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Course not found with id: " + courseId));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+        if (!course.getInstructor().getId().equals(currentUser.getId())) {
+            throw new UnauthorizedException("You are not authorized to delete chapters from this course");
+        }
+        Chapter chapter = chapterRepository.findById(chapterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id: " + chapterId));
+        chapterRepository.delete(chapter);
+    }
 
+    @Override
+    @Transactional
+    public AssessmentResponse addChapterAssessment(UUID courseId, UUID chapterId, CreateAssessmentRequest request) {
+        User currentUser = securityUtils.getCurrentUser();
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         if (!course.getInstructor().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("You are not authorized to add assessment to this chapter");
         }
-
         Chapter chapter = chapterRepository.findById(chapterId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Chapter not found with id: " + chapterId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found with id: " + chapterId));
         if (chapter.getAssessment() != null) {
             throw new BadRequestException("Assessment already exists for this chapter");
         }
-
         Assessment assessment = buildAssessment(request);
         assessment.setChapter(chapter);
         assessmentRepository.save(assessment);
-
         return mapToAssessmentResponse(assessment);
     }
 
-    // ─── Add Grand Assessment ─────────────────────────────────
     @Override
     @Transactional
-    public AssessmentResponse addGrandAssessment(UUID courseId,
-                                                 CreateAssessmentRequest request) {
+    public AssessmentResponse addGrandAssessment(UUID courseId, CreateAssessmentRequest request) {
         User currentUser = securityUtils.getCurrentUser();
-
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Course not found with id: " + courseId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
         if (!course.getInstructor().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("You are not authorized to add grand assessment");
         }
-
         if (course.getGrandAssessment() != null) {
             throw new BadRequestException("Grand assessment already exists for this course");
         }
-
         Assessment assessment = buildAssessment(request);
         assessment.setCourse(course);
         assessmentRepository.save(assessment);
-
         return mapToAssessmentResponse(assessment);
     }
 
-    // ─── Helpers ──────────────────────────────────────────────
     private Assessment buildAssessment(CreateAssessmentRequest request) {
         Assessment assessment = Assessment.builder()
                 .title(request.getTitle() != null ? request.getTitle() : "Assessment")
                 .passingScore(request.getPassingScore() != null ? request.getPassingScore() : 70)
                 .questions(new ArrayList<>())
                 .build();
-
         for (CreateAssessmentRequest.QuestionRequest qr : request.getQuestions()) {
             Question question = Question.builder()
                     .assessment(assessment)
@@ -183,7 +192,6 @@ public class ChapterServiceImpl implements ChapterService {
                     .correctOptionIndex(qr.getCorrectOptionIndex())
                     .options(new ArrayList<>())
                     .build();
-
             for (int i = 0; i < qr.getOptions().size(); i++) {
                 Option option = Option.builder()
                         .question(question)
@@ -192,14 +200,11 @@ public class ChapterServiceImpl implements ChapterService {
                         .build();
                 question.getOptions().add(option);
             }
-
             assessment.getQuestions().add(question);
         }
-
         return assessment;
     }
 
-    // ─── Mappers ──────────────────────────────────────────────
     private ChapterResponse mapToChapterResponse(Chapter chapter) {
         return ChapterResponse.builder()
                 .id(chapter.getId())
@@ -210,8 +215,13 @@ public class ChapterServiceImpl implements ChapterService {
                 .textContent(chapter.getTextContent())
                 .description(chapter.getDescription())
                 .chapterOrder(chapter.getChapterOrder())
-                .assessment(chapter.getAssessment() != null ?
-                        mapToAssessmentResponse(chapter.getAssessment()) : null)
+                .deadline(chapter.getDeadline())
+                .penaltyPerDay(chapter.getPenaltyPerDay())
+                .isPublished(chapter.getIsPublished())
+                .createdAt(chapter.getCreatedAt())
+                .assessment(chapter.getAssessment() != null
+                        ? mapToAssessmentResponse(chapter.getAssessment())
+                        : null)
                 .build();
     }
 
@@ -230,7 +240,6 @@ public class ChapterServiceImpl implements ChapterService {
                                 .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
-
         return AssessmentResponse.builder()
                 .id(assessment.getId())
                 .title(assessment.getTitle())

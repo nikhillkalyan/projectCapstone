@@ -3,6 +3,7 @@ package backend.backend.Controller;
 import backend.backend.Dto.Request.CreateUniversityCourseAllocationRequest;
 import backend.backend.Dto.Request.CreateUniversityCourseRequest;
 import backend.backend.Dto.Request.RejectRequest;
+import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
@@ -67,6 +68,16 @@ public class UniversityCourseController {
             @AuthenticationPrincipal UserDetails principal) {
         universityCourseService.deletePendingCourse(courseId, principal.getUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/settings")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<UniversityCourseResponse> updateCourseSettings(
+            @AuthenticationPrincipal UserDetails principal,
+            @PathVariable UUID id,
+            @RequestBody UpdateUniversityCourseSettingsRequest request) {
+        return ResponseEntity.ok(
+                universityCourseService.updateCourseSettings(principal.getUsername(), id, request));
     }
 
     @GetMapping("/branches")

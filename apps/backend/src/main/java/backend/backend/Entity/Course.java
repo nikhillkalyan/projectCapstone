@@ -103,6 +103,13 @@ public class Course {
     @Builder.Default
     private Integer weightProject = 0;
 
+    @Column(name = "default_penalty_per_day")
+    @Builder.Default
+    private Double defaultPenaltyPerDay = 0.0;
+
+    @Column(name = "penalty_description", columnDefinition = "TEXT")
+    private String penaltyDescription;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

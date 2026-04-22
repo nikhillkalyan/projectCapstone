@@ -1,13 +1,13 @@
 package backend.backend.Service.Impl;
 
-import backend.backend.Dto.Request.CreateUniversityCourseRequest;
 import backend.backend.Dto.Request.CreateUniversityCourseAllocationRequest;
+import backend.backend.Dto.Request.CreateUniversityCourseRequest;
 import backend.backend.Dto.Request.RejectRequest;
+import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 import backend.backend.Entity.*;
-import java.util.ArrayList;
 import backend.backend.Exceptions.BadRequestException;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -82,6 +83,8 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
                 .weightAttendance(course.getWeightAttendance())
                 .weightLiveTests(course.getWeightLiveTests())
                 .weightProject(course.getWeightProject())
+                .defaultPenaltyPerDay(course.getDefaultPenaltyPerDay())
+                .penaltyDescription(course.getPenaltyDescription())
                 .instructorId(ins.getUser().getId())
                 .instructorName(ins.getUser().getName())
                 .instructorAvatar(ins.getUser().getAvatarUrl())
@@ -391,5 +394,49 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
             throw new BadRequestException("Cannot delete an approved course");
 
         courseRepository.delete(course);
+    }
+
+    @Override
+    @Transactional
+    public UniversityCourseResponse updateCourseSettings(
+            String instructorEmail, UUID courseId, UpdateUniversityCourseSettingsRequest request) {
+
+        Instructor instructor = resolveInstructor(instructorEmail);
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        if (!course.getInstructor().getId().equals(instructor.getUser().getId())) {
+            throw new UnauthorizedException("You are not authorized to update this course");
+        }
+
+        if (!Boolean.TRUE.equals(course.getIsUniversityCourse())) {
+            throw new BadRequestException("Not a university course");
+        }
+
+        if (request.getDefaultPenaltyPerDay() != null) {
+            course.setDefaultPenaltyPerDay(request.getDefaultPenaltyPerDay());
+        }
+        if (request.getPenaltyDescription() != null) {
+            course.setPenaltyDescription(request.getPenaltyDescription());
+        }
+        if (request.getTitle() != null) {
+            course.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            course.setDescription(request.getDescription());
+        }
+        if (request.getLongDescription() != null) {
+            course.setLongDescription(request.getLongDescription());
+        }
+        if (request.getThumbnail() != null) {
+            course.setThumbnail(request.getThumbnail());
+        }
+        if (request.getDuration() != null) {
+            course.setDuration(request.getDuration());
+        }
+
+        course = courseRepository.save(course);
+        return mapToResponse(course);
     }
 }

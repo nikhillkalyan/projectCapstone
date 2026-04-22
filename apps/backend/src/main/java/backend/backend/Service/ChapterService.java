@@ -13,6 +13,7 @@ public interface ChapterService {
     List<ChapterResponse> getChaptersByCourse(UUID courseId);
     ChapterResponse addChapter(UUID courseId, CreateChapterRequest request);
     ChapterResponse updateChapter(UUID courseId, UUID chapterId, UpdateChapterRequest request);
+    void deleteChapter(UUID courseId, UUID chapterId);
     AssessmentResponse addChapterAssessment(UUID courseId, UUID chapterId, CreateAssessmentRequest request);
     AssessmentResponse addGrandAssessment(UUID courseId, CreateAssessmentRequest request);
 }

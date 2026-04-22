@@ -3,7 +3,9 @@ package backend.backend.Entity;
 import backend.backend.Enums.ChapterType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -44,6 +46,21 @@ public class Chapter {
 
     @Column(name = "chapter_order")
     private Integer chapterOrder;
+
+    @Column(name = "deadline")
+    private LocalDateTime deadline;
+
+    @Column(name = "penalty_per_day")
+    @Builder.Default
+    private Double penaltyPerDay = 0.0;
+
+    @Column(name = "is_published")
+    @Builder.Default
+    private Boolean isPublished = true;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Assessment assessment;

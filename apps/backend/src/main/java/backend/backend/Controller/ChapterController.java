@@ -47,6 +47,15 @@ public class ChapterController {
         return ResponseEntity.ok(chapterService.updateChapter(courseId, chapterId, request));
     }
 
+    @DeleteMapping("/{chapterId}")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<Void> deleteChapter(
+            @PathVariable UUID courseId,
+            @PathVariable UUID chapterId) {
+        chapterService.deleteChapter(courseId, chapterId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{chapterId}/assessment")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<AssessmentResponse> addChapterAssessment(

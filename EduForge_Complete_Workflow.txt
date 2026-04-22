@@ -75,27 +75,27 @@ src/main/java/backend/backend
 ├── Controller
 │   ├── AdminController.java
 │   ├── AuthController.java
-│   ├── ChapterController.java
+│   ├── ChapterController.java                    [UPDATED - added DELETE /{chapterId} endpoint]
 │   ├── CourseController.java
 │   ├── MessageController.java
 │   ├── ProgressController.java
 │   ├── StudentController.java
 │   ├── UniversityContextController.java
 │   ├── UniversityController.java
-│   ├── UniversityCourseController.java          [NEW]
+│   ├── UniversityCourseController.java           [UPDATED - added PATCH /{id}/settings endpoint]
 │   ├── UniversityUsersController.java
 │   └── UserController.java
 ├── Dto
 │   ├── Request
 │   │   ├── CreateAssessmentRequest.java
-│   │   ├── CreateUniversityCourseAllocationRequest.java [NEW]
 │   │   ├── CreateBranchRequest.java
-│   │   ├── CreateChapterRequest.java
+│   │   ├── CreateChapterRequest.java             [UPDATED - added deadline, penaltyPerDay fields]
 │   │   ├── CreateCourseRequest.java
 │   │   ├── CreateReviewRequest.java
 │   │   ├── CreateSectionRequest.java
 │   │   ├── CreateUniversityRequest.java
-│   │   ├── CreateUniversityCourseRequest.java   [NEW]
+│   │   ├── CreateUniversityCourseRequest.java
+│   │   ├── CreateUniversityCourseAllocationRequest.java
 │   │   ├── FlagRequest.java
 │   │   ├── InstructorSignupRequest.java
 │   │   ├── JoinUniversityRequest.java
@@ -104,18 +104,19 @@ src/main/java/backend/backend
 │   │   ├── SendMessageRequest.java
 │   │   ├── StudentSignupRequest.java
 │   │   ├── SubmitAssessmentRequest.java
-│   │   ├── UpdateChapterRequest.java
+│   │   ├── UpdateChapterRequest.java             [UPDATED - added deadline, penaltyPerDay, isPublished]
 │   │   ├── UpdateCourseRequest.java
-│   │   └── UpdateProfileRequest.java
+│   │   ├── UpdateProfileRequest.java
+│   │   └── UpdateUniversityCourseSettingsRequest.java [NEW - defaultPenaltyPerDay, penaltyDescription, basic fields]
 │   └── Response
 │       ├── AdminStatsResponse.java
 │       ├── AssessmentResponse.java
 │       ├── AssessmentResultResponse.java
 │       ├── AuthResponse.java
 │       ├── BranchResponse.java
-│       ├── ChapterResponse.java
+│       ├── ChapterResponse.java                  [UPDATED - added deadline, penaltyPerDay, isPublished, createdAt]
 │       ├── ContactResponse.java
-│       ├── CourseAllocationResponse.java         [NEW]
+│       ├── CourseAllocationResponse.java
 │       ├── CourseProgressResponse.java
 │       ├── CourseResponse.java
 │       ├── EnrollmentResponse.java
@@ -130,7 +131,7 @@ src/main/java/backend/backend
 │       ├── StudentProgressSummaryResponse.java
 │       ├── StudentSummaryResponse.java
 │       ├── UniAdminDashboardResponse.java
-│       ├── UniversityCourseResponse.java         [NEW]
+│       ├── UniversityCourseResponse.java         [UPDATED - added defaultPenaltyPerDay, penaltyDescription]
 │       ├── UniversityLookupResponse.java
 │       ├── UniversityResponse.java
 │       ├── UserProfileResponse.java
@@ -138,8 +139,8 @@ src/main/java/backend/backend
 ├── Entity
 │   ├── Assessment.java
 │   ├── Branch.java
-│   ├── Chapter.java
-│   ├── Course.java                               [UPDATED — added weightTests, weightAttendance, weightLiveTests, weightProject, rejectionReason]
+│   ├── Chapter.java                              [UPDATED - added deadline, penaltyPerDay, isPublished, createdAt]
+│   ├── Course.java                               [UPDATED - added weightTests, weightAttendance, weightLiveTests, weightProject, rejectionReason, defaultPenaltyPerDay, penaltyDescription]
 │   ├── CourseAllocation.java
 │   ├── Enrollment.java
 │   ├── Instructor.java
@@ -157,6 +158,10 @@ src/main/java/backend/backend
 │   ├── University.java
 │   └── User.java
 ├── Enums
+│   ├── ApprovalStatus.java
+│   ├── ChapterType.java
+│   ├── CourseLevel.java
+│   ├── MessageStatus.java
 │   └── Role.java
 ├── Exceptions
 │   ├── BadRequestException.java
@@ -167,7 +172,7 @@ src/main/java/backend/backend
 │   ├── BranchRepository.java
 │   ├── ChapterRepository.java
 │   ├── CourseAllocationRepository.java
-│   ├── CourseRepository.java                     [UPDATED — added findByInstructorIdAndIsUniversityCourseTrue, findByUniversityIdAndIsUniversityCourseTrue]
+│   ├── CourseRepository.java                     [UPDATED - added findByInstructorIdAndIsUniversityCourseTrue, findByUniversityIdAndIsUniversityCourseTrue]
 │   ├── EnrollmentRepository.java
 │   ├── InstructorRepository.java
 │   ├── LiveTestRepository.java
@@ -189,24 +194,24 @@ src/main/java/backend/backend
 │   ├── Impl
 │   │   ├── AdminServiceImpl.java
 │   │   ├── AuthServiceImpl.java
-│   │   ├── ChapterServiceImpl.java
+│   │   ├── ChapterServiceImpl.java               [UPDATED - added deleteChapter, deadline/penalty support in add/update]
 │   │   ├── CourseServiceImpl.java
 │   │   ├── MessageServiceImpl.java
 │   │   ├── ProgressServiceImpl.java
 │   │   ├── StudentServiceImpl.java
 │   │   ├── UniversityContextServiceImpl.java
-│   │   ├── UniversityCourseServiceImpl.java      [NEW]
+│   │   ├── UniversityCourseServiceImpl.java      [UPDATED - added updateCourseSettings]
 │   │   ├── UniversityServiceImpl.java
 │   │   └── UserServiceImpl.java
 │   ├── AdminService.java
 │   ├── AuthService.java
-│   ├── ChapterService.java
+│   ├── ChapterService.java                       [UPDATED - added deleteChapter to interface]
 │   ├── CourseService.java
 │   ├── MessageService.java
 │   ├── ProgressService.java
 │   ├── StudentService.java
 │   ├── UniversityContextService.java
-│   ├── UniversityCourseService.java              [NEW]
+│   ├── UniversityCourseService.java              [UPDATED - added updateCourseSettings to interface]
 │   ├── UniversityService.java
 │   └── UserService.java
 └── Utils
@@ -235,8 +240,8 @@ src
 │   └── AuthContext.jsx
 ├── pages
 │   ├── allocations
-│   │   ├── Allocations.css                      [NEW]
-│   │   └── Allocations.jsx                      [UPDATED — fully wired allocations dashboard, grouped cards, allocate/remove dialogs]
+│   │   ├── Allocations.css
+│   │   └── Allocations.jsx
 │   ├── auth
 │   │   ├── Login.css
 │   │   └── Login.jsx
@@ -246,7 +251,7 @@ src
 │   ├── certificates
 │   │   └── Certificates.jsx
 │   ├── courses
-│   │   └── CoursePool.jsx                        [UPDATED — fully wired, status tabs, filters, detail modal, approve/reject]
+│   │   └── CoursePool.jsx
 │   ├── dashboard
 │   │   ├── Dashboard.css
 │   │   └── Dashboard.jsx
@@ -332,7 +337,7 @@ src
 │   │   └── _AuthPages.jsx
 │   ├── instructor
 │   │   ├── CreateCourse.jsx
-│   │   ├── CreateUniversityCourse.jsx            [NEW — university course form with dynamic weightage builder]
+│   │   ├── CreateUniversityCourse.jsx
 │   │   ├── InstructorChat.jsx
 │   │   ├── InstructorCourses.jsx
 │   │   ├── InstructorDashboard.jsx
@@ -342,7 +347,7 @@ src
 │   │   └── StudentProgress.jsx
 │   ├── LandingPage.jsx
 │   ├── shared
-│   │   └── UniversitySpace.jsx
+│   │   └── UniversitySpace.jsx                  [UPDATED - full Studio expansion: chapter edit/delete, deadline + penalty per chapter, inline quiz builder, penalty policy panel, course stats strip, DeadlinePill, ChapterCard accordion edit]
 │   └── student
 │       ├── Certificate.jsx
 │       ├── CourseDetails.jsx
@@ -377,37 +382,37 @@ This defines the everyday, global functions of the platform.
 - Students: Regular students can make basic accounts, log in, browse the public platform offerings, track their independent progress loops naturally. They can message general instructors on the site publicly via generic shared tools.
 
 --------------------------------------------------
-Section B: Enhancement — The University Space
+Section B: Enhancement - The University Space
 --------------------------------------------------
 EduForge scales higher natively through specific institutional networks titled roughly as the "University Spaces." Students entering registered universities unlock an entirely segmented internal network operating under these structural dynamics:
 
 The Three Tier Structure:
-1. Tier 1 — EduForge Platform Admin: Operates the entire system. Focuses on onboarding public Instructors, plus spawning macro University structures (delivering "Join Codes" and logins to the individual Universities).
-2. Tier 2 — University Admin Portal: Acts via a distinctly isolated standalone codebase (`uni-admin`). Tier 2 assigns Branches, Sections, maps students mapped, and importantly curates and allocates approved institutional courses cleanly via an internal semester pool.
-3. Tier 3 — Instructors and Students: Interact actively via their pre-built default web portals, newly granted localized "University Space" tabs if they registered with corresponding recognized Colleges.
+1. Tier 1 - EduForge Platform Admin: Operates the entire system. Focuses on onboarding public Instructors, plus spawning macro University structures (delivering "Join Codes" and logins to the individual Universities).
+2. Tier 2 - University Admin Portal: Acts via a distinctly isolated standalone codebase (`uni-admin`). Tier 2 assigns Branches, Sections, maps students mapped, and importantly curates and allocates approved institutional courses cleanly via an internal semester pool.
+3. Tier 3 - Instructors and Students: Interact actively via their pre-built default web portals, newly granted localized "University Space" tabs if they registered with corresponding recognized Colleges.
 
 The comprehensive plan for implementing this enhancement phases sequentially:
 
-Phase 1 — University Foundation & Onboarding
+Phase 1 - University Foundation & Onboarding
 - First-Time Binding: If a designated student/instructor logged into their web frontend presses the University module, the system explicitly queries onboard details (University Join Code, Section, GitHub username, Emp Id natively bridging them inward to their university space).
 - Mapping matrix: The Tier-2 Admin reviews precisely mapped user records filtered aggressively by Branch/Section arrays.
 
-Phase 2 — University Courses & Semester Allocation
+Phase 2 - University Courses & Semester Allocation
 - Dynamic Courses: Instructors design university-tier courses appending precise weightages dynamically mapped (Tests: 30%, Lecture Completion: 10%, Project: 40%). Unlike static generic courses, these are freely edited throughout the instructional cycle.
 - Allocation: Instead of automatic publication, Tier 2 Admins now use the dedicated Allocations dashboard to pick APPROVED courses from the faculty pool, map them explicitly to one or more sections, review current allocations grouped by course, remove section allocations when needed, and impose final course completion deadlines.
 
-Phase 3 — Chapter Deadlines, Assessments & Real-Time Marks Engine
+Phase 3 - Chapter Deadlines, Assessments & Real-Time Marks Engine
 - Automated Marks Integration: Built-to-order logic dynamically maps deadline constraints globally into internal grades for both individual branches and pre-set test structures resulting in live dashboarding capabilities per student and detailed cross-matrices per Instructor mapping.
 
-Phase 4 — Live Tests & Synchronous Interactions
+Phase 4 - Live Tests & Synchronous Interactions
 - Testing Protocol: Allows faculty to spin up synchronised live assessments (notified immediately and powered by responsive web socket pipelines).
 - Broadcast Classrooms: Web-native API integrations leveraging Jitsi allowing ad-hoc real-time broadcasting to enrolled subset branches exclusively.
 
-Phase 5 — Project Space & GitHub Integration
+Phase 5 - Project Space & GitHub Integration
 - Teams Setup: The module permits dynamic selective or random group construction. Teams draft concept specs.
 - GitHub Integration: Leveraging active endpoints the backend invokes internal Github hooks directly via Instructor keys orchestrating bulk repository generations. The codebase automatically scopes in registered Github users natively attaching explicit students as immediate repository collaborators seamlessly tracing PRs internally within the frontend.
 
-Phase 6 — Final Evaluation, Marks Sheet & Certification
+Phase 6 - Final Evaluation, Marks Sheet & Certification
 - Rollup Sheets: The platform auto-curates complete metrics based thoroughly upon preset weightages consolidating final evaluation ledgers successfully. Instructors adjust manually pre-submission.
 - Certifications: Emits internally verified visual Certificates dynamically post Tier-2 Admin ledger approvals.
 
@@ -428,24 +433,24 @@ Completed Features / Done
 9.  Student management (Tier 2) - Students.jsx wired; list all students with branch/year/section filters and search.
 10. Instructor management (Tier 2) - Instructors.jsx wired; list instructors, approve/reject/remove with reason modal.
 11. University Space onboarding (Tier 3) - UniversitySpace.jsx: join code lookup, student form (section/roll number/college/year), instructor form (branch/employee ID). Dual-status maintained correctly.
-12. University Course Creation (Tier 3 Instructor) - university course authoring flow completed with title, description, targeting (branch + year), and dynamic weightage builder (Tests / Attendance / Live Tests / Project must sum to 100%). Submission enters the uni-admin pool as PENDING, and backend validation enforces instructor approval plus valid total weightage.
-13. Course Pool (Tier 2 Uni-Admin) - CoursePool.jsx fully wired: status tabs (All/Pending/Approved/Rejected), branch filter, search, detail modal with full weightage breakdown, inline approve and reject-with-reason actions.
-14. Course Allocation Dashboard (Tier 2 Uni-Admin) - Allocations.jsx + Allocations.css fully wired: fetch approved courses and sections, allocate one course to multiple sections, set final deadline, list existing allocations grouped by course, remove section-level allocations, and improved responsive modal styling aligned with the uni-admin theme.
-15. University Space Hub (Tier 3 Shared Web Portal) - UniversitySpace.jsx is now a complete internal university hub instead of a dead-end linked screen. Instructor view includes Overview, My Courses, inline Create Course, and Studio tabs. Student view includes Overview and My Courses for allocated section courses and deadlines.
-16. Instructor University Course Management (Tier 3 Instructor) - inside UniversitySpace, instructors can view all of their university courses with approval badges, rejection reasons, open approved courses in Studio, and delete PENDING courses directly from the hub.
-17. University Course Studio (Tier 3 Instructor) - approved university courses now open into an inline Studio inside UniversitySpace where instructors can load chapters and add new chapter content/materials using the existing chapter APIs. This is the first editable post-allocation university course-management flow.
-18. Student Allocated Course View (Tier 3 Student) - students can now see courses allocated to their section from inside UniversitySpace, including instructor, branch/year targeting, and deadline visibility with expired-state cues.
-19. Backend: UniversityCourseController + UniversityCourseService/Impl - university-course backend now supports create, instructor own listings, instructor my-courses, uni-admin course pool, approve, reject, instructor delete for pending courses, instructor branch lookup, admin sections, allocations list/create/remove, and student allocated-course retrieval. Security rules remain enforced: instructor must belong to university and be APPROVED; branch/sections must belong to same university; weightages must sum to 100; only APPROVED university courses can be allocated by the university admin.
+12. University Course Creation (Tier 3 Instructor) - inline CreateCourseTab inside UniversitySpace: title, description, targeting (branch + year), dynamic weightage builder (Tests/Attendance/LiveTests/Project must sum to 100%). Submitted as PENDING to uni-admin pool.
+13. Course Pool (Tier 2 Uni-Admin) - CoursePool.jsx fully wired: status tabs, branch filter, search, detail modal with weightage breakdown, approve/reject actions.
+14. Course Allocation Dashboard (Tier 2 Uni-Admin) - Allocations.jsx fully wired: fetch approved courses and sections, allocate course to multiple sections, set deadline, list existing allocations, remove section allocations.
+15. University Space Hub (Tier 3) - UniversitySpace.jsx is a full tabbed hub. Instructor: Overview / My Courses / Create Course / Studio tabs. Student: Overview / My Courses tabs.
+16. Instructor University Course Management - view all university courses with status badges, rejection reasons, Studio button for APPROVED, delete for PENDING.
+17. University Course Studio - Full expansion: chapter add with deadline + penalty fields, chapter edit (accordion expand-to-edit with all fields), chapter delete with confirm overlay, inline quiz builder per chapter (add questions, set correct answer, set passing score), course-level penalty policy panel (defaultPenaltyPerDay + penaltyDescription), course stats strip (total chapters, with deadline, with quiz, overdue count). Backend: deleteChapter endpoint, deadline/penaltyPerDay on Chapter entity, PATCH /uni-courses/{id}/settings for course-level penalty policy.
+18. Student Allocated Course View - students see courses allocated to their section with instructor, branch, year, deadline pill (days remaining / expired state).
+19. Backend chapter service fully updated - deleteChapter, deadline/penalty fields in create + update, ChapterResponse includes all new fields.
 
 To Build Next / Action Items (in priority order)
-1.  Student Internal Marks Dashboard - inside UniversitySpace, show live running marks per allocated course across tests, attendance, live tests, and project categories.
-2.  Studio Expansion - extend the new inline university Studio to support chapter edit/delete flows, per-chapter deadlines, assessment authoring, and richer material management beyond the current add-and-view workflow.
-3.  Chapter Deadlines & Marks Engine - instructor sets deadline per chapter and per test. Platform auto-calculates marks using weightage system. Late penalty deducted automatically.
-4.  Student + Instructor Notifications for Allocation Events - on successful allocation/removal, relevant users receive in-app updates about assigned university courses and deadline changes.
-5.  Live Tests (WebSocket) - instructor launches timed test, all section students notified simultaneously, test auto-closes after duration, scores fed directly into marks engine.
-6.  Live Classes (Jitsi Integration) - instructor starts session, section students notified, join via Jitsi embed inside platform.
-7.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
+1.  Student Internal Marks Dashboard - inside UniversitySpace Student view, show live running marks per allocated course: scores across Tests, Attendance, Live Tests, Project categories with progress bars. Needs backend marks calculation endpoints.
+2.  Student Course Player for University Courses - when student clicks a course in My Courses, open it to see chapters, video/text content, attempt chapter quizzes, mark attendance.
+3.  Chapter Deadline Marks Engine (Backend) - auto-calculate marks deductions when chapter deadlines pass. Scheduled job checks daily, applies penaltyPerDay to student marks. Live marks update per student per course.
+4.  Student + Instructor Notifications - on allocation, on deadline approaching (3 days), on quiz submission, on marks update: in-app notification feed.
+5.  Live Tests (WebSocket) - instructor creates timed test from Studio, launches it (scheduled or instant), all section students notified simultaneously, test auto-closes after duration, scores fed into marks engine under Live Tests category.
+6.  Live Classes (Jitsi Integration) - instructor starts session from Studio, section students notified, join via Jitsi embed inside platform.
+7.  Project Space + GitHub Integration - group formation (random/selective), proposal flow (submit/approve/reject/assign), GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
 8.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
 9.  Marks Review (Uni-Admin) - MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
 10. Certificate Engine - auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
-11. History Views - past course history for instructors (student list, group compositions, PRs, marks, submitted marks sheet) and for students (marks, team, project repo, PRs, certificate) per completed course.
+11. History Views - past course history for instructors and students per completed course.

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -22,4 +23,8 @@ public class ChapterResponse {
     private String description;
     private Integer chapterOrder;
     private AssessmentResponse assessment;
+    private LocalDateTime deadline;
+    private Double penaltyPerDay;
+    private Boolean isPublished;
+    private LocalDateTime createdAt;
 }

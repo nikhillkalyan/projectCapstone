@@ -31,6 +31,8 @@ public class UniversityCourseResponse {
     private Integer weightAttendance;
     private Integer weightLiveTests;
     private Integer weightProject;
+    private Double defaultPenaltyPerDay;
+    private String penaltyDescription;
 
     // Instructor info
     private UUID instructorId;
