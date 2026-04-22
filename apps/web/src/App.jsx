@@ -14,6 +14,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import ExploreCourses from './pages/student/ExploreCourses';
 import CourseDetails from './pages/student/CourseDetails';
 import CoursePlayer from './pages/student/CoursePlayer';
+import UniversityCoursePlayer from './pages/student/UniversityCoursePlayer';
 import StudentProfile from './pages/student/StudentProfile';
 import EnrolledCourses from './pages/student/EnrolledCourses';
 import FavoriteCourses from './pages/student/FavoriteCourses';
@@ -67,6 +68,7 @@ function App() {
               <Route path="/student/certificate/:courseId" element={<PrivateRoute role="student"><Certificate /></PrivateRoute>} />
               <Route path="/student/chat" element={<PrivateRoute role="student"><StudentChat /></PrivateRoute>} />
               <Route path="/student/university" element={<PrivateRoute role="student"><UniversitySpace /></PrivateRoute>} />
+              <Route path="/student/university/course/:courseId" element={<PrivateRoute role="student"><UniversityCoursePlayer /></PrivateRoute>} />
               <Route path="/student/profile" element={<PrivateRoute role="student"><StudentProfile /></PrivateRoute>} />
 
               {/* Waiting hall — no approval required, just needs instructor role */}

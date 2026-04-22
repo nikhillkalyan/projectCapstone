@@ -6,6 +6,7 @@ import backend.backend.Dto.Request.RejectRequest;
 import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
+import backend.backend.Dto.Response.StudentUniCourseResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public interface UniversityCourseService {
 
     List<UniversityCourseResponse> getMyUniversityCourses(String email);
     List<CourseAllocationResponse> getStudentAllocatedCourses(String email);
+    List<StudentUniCourseResponse> getStudentEnrolledCourses(String email);
     void deletePendingCourse(UUID courseId, String email);
     UniversityCourseResponse updateCourseSettings(String instructorEmail, UUID courseId, UpdateUniversityCourseSettingsRequest request);
 }

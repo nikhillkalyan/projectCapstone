@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     Optional<Student> findByUserId(UUID userId);
+    List<Student> findBySectionId(UUID sectionId);
 
     /** Fetch all students belonging to a specific university (via user.university_id). */
     List<Student> findByUserUniversityId(UUID universityId);

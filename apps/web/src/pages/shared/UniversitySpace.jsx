@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
@@ -1207,8 +1208,196 @@ function StudentCoursesTab({ allocations, loading }) {
   );
 }
 
+function StudentOverviewTabV2({ user, allocations }) {
+  const active = allocations.filter(a => !isPast(a.finalDeadline)).length;
+  const completed = allocations.filter(a => a.isCompleted).length;
+  const inProgress = allocations.filter(a => !a.isCompleted && (a.overallProgress || 0) > 0).length;
+  const avgProgress = allocations.length > 0
+    ? Math.round(allocations.reduce((sum, a) => sum + (a.overallProgress || 0), 0) / allocations.length)
+    : 0;
+
+  return (
+    <div className="space-y-5 py-2">
+      <div className="relative overflow-hidden flex items-center gap-5 p-6 bg-bg-surface border border-border-subtle rounded-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/3 to-transparent" />
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-indigo-500/5 blur-2xl -translate-y-1/2 translate-x-1/2" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-600 to-indigo-600 flex items-center justify-center shadow-xl shrink-0 relative">
+          <Building2 className="w-8 h-8 text-white" />
+        </div>
+        <div className="relative">
+          <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-1">Enrolled Institution</div>
+          <h2 className="text-xl font-bold font-syne text-text-primary">{user.profile?.universityName || 'Your University'}</h2>
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs text-emerald-400 font-semibold">Active Student</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 rounded-2xl border bg-primary-500/10 border-primary-500/20 text-center">
+          <div className="text-3xl font-bold font-syne text-primary-400">{allocations.length}</div>
+          <div className="text-xs font-semibold mt-1 text-primary-400 opacity-70">Total Courses</div>
+        </div>
+        <div className="p-4 rounded-2xl border bg-emerald-500/10 border-emerald-500/20 text-center">
+          <div className="text-3xl font-bold font-syne text-emerald-400">{completed}</div>
+          <div className="text-xs font-semibold mt-1 text-emerald-400 opacity-70">Completed</div>
+        </div>
+        <div className="p-4 rounded-2xl border bg-indigo-500/10 border-indigo-500/20 text-center">
+          <div className="text-3xl font-bold font-syne text-indigo-400">{inProgress}</div>
+          <div className="text-xs font-semibold mt-1 text-indigo-400 opacity-70">In Progress</div>
+        </div>
+        <div className="p-4 rounded-2xl border bg-amber-500/10 border-amber-500/20 text-center">
+          <div className="text-3xl font-bold font-syne text-amber-400">{avgProgress}%</div>
+          <div className="text-xs font-semibold mt-1 text-amber-400 opacity-70">Avg Progress</div>
+        </div>
+      </div>
+
+      {active > 0 && (
+        <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-300">{active} course{active !== 1 ? 's' : ''} with active deadlines. Stay on track!</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StudentCoursesTabV2({ allocations, loading, navigate }) {
+  if (loading) return (
+    <div className="space-y-3 py-4">
+      {[1, 2, 3].map(i => <div key={i} className="h-36 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />)}
+    </div>
+  );
+
+  if (allocations.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-primary-500/8 border border-primary-500/20 flex items-center justify-center mb-4">
+        <CalendarCheck className="w-8 h-8 text-primary-400" />
+      </div>
+      <h3 className="text-lg font-bold font-syne text-text-primary mb-2">No courses yet</h3>
+      <p className="text-text-secondary text-sm max-w-xs">Your university admin hasn't allocated courses to your section yet.</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 py-2">
+      {allocations.map((a, i) => {
+        const past = isPast(a.finalDeadline);
+        const days = daysUntil(a.finalDeadline);
+        const urgent = days !== null && days <= 3 && days >= 0;
+        const prog = Math.round(a.overallProgress || 0);
+        const done = a.completedChapters || 0;
+        const total = a.totalChapters || 0;
+        const completed = a.isCompleted;
+
+        return (
+          <motion.div key={a.courseId || a.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            className="p-5 bg-bg-surface border border-border-subtle rounded-2xl hover:border-border-strong transition-all group">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="relative shrink-0">
+                  {a.courseThumbnail ? (
+                    <img src={a.courseThumbnail} alt={a.courseTitle} className="w-12 h-12 rounded-xl object-cover border border-border-subtle" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                  {completed && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <CheckCircle2 className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-text-primary leading-snug">{a.courseTitle}</h4>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-text-muted flex-wrap">
+                    {a.instructorName && <span>{a.instructorName}</span>}
+                    {a.targetBranch && <><span>·</span><span className="flex items-center gap-0.5"><GitBranch className="w-2.5 h-2.5" />{a.targetBranch}</span></>}
+                    {a.targetYear && <><span>·</span><span>{a.targetYear}</span></>}
+                  </div>
+                </div>
+              </div>
+
+              {a.finalDeadline && (
+                <span className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  past ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                  urgent ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' :
+                    'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                }`}>
+                  <Calendar className="w-3 h-3" />
+                  {past ? 'Expired' : `${days}d left`}
+                </span>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-text-muted">{done}/{total} chapters complete</span>
+                <span className={`text-xs font-bold ${completed ? 'text-emerald-400' : prog > 0 ? 'text-primary-400' : 'text-text-muted'}`}>
+                  {completed ? 'Done' : `${prog}%`}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-bg-elevated rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-600 to-accent-500'}`}
+                  style={{ width: `${prog}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 mb-4 flex-wrap">
+              {[
+                { key: 'weightTests', label: 'Tests', color: '#6C7FD8' },
+                { key: 'weightAttendance', label: 'Attend', color: '#4ECDC4' },
+                { key: 'weightLiveTests', label: 'Live', color: '#F7B731' },
+                { key: 'weightProject', label: 'Project', color: '#FC5C7D' },
+              ].filter((cat) => a[cat.key] > 0).map((cat) => (
+                <span
+                  key={cat.key}
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: `${cat.color}18`, color: cat.color, border: `1px solid ${cat.color}30` }}
+                >
+                  {cat.label} {a[cat.key]}%
+                </span>
+              ))}
+              {a.sectionName && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-bg-elevated text-text-muted border border-border-subtle">
+                  Section {a.sectionName}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={() => navigate(`/student/university/course/${a.courseId}`)}
+              className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+                completed
+                  ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                  : prog > 0
+                    ? 'bg-primary-500/10 border border-primary-500/20 text-primary-400 hover:bg-primary-500/20'
+                    : 'bg-bg-elevated border border-border-subtle text-text-secondary hover:border-primary-500/30 hover:text-primary-400'
+              }`}
+            >
+              {completed ? (
+                <><CheckCircle2 className="w-4 h-4" /> View Course</>
+              ) : prog > 0 ? (
+                <><TrendingUp className="w-4 h-4" /> Continue Learning</>
+              ) : (
+                <><Play className="w-4 h-4" /> Start Course</>
+              )}
+            </button>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function UniversitySpace() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isStudent = user?.role === 'student';
   const hasJoined = !!user?.universityId || !!user?.profile?.universityName;
   const isApproved = !isStudent ? user?.profile?.approvalStatus === 'APPROVED' : true;
@@ -1234,7 +1423,7 @@ export default function UniversitySpace() {
         setCourses((coursesRes.data || []).map(normalizeCourse));
         setBranches(branchesRes.data || []);
       } else {
-        const res = await api.get('/uni-courses/student/allocated').catch(() => ({ data: [] }));
+        const res = await api.get('/uni-courses/student/my-enrollments').catch(() => ({ data: [] }));
         setAllocations(res.data || []);
       }
     } finally { setLoading(false); }
@@ -1280,8 +1469,8 @@ export default function UniversitySpace() {
       }
     } else {
       switch (activeTab) {
-        case 'overview': return <StudentOverviewTab user={user} allocations={allocations} />;
-        case 'courses': return <StudentCoursesTab allocations={allocations} loading={loading} />;
+        case 'overview': return <StudentOverviewTabV2 user={user} allocations={allocations} />;
+        case 'courses': return <StudentCoursesTabV2 allocations={allocations} loading={loading} navigate={navigate} />;
         default: return null;
       }
     }

@@ -6,6 +6,7 @@ import backend.backend.Dto.Request.RejectRequest;
 import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
+import backend.backend.Dto.Response.StudentUniCourseResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 import backend.backend.Entity.*;
 import backend.backend.Exceptions.BadRequestException;
@@ -35,6 +36,7 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
     private final SectionRepository sectionRepository;
     private final CourseAllocationRepository courseAllocationRepository;
     private final StudentRepository studentRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -267,6 +269,26 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
                     .build();
 
             allocation = courseAllocationRepository.save(allocation);
+
+            List<Student> studentsInSection = studentRepository.findBySectionId(sectionId);
+            for (Student student : studentsInSection) {
+                boolean alreadyEnrolled = enrollmentRepository
+                        .existsByStudentIdAndCourseId(student.getId(), course.getId());
+
+                if (!alreadyEnrolled) {
+                    Enrollment enrollment = Enrollment.builder()
+                            .student(student)
+                            .course(course)
+                            .overallProgress(0.0f)
+                            .isCompleted(false)
+                            .build();
+                    enrollmentRepository.save(enrollment);
+
+                    log.info("Auto-enrolled student '{}' into university course '{}' via section allocation",
+                            student.getUser().getName(), course.getTitle());
+                }
+            }
+
             results.add(mapToAllocationResponse(allocation));
         }
 
@@ -359,7 +381,7 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<CourseAllocationResponse> getStudentAllocatedCourses(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -369,10 +391,99 @@ public class UniversityCourseServiceImpl implements UniversityCourseService {
 
         if (student.getSection() == null) return List.of();
 
+        ensureStudentSectionEnrollments(student);
+
         return courseAllocationRepository.findBySectionId(student.getSection().getId())
                 .stream()
                 .map(this::mapToAllocationResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<StudentUniCourseResponse> getStudentEnrolledCourses(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Student student = studentRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+        ensureStudentSectionEnrollments(student);
+
+        return enrollmentRepository.findByStudentId(student.getId())
+                .stream()
+                .filter(enrollment -> Boolean.TRUE.equals(enrollment.getCourse().getIsUniversityCourse()))
+                .map(enrollment -> {
+                    Course course = enrollment.getCourse();
+                    Instructor instructor = course.getInstructor();
+
+                    CourseAllocation allocation = null;
+                    if (student.getSection() != null) {
+                        allocation = courseAllocationRepository.findByCourseId(course.getId())
+                                .stream()
+                                .filter(item -> item.getSection().getId().equals(student.getSection().getId()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+
+                    int totalChapters = course.getChapters() != null ? course.getChapters().size() : 0;
+
+                    return StudentUniCourseResponse.builder()
+                            .courseId(course.getId())
+                            .courseTitle(course.getTitle())
+                            .courseDescription(course.getDescription())
+                            .courseThumbnail(course.getThumbnail())
+                            .duration(course.getDuration())
+                            .instructorName(instructor != null ? instructor.getUser().getName() : null)
+                            .instructorAvatar(instructor != null ? instructor.getUser().getAvatarUrl() : null)
+                            .targetBranch(course.getTargetBranch() != null ? course.getTargetBranch().getName() : null)
+                            .targetYear(course.getTargetYear())
+                            .allocationId(allocation != null ? allocation.getId() : null)
+                            .finalDeadline(allocation != null ? allocation.getFinalDeadline() : null)
+                            .sectionName(student.getSection() != null ? student.getSection().getName() : null)
+                            .weightTests(course.getWeightTests())
+                            .weightAttendance(course.getWeightAttendance())
+                            .weightLiveTests(course.getWeightLiveTests())
+                            .weightProject(course.getWeightProject())
+                            .overallProgress(enrollment.getOverallProgress())
+                            .completedChapters(Math.round(((enrollment.getOverallProgress() != null ? enrollment.getOverallProgress() : 0f) / 100f) * totalChapters))
+                            .totalChapters(totalChapters)
+                            .isCompleted(enrollment.getIsCompleted())
+                            .defaultPenaltyPerDay(course.getDefaultPenaltyPerDay())
+                            .penaltyDescription(course.getPenaltyDescription())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void ensureStudentSectionEnrollments(Student student) {
+        if (student.getSection() == null) {
+            return;
+        }
+
+        List<CourseAllocation> sectionAllocations = courseAllocationRepository.findBySectionId(student.getSection().getId());
+        for (CourseAllocation allocation : sectionAllocations) {
+            Course course = allocation.getCourse();
+            if (!Boolean.TRUE.equals(course.getIsUniversityCourse())) {
+                continue;
+            }
+
+            boolean alreadyEnrolled = enrollmentRepository
+                    .existsByStudentIdAndCourseId(student.getId(), course.getId());
+
+            if (!alreadyEnrolled) {
+                Enrollment enrollment = Enrollment.builder()
+                        .student(student)
+                        .course(course)
+                        .overallProgress(0.0f)
+                        .isCompleted(false)
+                        .build();
+                enrollmentRepository.save(enrollment);
+
+                log.info("Backfilled enrollment for student '{}' into allocated university course '{}'",
+                        student.getUser().getName(), course.getTitle());
+            }
+        }
     }
 
     @Override

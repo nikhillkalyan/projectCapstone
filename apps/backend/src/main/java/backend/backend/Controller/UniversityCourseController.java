@@ -6,6 +6,7 @@ import backend.backend.Dto.Request.RejectRequest;
 import backend.backend.Dto.Request.UpdateUniversityCourseSettingsRequest;
 import backend.backend.Dto.Response.CourseAllocationResponse;
 import backend.backend.Dto.Response.SectionResponse;
+import backend.backend.Dto.Response.StudentUniCourseResponse;
 import backend.backend.Dto.Response.UniversityCourseResponse;
 import backend.backend.Dto.Response.BranchResponse;
 import backend.backend.Entity.User;
@@ -163,5 +164,13 @@ public class UniversityCourseController {
             @AuthenticationPrincipal UserDetails principal) {
         return ResponseEntity.ok(
             universityCourseService.getStudentAllocatedCourses(principal.getUsername()));
+    }
+
+    @GetMapping("/student/my-enrollments")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<StudentUniCourseResponse>> getStudentEnrolledCourses(
+            @AuthenticationPrincipal UserDetails principal) {
+        return ResponseEntity.ok(
+                universityCourseService.getStudentEnrolledCourses(principal.getUsername()));
     }
 }
