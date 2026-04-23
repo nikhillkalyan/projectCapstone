@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
+import LiveTestsPanel from '../instructor/LiveTestsPanel';
 import { lookupUniversity, joinUniversitySpace } from '../../api/authApi';
 import api from '../../lib/api';
 import {
@@ -839,6 +840,10 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
         penaltyDescription={courseSettings.penaltyDescription}
         onSaved={updates => setCourseSettings(s => ({ ...s, ...updates }))}
       />
+
+      <div className="border-t border-border-subtle pt-5">
+        <LiveTestsPanel courseId={courseId} />
+      </div>
 
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">

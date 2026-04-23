@@ -85,6 +85,7 @@ src/main/java/backend/backend
 │   ├── AuthController.java
 │   ├── ChapterController.java                    [UPDATED - added DELETE /{chapterId} endpoint]
 │   ├── CourseController.java
+│   ├── LiveTestController.java                   [NEW - create/list/launch/close/delete live tests + student active/submit endpoints]
 │   ├── MarksController.java                      [NEW - added GET /marks/student/course/{courseId} and GET /marks/instructor/course/{courseId}/students]
 │   ├── MessageController.java
 │   ├── ProgressController.java
@@ -100,6 +101,7 @@ src/main/java/backend/backend
 │   │   ├── CreateBranchRequest.java
 │   │   ├── CreateChapterRequest.java              [UPDATED - added deadline, penaltyPerDay fields]
 │   │   ├── CreateCourseRequest.java
+│   │   ├── CreateLiveTestRequest.java             [NEW - title, duration, passing score, optional schedule, question builder payload]
 │   │   ├── CreateReviewRequest.java
 │   │   ├── CreateSectionRequest.java
 │   │   ├── CreateUniversityRequest.java
@@ -113,6 +115,7 @@ src/main/java/backend/backend
 │   │   ├── SendMessageRequest.java
 │   │   ├── StudentSignupRequest.java
 │   │   ├── SubmitAssessmentRequest.java
+│   │   ├── SubmitLiveTestRequest.java             [NEW - ordered answers array for student live test submission]
 │   │   ├── UpdateChapterRequest.java              [UPDATED - added deadline, penaltyPerDay, isPublished]
 │   │   ├── UpdateCourseRequest.java
 │   │   ├── UpdateProfileRequest.java
@@ -131,6 +134,9 @@ src/main/java/backend/backend
 │       ├── EnrollmentResponse.java
 │       ├── InstructorAdminResponse.java
 │       ├── InstructorSummaryResponse.java
+│       ├── LiveTestNotificationPayload.java       [NEW - websocket payload for LIVE_TEST_STARTED / LIVE_TEST_CLOSED]
+│       ├── LiveTestResponse.java                  [NEW - instructor/student live test payload with questions and stats]
+│       ├── LiveTestResultResponse.java            [NEW - student submission result with score, pass/fail, correct answers]
 │       ├── MarksBreakdownResponse.java            [NEW - student-facing marks breakdown with raw scores, weighted totals, penalties, final score, grade]
 │       ├── MessageResponse.java
 │       ├── OptionResponse.java
@@ -156,7 +162,8 @@ src/main/java/backend/backend
 │   ├── CourseAllocation.java
 │   ├── Enrollment.java
 │   ├── Instructor.java
-│   ├── LiveTest.java
+│   ├── LiveTest.java                               [UPDATED - scheduledAt, start/end time, isClosed, createdAt for timed live quizzes]
+│   ├── LiveTestSubmission.java                     [NEW - student answers JSON + score/passed per live test]
 │   ├── MarksSheet.java
 │   ├── Message.java
 │   ├── Option.java
@@ -187,7 +194,8 @@ src/main/java/backend/backend
 │   ├── CourseRepository.java                      [UPDATED - added findByInstructorIdAndIsUniversityCourseTrue, findByUniversityIdAndIsUniversityCourseTrue]
 │   ├── EnrollmentRepository.java
 │   ├── InstructorRepository.java
-│   ├── LiveTestRepository.java
+│   ├── LiveTestRepository.java                     [UPDATED - active/live course lookup helpers]
+│   ├── LiveTestSubmissionRepository.java           [NEW - submission lookup, average score, exists checks]
 │   ├── MarksSheetRepository.java                  [UPDATED - added findByStudentIdAndCourseId, findByCourseIdAndIsApprovedByUniAdminFalse]
 │   ├── MessageRepository.java
 │   ├── ProgressRepository.java
@@ -208,6 +216,7 @@ src/main/java/backend/backend
 │   │   ├── AuthServiceImpl.java
 │   │   ├── ChapterServiceImpl.java                [UPDATED - deleteChapter, deadline/penalty in add+update]
 │   │   ├── CourseServiceImpl.java
+│   │   ├── LiveTestServiceImpl.java               [NEW - create/launch/close/delete live tests, evaluate submissions, sync live score into marks sheet]
 │   │   ├── MarksServiceImpl.java                  [NEW - calculates attendance/tests/live/project weighted marks, penalties, final score, grade]
 │   │   ├── MessageServiceImpl.java
 │   │   ├── ProgressServiceImpl.java
@@ -220,6 +229,8 @@ src/main/java/backend/backend
 │   ├── AuthService.java
 │   ├── ChapterService.java                        [UPDATED - added deleteChapter to interface]
 │   ├── CourseService.java
+│   ├── LiveTestNotificationService.java           [NEW - abstraction for websocket pushes to enrolled students]
+│   ├── LiveTestService.java                       [NEW - instructor/student live test operations]
 │   ├── MarksService.java                          [NEW - student marks + instructor course marks interface]
 │   ├── MessageService.java
 │   ├── ProgressService.java
@@ -336,6 +347,8 @@ src
 │   └── ChatContext.jsx
 ├── data
 │   └── mockDatabase.js
+├── hooks
+│   └── useLiveTestSocket.js                       [NEW - subscribes student player to /topic/course/{courseId}/live-test via SockJS/STOMP]
 ├── lib
 │   ├── api.js
 │   └── utils.js
@@ -358,11 +371,12 @@ src
 │   │   ├── InstructorDashboard.jsx
 │   │   ├── InstructorProfile.jsx
 │   │   ├── InstructorWaitingRoom.jsx
+│   │   ├── LiveTestsPanel.jsx                     [NEW - studio panel to create, schedule, launch, close, inspect, and delete live tests]
 │   │   ├── ManageCourse.jsx
 │   │   └── StudentProgress.jsx
 │   ├── LandingPage.jsx
 │   ├── shared
-│   │   └── UniversitySpace.jsx                   [UPDATED - StudentCoursesTab is now rich cards with progress bars, weightage pills, Continue/Start button; StudentOverviewTab shows completed/in-progress/avg stats; fetchData uses /uni-courses/student/my-enrollments; added Student My Marks tab with CourseMarksCard; added instructor Student Progress table inside Studio]
+│   │   └── UniversitySpace.jsx                   [UPDATED - StudentCoursesTab is now rich cards with progress bars, weightage pills, Continue/Start button; StudentOverviewTab shows completed/in-progress/avg stats; fetchData uses /uni-courses/student/my-enrollments; added Student My Marks tab with CourseMarksCard; added instructor Student Progress table inside Studio; integrated LiveTestsPanel into Studio]
 │   └── student
 │       ├── Certificate.jsx
 │       ├── CourseDetails.jsx
@@ -370,10 +384,11 @@ src
 │       ├── EnrolledCourses.jsx
 │       ├── ExploreCourses.jsx
 │       ├── FavoriteCourses.jsx
+│       ├── LiveTestQuiz.jsx                       [NEW - full-screen timed student live test attempt UI with autosubmit and result screen]
 │       ├── StudentChat.jsx
 │       ├── StudentDashboard.jsx
 │       ├── StudentProfile.jsx
-│       └── UniversityCoursePlayer.jsx             [NEW - full university course player at /student/university/course/:courseId; sidebar with chapter list + progress ring + weightage panel; chapter content viewer; mark complete; inline quiz with result overlay; deadline badges per chapter; prev/next navigation]
+│       └── UniversityCoursePlayer.jsx             [UPDATED - full university course player at /student/university/course/:courseId; sidebar with chapter list + progress ring + weightage panel; chapter content viewer; mark complete; inline quiz with result overlay; deadline badges per chapter; prev/next navigation; live test socket listener + launch button + in-place LiveTestQuiz modal]
 ├── styles
 │   └── glassmorphism.css
 ├── theme
@@ -409,8 +424,8 @@ The Three Tier Structure:
 
 Phase 1 - University Foundation & Onboarding: Complete.
 Phase 2 - University Courses & Semester Allocation: Complete. Auto-enrollment on allocation now active.
-Phase 3 - Chapter Deadlines, Assessments & Real-Time Marks Engine: Core marks engine now built. Attendance score, tests average, manual live/project placeholders, late-penalty deductions, weighted final score, and grade calculation are now exposed to students and instructors.
-Phase 4 - Live Tests & Synchronous Interactions: Pending.
+Phase 3 - Chapter Deadlines, Assessments & Real-Time Marks Engine: Complete for the current scope. Attendance score, tests average, live-tests slot, manual project placeholders, late-penalty deductions, weighted final score, and grade calculation are now exposed to students and instructors.
+Phase 4 - Live Tests & Synchronous Interactions: Core live test flow now built. Instructors can create/schedule/launch/close/delete timed live tests, students receive websocket start/close notifications and submit quiz attempts, and average live test score now syncs into the marks sheet breakdown. Live classes are still pending.
 Phase 5 - Project Space & GitHub Integration: Pending.
 Phase 6 - Final Evaluation, Marks Sheet & Certification: Pending.
 
@@ -444,9 +459,13 @@ Completed Features / Done
 22. Marks repository support - MarksSheetRepository now supports findByStudentIdAndCourseId and findByCourseIdAndIsApprovedByUniAdminFalse for marks lookup and upcoming review flow.
 23. Student Internal Marks Dashboard - inside UniversitySpace Student view, a My Marks tab now renders per-course marks breakdown with weighted category bars, penalty deduction, final score bar, and grade.
 24. Instructor Student Progress View - inside UniversitySpace Studio, instructor can open a Student Progress panel showing enrolled students, class average, passing count, sortable marks/progress rows, penalties, and grades.
+25. Live Tests Backend - LiveTestController, LiveTestService, LiveTestServiceImpl, LiveTestSubmission entity/repository, request/response DTOs, and repository helpers added. Instructors can create, launch, close, delete, and inspect live tests; students can fetch the active test and submit answers.
+26. Live Test Marks Sync - when a student submits a live test, the backend evaluates answers, stores the submission, computes the student's average live test score for that course, and writes it into `MarksSheet.breakdownJson.liveTestsScore` so the marks engine reflects it.
+27. Live Test Studio UI - `LiveTestsPanel.jsx` added into UniversitySpace Studio. Instructors now get a dedicated panel for timed quiz creation, optional schedule entry, question builder, launch/stop controls, delete flow, and closed-test stats.
+28. Student Live Test Experience - `useLiveTestSocket.js` and `LiveTestQuiz.jsx` added. `UniversityCoursePlayer.jsx` now listens for websocket notifications, surfaces an active live test CTA, opens a full-screen timed quiz attempt UI, auto-submits on expiry, and shows result feedback inline.
 
 To Build Next / Action Items (in priority order)
-1.  Live Tests (WebSocket) - instructor creates timed test from Studio, launches (scheduled or instant), all section students notified, auto-closes after duration, scores fed into live tests marks category.
+1.  Live Test Polish - auto-launch for scheduled tests, auto-close after duration, richer attempt analytics, and stronger submission guarding/visibility for instructors.
 2.  Live Classes (Jitsi Integration) - instructor starts session from Studio, section students notified, join via Jitsi embed inside platform.
 3.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
 4.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.

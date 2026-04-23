@@ -12,6 +12,7 @@ import backend.backend.Service.StudentService;
 import backend.backend.Utils.SecurityUtils;
 import backend.backend.Service.Impl.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
@@ -36,7 +38,7 @@ public class StudentServiceImpl implements StudentService {
     public EnrollmentResponse enrollInCourse(UUID courseId) {
         User currentUser = securityUtils.getCurrentUser();
 
-        Student student = studentRepository.findById(currentUser.getId())
+        Student student = studentRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         Course course = courseRepository.findById(courseId)
@@ -69,10 +71,23 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(readOnly = true)
     public List<EnrollmentResponse> getEnrolledCourses() {
         User currentUser = securityUtils.getCurrentUser();
+        Student student = studentRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-        return enrollmentRepository.findByStudentId(currentUser.getId())
+        return enrollmentRepository.findByStudentId(student.getId())
                 .stream()
-                .map(this::mapToEnrollmentResponse)
+                .map(enrollment -> {
+                    try {
+                        return mapToEnrollmentResponse(enrollment);
+                    } catch (Exception exception) {
+                        log.warn("Skipping broken enrollment '{}' for student '{}': {}",
+                                enrollment != null ? enrollment.getId() : null,
+                                student.getId(),
+                                exception.getMessage());
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +97,7 @@ public class StudentServiceImpl implements StudentService {
     public String toggleFavorite(UUID courseId) {
         User currentUser = securityUtils.getCurrentUser();
 
-        Student student = studentRepository.findById(currentUser.getId())
+        Student student = studentRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         Course course = courseRepository.findById(courseId)
@@ -110,12 +125,23 @@ public class StudentServiceImpl implements StudentService {
     public List<CourseResponse> getFavoriteCourses() {
         User currentUser = securityUtils.getCurrentUser();
 
-        Student student = studentRepository.findById(currentUser.getId())
+        Student student = studentRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         return student.getFavoriteCourses()
                 .stream()
-                .map(courseServiceImpl::mapToCourseResponse)
+                .map(course -> {
+                    try {
+                        return courseServiceImpl.mapToCourseResponse(course);
+                    } catch (Exception exception) {
+                        log.warn("Skipping broken favorite course '{}' for student '{}': {}",
+                                course != null ? course.getId() : null,
+                                student.getId(),
+                                exception.getMessage());
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -125,7 +151,7 @@ public class StudentServiceImpl implements StudentService {
     public ReviewResponse submitReview(UUID courseId, CreateReviewRequest request) {
         User currentUser = securityUtils.getCurrentUser();
 
-        Student student = studentRepository.findById(currentUser.getId())
+        Student student = studentRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         Course course = courseRepository.findById(courseId)

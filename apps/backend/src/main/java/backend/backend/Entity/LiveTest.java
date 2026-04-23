@@ -35,9 +35,23 @@ public class LiveTest {
     @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
 
+    @Column(name = "questions_json", columnDefinition = "TEXT")
+    private String questionsJson;
+
+    @Column(name = "passing_score")
+    @Builder.Default
+    private Integer passingScore = 70;
+
     @Column(name = "is_live")
     @Builder.Default
     private Boolean isLive = false;
+
+    @Column(name = "is_closed")
+    @Builder.Default
+    private Boolean isClosed = false;
+
+    @Column(name = "scheduled_at")
+    private LocalDateTime scheduledAt;
 
     @Column(name = "start_time")
     private LocalDateTime startTime;

@@ -22,13 +22,17 @@ import backend.backend.Service.CourseService;
 import backend.backend.Utils.SecurityUtils;
 import backend.backend.Entity.Review;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
@@ -164,7 +168,7 @@ public class CourseServiceImpl implements CourseService {
     // ─── Mapper ───────────────────────────────────────────────
     public CourseResponse mapToCourseResponse(Course course) {
         Instructor instructor = course.getInstructor();
-        User instructorUser = instructor.getUser();
+        User instructorUser = instructor != null ? instructor.getUser() : null;
 
         return CourseResponse.builder()
                 .id(course.getId())
@@ -180,25 +184,29 @@ public class CourseServiceImpl implements CourseService {
                 .rating(course.getRating())
                 .totalEnrollments(course.getTotalEnrollments())
                 .createdAt(course.getCreatedAt())
-                .instructor(InstructorSummaryResponse.builder()
-                        .id(instructorUser.getId())
-                        .name(instructorUser.getName())
-                        .avatarUrl(instructorUser.getAvatarUrl())
-                        .specialization(instructor.getSpecialization())
-                        .rating(instructor.getRating())
-                        .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
-                        .build())
+                .instructor(instructorUser != null
+                        ? InstructorSummaryResponse.builder()
+                                .id(instructorUser.getId())
+                                .name(instructorUser.getName())
+                                .avatarUrl(instructorUser.getAvatarUrl())
+                                .specialization(instructor.getSpecialization())
+                                .rating(instructor.getRating())
+                                .approvalStatus(instructor.getApprovalStatus() != null ? instructor.getApprovalStatus().name() : "PENDING")
+                                .build()
+                        : null)
                 .grandAssessment(course.getGrandAssessment() != null ? mapToAssessmentResponse(course.getGrandAssessment()) : null)
                 .build();
     }
 
     private AssessmentResponse mapToAssessmentResponse(Assessment assessment) {
-        List<QuestionResponse> questions = assessment.getQuestions().stream()
+        List<QuestionResponse> questions = (assessment.getQuestions() != null ? assessment.getQuestions() : Collections.<backend.backend.Entity.Question>emptyList()).stream()
+                .filter(Objects::nonNull)
                 .map(q -> QuestionResponse.builder()
                         .id(q.getId())
                         .questionText(q.getQuestionText())
                         .correctOptionIndex(q.getCorrectOptionIndex())
-                        .options(q.getOptions().stream()
+                        .options((q.getOptions() != null ? q.getOptions() : Collections.<backend.backend.Entity.Option>emptyList()).stream()
+                                .filter(Objects::nonNull)
                                 .map(o -> OptionResponse.builder()
                                         .id(o.getId())
                                         .optionText(o.getOptionText())

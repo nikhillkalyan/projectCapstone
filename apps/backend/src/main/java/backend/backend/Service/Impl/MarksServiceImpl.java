@@ -20,18 +20,22 @@ import backend.backend.Repository.StudentRepository;
 import backend.backend.Repository.UserRepository;
 import backend.backend.Service.MarksService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MarksServiceImpl implements MarksService {
 
@@ -43,12 +47,54 @@ public class MarksServiceImpl implements MarksService {
     private final ProgressRepository progressRepository;
     private final MarksSheetRepository marksSheetRepository;
 
+    private MarksBreakdownResponse buildEmptyMarks(Course course, Enrollment enrollment) {
+        float overallProgress = enrollment != null && enrollment.getOverallProgress() != null
+                ? enrollment.getOverallProgress()
+                : 0f;
+
+        List<Chapter> chapters = (course.getChapters() != null ? course.getChapters() : Collections.<Chapter>emptyList())
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return MarksBreakdownResponse.builder()
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .attendanceScore(0.0)
+                .testsScore(0.0)
+                .liveTestsScore(0.0)
+                .projectScore(0.0)
+                .weightAttendance(course.getWeightAttendance() != null ? course.getWeightAttendance() : 0)
+                .weightTests(course.getWeightTests() != null ? course.getWeightTests() : 0)
+                .weightLiveTests(course.getWeightLiveTests() != null ? course.getWeightLiveTests() : 0)
+                .weightProject(course.getWeightProject() != null ? course.getWeightProject() : 0)
+                .attendanceWeighted(0.0)
+                .testsWeighted(0.0)
+                .liveTestsWeighted(0.0)
+                .projectWeighted(0.0)
+                .totalPenalty(0.0)
+                .penaltyDescription(course.getPenaltyDescription())
+                .finalScore(0.0)
+                .grade("F")
+                .completedChapters(0)
+                .totalChapters(chapters.size())
+                .overallProgress(overallProgress)
+                .build();
+    }
+
     private MarksBreakdownResponse calculateMarks(Student student, Course course) {
-        List<Chapter> chapters = course.getChapters();
+        List<Chapter> chapters = (course.getChapters() != null ? course.getChapters() : Collections.<Chapter>emptyList())
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         int totalChapters = chapters.size();
 
         List<Progress> progressList = progressRepository
-                .findByStudentIdAndChapterCourseId(student.getId(), course.getId());
+                .findByStudentIdAndChapterCourseId(student.getId(), course.getId())
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(progress -> progress.getChapter() != null)
+                .collect(Collectors.toList());
 
         Map<UUID, Progress> progressMap = progressList.stream()
                 .collect(Collectors.toMap(
@@ -180,7 +226,17 @@ public class MarksServiceImpl implements MarksService {
             throw new UnauthorizedException("You are not enrolled in this course");
         }
 
-        return calculateMarks(student, course);
+        Enrollment enrollment = enrollmentRepository
+                .findByStudentIdAndCourseId(student.getId(), course.getId())
+                .orElse(null);
+
+        try {
+            return calculateMarks(student, course);
+        } catch (Exception exception) {
+            log.error("Failed to calculate marks for student '{}' and course '{}': {}",
+                    student.getId(), course.getId(), exception.getMessage(), exception);
+            return buildEmptyMarks(course, enrollment);
+        }
     }
 
     @Override
@@ -204,7 +260,17 @@ public class MarksServiceImpl implements MarksService {
         return enrollments.stream()
                 .map(enrollment -> {
                     Student student = enrollment.getStudent();
-                    MarksBreakdownResponse breakdown = calculateMarks(student, course);
+                    MarksBreakdownResponse breakdown;
+                    try {
+                        breakdown = calculateMarks(student, course);
+                    } catch (Exception exception) {
+                        log.error("Failed to calculate marks for student '{}' and course '{}': {}",
+                                student != null ? student.getId() : null,
+                                course.getId(),
+                                exception.getMessage(),
+                                exception);
+                        breakdown = buildEmptyMarks(course, enrollment);
+                    }
 
                     return StudentMarksResponse.builder()
                             .studentId(student.getId())

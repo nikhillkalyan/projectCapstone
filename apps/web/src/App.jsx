@@ -39,7 +39,10 @@ function PrivateRoute({ children, role, requireApproval = false }) {
   if (!user) return <Navigate to="/" />;
   if (role && user.role !== role) return <Navigate to="/" />;
 
-  if (requireApproval && user.role === 'instructor' && user.profile?.approvalStatus !== 'APPROVED') {
+  const approvalStatus = user.profile?.approvalStatus;
+  const hasExplicitNonApprovedStatus = approvalStatus && approvalStatus !== 'APPROVED';
+
+  if (requireApproval && user.role === 'instructor' && hasExplicitNonApprovedStatus) {
     return <Navigate to="/instructor/waiting-hall" />;
   }
 

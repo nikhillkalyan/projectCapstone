@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../lib/api';
+import { useLiveTestSocket } from '../../hooks/useLiveTestSocket';
 import {
   getCourseProgress as apiGetProgress,
   markChapterComplete as apiMarkChapter,
@@ -12,9 +13,10 @@ import {
   ArrowLeft, Play, FileText, CheckCircle2, CheckCheck,
   HelpCircle, Clock, Calendar, Minus, AlertTriangle,
   ChevronDown, ChevronRight, Loader2, Building2, GitBranch,
-  BookOpen, Shield, X, Check, BarChart2, Sparkles
+  BookOpen, Shield, X, Check, BarChart2, Sparkles, Zap
 } from 'lucide-react';
 import Assessment from '../../components/shared/Assessment';
+import LiveTestQuiz from './LiveTestQuiz';
 
 const fmt = (iso) => iso
   ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -214,7 +216,7 @@ function WeightagePanel({ course }) {
 export default function UniversityCoursePlayer() {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  useAuth();
+  const { user } = useAuth();
 
   const [course, setCourse] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -228,15 +230,36 @@ export default function UniversityCoursePlayer() {
   const [markingComplete, setMarkingComplete] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeLiveTest, setActiveLiveTest] = useState(null);
+  const [showLiveTestQuiz, setShowLiveTestQuiz] = useState(false);
+  const token = user?.token || localStorage.getItem('token');
+  const { notification, dismiss } = useLiveTestSocket(courseId, token);
+
+  const fetchActiveLiveTest = useCallback(async () => {
+    try {
+      const response = await api.get(`/live-tests/course/${courseId}/active`);
+      if (response.status === 204 || !response.data) {
+        setActiveLiveTest(null);
+        setShowLiveTestQuiz(false);
+        return;
+      }
+      setActiveLiveTest(response.data);
+    } catch (err) {
+      setActiveLiveTest(null);
+    }
+  }, [courseId]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [chapRes, progRes, enrollmentsRes] = await Promise.all([
+      const [chapRes, progRes, enrollmentsRes, activeLiveTestRes] = await Promise.all([
         api.get(`/courses/${courseId}/chapters`),
         apiGetProgress(courseId).catch(() => ({ data: null })),
         api.get('/uni-courses/student/my-enrollments').catch(() => ({ data: [] })),
+        api.get(`/live-tests/course/${courseId}/active`).catch((activeError) => (
+          activeError?.response?.status === 204 ? { data: null } : { data: null }
+        )),
       ]);
 
       const fetchedChapters = chapRes.data || [];
@@ -253,6 +276,8 @@ export default function UniversityCoursePlayer() {
       if (foundCourse) {
         setCourse(foundCourse);
       }
+
+      setActiveLiveTest(activeLiveTestRes.data || null);
 
       const prog = progRes.data;
       if (prog) {
@@ -282,6 +307,26 @@ export default function UniversityCoursePlayer() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  useEffect(() => {
+    if (!notification) {
+      return;
+    }
+
+    if (notification.event === 'LIVE_TEST_STARTED') {
+      fetchActiveLiveTest().then(() => {
+        setShowLiveTestQuiz(true);
+      });
+      dismiss();
+      return;
+    }
+
+    if (notification.event === 'LIVE_TEST_CLOSED') {
+      setActiveLiveTest(null);
+      setShowLiveTestQuiz(false);
+      dismiss();
+    }
+  }, [dismiss, fetchActiveLiveTest, notification]);
 
   const handleMarkComplete = async () => {
     if (!activeChapter || markingComplete) return;
@@ -500,6 +545,22 @@ export default function UniversityCoursePlayer() {
           </div>
 
           <div className="flex items-center gap-2">
+            {activeLiveTest && (
+              <motion.button
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setShowLiveTestQuiz(true)}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/20 transition-all animate-pulse"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                </span>
+                <Zap className="w-3.5 h-3.5" />
+                Live Test Active
+              </motion.button>
+            )}
+
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-500/10 border border-primary-500/20 rounded-full">
               <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
               <span className="text-xs font-bold text-primary-400">{completedCount}/{chapters.length} done</span>
@@ -767,6 +828,20 @@ export default function UniversityCoursePlayer() {
               {sidebar}
             </motion.aside>
           </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLiveTestQuiz && activeLiveTest && (
+          <LiveTestQuiz
+            liveTest={activeLiveTest}
+            onClose={(completed) => {
+              setShowLiveTestQuiz(false);
+              if (completed) {
+                setActiveLiveTest(null);
+              }
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
