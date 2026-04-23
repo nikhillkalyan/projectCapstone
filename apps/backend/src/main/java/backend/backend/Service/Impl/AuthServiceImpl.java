@@ -106,6 +106,8 @@ public class AuthServiceImpl implements AuthService {
                                 .role(user.getRole().name())
                                 .universityId(university != null ? university.getId() : null)
                                 .profile(UserProfileResponse.builder()
+                                                .githubUsername(user.getGithubUsername())
+                                                .rollNumber(student.getRollNumber())
                                                 .college(request.getCollege())
                                                 .yearOfStudy(request.getYearOfStudy())
                                                 .interests(student.getInterests())
@@ -179,6 +181,8 @@ public class AuthServiceImpl implements AuthService {
                                 .role(user.getRole().name())
                                 .universityId(university != null ? university.getId() : null)
                                 .profile(UserProfileResponse.builder()
+                                                .githubUsername(user.getGithubUsername())
+                                                .employeeId(instructor.getEmployeeId())
                                                 .qualification(instructor.getQualification())
                                                 .experience(instructor.getExperience())
                                                 .specialization(instructor.getSpecialization())
@@ -217,7 +221,9 @@ public class AuthServiceImpl implements AuthService {
                                         .orElseThrow(() -> new UnauthorizedException("Student profile not found"));
                         profile = UserProfileResponse.builder()
                                         .avatarUrl(user.getAvatarUrl())
+                                        .githubUsername(user.getGithubUsername())
                                         .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
+                                        .rollNumber(student.getRollNumber())
                                         .college(student.getCollege())
                                         .yearOfStudy(student.getYearOfStudy())
                                         .bio(student.getBio())
@@ -231,7 +237,9 @@ public class AuthServiceImpl implements AuthService {
 
                         profile = UserProfileResponse.builder()
                                         .avatarUrl(user.getAvatarUrl())
+                                        .githubUsername(user.getGithubUsername())
                                         .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
+                                        .employeeId(instructor.getEmployeeId())
                                         .qualification(instructor.getQualification())
                                         .experience(instructor.getExperience())
                                         .specialization(instructor.getSpecialization())
@@ -313,4 +321,4 @@ public class AuthServiceImpl implements AuthService {
                                 .build();
         }
 }
-
+

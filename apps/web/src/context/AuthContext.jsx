@@ -87,11 +87,17 @@ export function AuthProvider({ children }) {
   const updateUser = async (updates) => {
     try {
       const res = await api.put('/users/me', updates);
-      const updatedUser = { ...userRef.current, profile: res.data.profile };
+      const updatedUser = {
+        ...userRef.current,
+        name: res.data.name ?? userRef.current?.name,
+        email: res.data.email ?? userRef.current?.email,
+        universityId: res.data.universityId ?? userRef.current?.universityId,
+        profile: res.data.profile ?? userRef.current?.profile,
+      };
       setUser(updatedUser);
       userRef.current = updatedUser;
       localStorage.setItem('lms_user', JSON.stringify(updatedUser));
-      return { success: true };
+      return { success: true, user: updatedUser };
     } catch (err) {
       console.error('Failed to update user profile', err);
       return { success: false, error: err.response?.data?.error };

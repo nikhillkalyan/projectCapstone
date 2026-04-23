@@ -16,6 +16,7 @@ import CourseDetails from './pages/student/CourseDetails';
 import CoursePlayer from './pages/student/CoursePlayer';
 import UniversityCoursePlayer from './pages/student/UniversityCoursePlayer';
 import StudentProfile from './pages/student/StudentProfile';
+import StudentSettings from './pages/student/StudentSettings';
 import EnrolledCourses from './pages/student/EnrolledCourses';
 import FavoriteCourses from './pages/student/FavoriteCourses';
 import Certificate from './pages/student/Certificate';
@@ -29,6 +30,7 @@ import InstructorCourses from './pages/instructor/InstructorCourses';
 import StudentProgress from './pages/instructor/StudentProgress';
 import InstructorChat from './pages/instructor/InstructorChat';
 import InstructorProfile from './pages/instructor/InstructorProfile';
+import InstructorSettings from './pages/instructor/InstructorSettings';
 import InstructorWaitingRoom from './pages/instructor/InstructorWaitingRoom';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -73,12 +75,14 @@ function App() {
               <Route path="/student/university" element={<PrivateRoute role="student"><UniversitySpace /></PrivateRoute>} />
               <Route path="/student/university/course/:courseId" element={<PrivateRoute role="student"><UniversityCoursePlayer /></PrivateRoute>} />
               <Route path="/student/profile" element={<PrivateRoute role="student"><StudentProfile /></PrivateRoute>} />
+              <Route path="/student/settings" element={<PrivateRoute role="student"><StudentSettings /></PrivateRoute>} />
 
               {/* Waiting hall — no approval required, just needs instructor role */}
               <Route path="/instructor/waiting-hall" element={<PrivateRoute role="instructor"><InstructorWaitingRoom /></PrivateRoute>} />
 
               {/* Profile — accessible without approval so pending instructors can view/edit */}
               <Route path="/instructor/profile" element={<PrivateRoute role="instructor"><InstructorProfile /></PrivateRoute>} />
+              <Route path="/instructor/settings" element={<PrivateRoute role="instructor"><InstructorSettings /></PrivateRoute>} />
 
               {/* All other instructor routes — require approval */}
               <Route path="/instructor" element={<PrivateRoute role="instructor" requireApproval><InstructorDashboard /></PrivateRoute>} />

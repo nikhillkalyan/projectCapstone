@@ -10,11 +10,24 @@ export default function Topbar({ user, toggleMobile, onLogout }) {
   const [isBellOpen, setIsBellOpen] = useState(false);
   const profileRef = useRef(null);
   const bellRef = useRef(null);
+  const bellMarkedThisOpenRef = useRef(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   const { notifications, unreadCount, markAllRead, markOneRead } =
     useNotifications(user?.id, token);
+
+  useEffect(() => {
+    if (!isBellOpen) {
+      bellMarkedThisOpenRef.current = false;
+      return;
+    }
+
+    if (unreadCount > 0 && !bellMarkedThisOpenRef.current) {
+      bellMarkedThisOpenRef.current = true;
+      markAllRead();
+    }
+  }, [isBellOpen, unreadCount, markAllRead]);
 
   useEffect(() => {
     const handleMouseDown = (event) => {

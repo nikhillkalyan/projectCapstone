@@ -1,255 +1,148 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { getCoursesByInstructor } from '../../api/courseApi';
-import InstructorLayout from '../../components/layout/v2/InstructorLayout';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Camera,
-  Library,
-  Users,
+  BadgeCheck,
+  BookOpen,
+  Building2,
+  Github,
+  GraduationCap,
+  Mail,
+  PencilLine,
   Star,
-  CheckCircle2,
-  Save
+  UserRound,
+  Users,
 } from 'lucide-react';
+import { getCoursesByInstructor } from '../../api/courseApi';
+import { useAuth } from '../../context/AuthContext';
+import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 
-const specializationList = [
-  { key: 'AIML', label: 'AI & Machine Learning', icon: '🤖', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
-  { key: 'Cloud', label: 'Cloud Computing', icon: '☁️', color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
-  { key: 'DataScience', label: 'Data Science', icon: '📊', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-  { key: 'Cybersecurity', label: 'Cybersecurity', icon: '🔒', color: 'text-error-400', bg: 'bg-error-500/10', border: 'border-error-400/20' },
-];
+function MetricCard({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-bg-surface p-4">
+      <div className="flex items-center gap-2 text-text-muted mb-2">
+        <Icon className="w-4 h-4" />
+        <span className="text-[11px] font-bold uppercase tracking-wider">{label}</span>
+      </div>
+      <div className="text-xl font-bold font-syne text-text-primary">{value}</div>
+    </div>
+  );
+}
 
-// Custom Input Field Wrapper
-const InputField = ({ label, type = "text", value, onChange, placeholder, disabled = false, multiline = false }) => (
-  <div className="flex flex-col gap-1.5 w-full">
-    <label className="text-xs font-bold text-text-secondary uppercase tracking-wider font-syne ml-1">
-      {label}
-    </label>
-    {multiline ? (
-      <textarea
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        rows={4}
-        className="glass-input w-full resize-none rounded-lg px-4 py-3 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-text-secondary/50"
-      />
-    ) : (
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="glass-input h-11 w-full rounded-lg px-4 text-sm text-text-primary outline-none disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-text-secondary/50"
-      />
-    )}
-  </div>
-);
+function InfoRow({ label, value }) {
+  return (
+    <div className="py-3 border-b border-border-subtle/60 last:border-b-0">
+      <div className="text-[11px] font-bold uppercase tracking-wider text-text-muted mb-1">{label}</div>
+      <div className="text-sm font-semibold text-text-primary">{value || 'Not added yet'}</div>
+    </div>
+  );
+}
 
 export default function InstructorProfile() {
-  const { user, updateUser } = useAuth();
-  
-  const [form, setForm] = useState({
-    name: user?.name || '',
-    qualification: user?.profile?.qualification || user?.qualification || '',
-    experience: user?.profile?.experience || user?.experience || '',
-    bio: user?.profile?.bio || user?.bio || '',
-    specialization: user?.profile?.specialization || user?.specialization || '',
-  });
-  const [saved, setSaved] = useState(false);
-  const [myCourses, setMyCourses] = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const profile = user?.profile || {};
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
-      const fetchStats = async () => {
-          if (!user?.id) return;
-          try {
-              const res = await getCoursesByInstructor(user.id);
-              setMyCourses(res.data || []);
-          } catch(err) {
-              console.error("Failed to fetch courses for profile stats", err);
-          }
-      };
-      fetchStats();
-  }, [user]);
+    const loadCourses = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await getCoursesByInstructor(user.id);
+        setCourses(response.data || []);
+      } catch {
+        setCourses([]);
+      }
+    };
 
-  const totalStudents = myCourses.reduce((s, c) => s + (c.totalEnrollments || 0), 0);
-  const avgRating = myCourses.length > 0
-    ? (myCourses.reduce((s, c) => s + (c.rating || 0), 0) / myCourses.length).toFixed(1)
-    : '—';
+    loadCourses();
+  }, [user?.id]);
 
-  const initials = form.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'I';
-
-  const handleSave = () => {
-    updateUser(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const currentSpec = specializationList.find(s => s.key === form.specialization);
+  const totalStudents = courses.reduce((sum, course) => sum + (course.totalEnrollments || 0), 0);
+  const avgRating = courses.length
+    ? (courses.reduce((sum, course) => sum + (course.rating || 0), 0) / courses.length).toFixed(1)
+    : '0.0';
+  const initials = user?.name?.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'IN';
 
   return (
     <InstructorLayout>
-      <div className="max-w-4xl mx-auto w-full pb-24">
-
-        {/* 1. Header Section */}
-        <div className="animate-fade-in-up mb-10 text-center sm:text-left">
-          <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary mb-2">My Profile</h1>
-          <p className="text-text-secondary font-dmsans">Manage your academic and professional details.</p>
-        </div>
-
-        {/* Top Stats Grid */}
-        <div className="animate-fade-in-up grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10" style={{ animationDelay: '0.1s' }}>
-          {[
-            { icon: Library, label: 'Courses Created', value: myCourses.length, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-            { icon: Users, label: 'Total Students', value: totalStudents, color: 'text-success-400', bg: 'bg-success-500/10', border: 'border-success-400/20' },
-            { icon: Star, label: 'Average Rating', value: avgRating, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-          ].map((stat, idx) => (
-            <div key={idx} className="bg-bg-surface border border-border-subtle rounded-3xl p-6 shadow-xl flex flex-col items-center text-center">
-              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 border ${stat.border}`}>
-                <stat.icon size={24} />
-              </div>
-              <div className="text-3xl font-bold font-syne text-text-primary leading-none mb-2">
-                {stat.value}
-              </div>
-              <div className="text-sm font-medium text-text-muted uppercase tracking-wider">
-                {stat.label}
-              </div>
+      <div className="max-w-5xl mx-auto w-full pb-24 space-y-8">
+        <section className="relative overflow-hidden rounded-[32px] border border-border-subtle bg-[radial-gradient(circle_at_top_left,rgba(78,205,196,0.15),transparent_28%),linear-gradient(135deg,rgba(14,17,26,0.98),rgba(18,25,30,0.96))] p-6 md:p-8 shadow-2xl">
+          <div className="relative flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+            <div className="w-24 h-24 md:w-28 md:h-28 rounded-[28px] bg-gradient-to-br from-emerald-500 via-primary-500 to-indigo-600 flex items-center justify-center text-white text-3xl md:text-4xl font-bold font-syne shadow-xl shadow-primary-500/20">
+              {initials}
             </div>
-          ))}
-        </div>
 
-        <div className="space-y-12">
-
-          {/* Overall Profile Card */}
-          <div className="bg-bg-surface border border-border-subtle rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-xl">
-            {/* 2. Avatar Block */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 border-b border-border-subtle/50 pb-10">
-              <div className="relative group cursor-pointer">
-                <div className="w-28 h-28 rounded-lg bg-gradient-to-tr from-primary-600 to-accent-500 flex items-center justify-center text-3xl font-syne font-bold text-white shadow-xl transition-transform duration-300 group-hover:scale-105">
-                  {initials}
-                </div>
-                <div className="absolute inset-0 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Camera className="w-8 h-8 text-white/90" />
-                </div>
-              </div>
-
-              <div className="flex-1 text-center sm:text-left mt-2 sm:mt-0">
-                <h2 className="text-2xl font-syne font-bold text-text-primary mb-1">{user?.name}</h2>
-                <p className="text-text-secondary text-sm mb-4">{user?.email}</p>
-
-                {currentSpec && (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${currentSpec.bg} ${currentSpec.color} ${currentSpec.border}`}>
-                    <span>{currentSpec.icon}</span>
-                    {currentSpec.label}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                  <BadgeCheck className="w-3.5 h-3.5" />
+                  Instructor Profile
+                </span>
+                {profile.universityName && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-white/[0.04] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-text-secondary">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {profile.universityName}
                   </span>
                 )}
               </div>
-            </div>
 
-            {/* 3. Main Form Grid */}
-            <div className="pt-8">
-              <h3 className="text-lg font-syne font-bold text-text-primary flex items-center gap-2 mb-6">
-                Personal Details
-              </h3>
+              <h1 className="text-3xl md:text-4xl font-syne font-bold text-text-primary leading-tight">
+                {user?.name || 'Instructor'}
+              </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <InputField
-                  label="Full Name"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. Dr. Jane Doe"
-                />
-
-                {/* Disabled Email */}
-                <InputField
-                  label="Email Address"
-                  type="email"
-                  value={user?.email || ''}
-                  disabled={true}
-                  onChange={() => { }}
-                />
-
-                <InputField
-                  label="Qualification"
-                  value={form.qualification}
-                  onChange={e => setForm({ ...form, qualification: e.target.value })}
-                  placeholder="PhD in Computer Science, IIT Delhi"
-                />
-
-                <InputField
-                  label="Experience"
-                  value={form.experience}
-                  onChange={e => setForm({ ...form, experience: e.target.value })}
-                  placeholder="8 years as Cloud Architect at AWS"
-                />
-
-                <div className="md:col-span-2">
-                  <InputField
-                    label="Bio"
-                    value={form.bio}
-                    onChange={e => setForm({ ...form, bio: e.target.value })}
-                    placeholder="Tell students about your expertise and teaching style..."
-                    multiline={true}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Specializations Grid */}
-            <div className="pt-10">
-              <h3 className="text-lg font-syne font-bold text-text-primary flex items-center gap-2 mb-2">
-                Specialization
-              </h3>
-              <p className="text-text-secondary text-sm mb-6">Select your primary area of academic expertise.</p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {specializationList.map((spec) => {
-                  const isSelected = form.specialization === spec.key;
-                  return (
-                    <button
-                      key={spec.key}
-                      onClick={() => setForm({ ...form, specialization: spec.key })}
-                      className={`flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all duration-200 ${isSelected
-                          ? `${spec.bg} ${spec.border} ring-1 ring-inset ${spec.color.replace('text-', 'ring-')}/50`
-                          : 'bg-bg-elevated border-border-subtle hover:border-border-strong text-text-secondary'
-                        }`}
-                    >
-                      <span className="text-3xl mb-2 block">{spec.icon}</span>
-                      <span className={`text-xs font-bold mt-1 ${isSelected ? spec.color : 'text-text-primary'}`}>
-                        {spec.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Action Footer */}
-            <div className="mt-12 flex justify-end pt-6 border-t border-border-subtle/50 relative">
-              <button
-                onClick={handleSave}
-                className="group relative flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-indigo-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all hover:-translate-y-0.5 overflow-hidden"
-              >
-                <Save className={`w-4 h-4 transition-transform ${saved ? 'scale-0' : 'scale-100'}`} />
-                <span className={`transition-opacity ${saved ? 'opacity-0' : 'opacity-100'}`}>Save Changes</span>
-
-                {/* Save Success Overlay */}
-                <div
-                  className={`absolute inset-0 bg-success-500 rounded-xl flex items-center justify-center gap-2 text-white font-bold transition-all duration-300 ${saved ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+              <div className="flex flex-wrap gap-3 mt-5">
+                <button
+                  onClick={() => navigate('/instructor/settings')}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary-500/20 hover:bg-primary-400 transition-all"
                 >
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Saved!</span>
-                </div>
-              </button>
+                  <PencilLine className="w-4 h-4" />
+                  Edit Profile
+                </button>
+                {profile.githubUsername && (
+                  <a
+                    href={`https://github.com/${profile.githubUsername}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-border-subtle bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-text-secondary hover:text-text-primary hover:border-border-strong transition-all"
+                  >
+                    <Github className="w-4 h-4" />
+                    @{profile.githubUsername}
+                  </a>
+                )}
+              </div>
             </div>
+          </div>
+        </section>
 
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard icon={BookOpen} label="Courses" value={courses.length} />
+          <MetricCard icon={Users} label="Students" value={totalStudents} />
+          <MetricCard icon={Star} label="Avg Rating" value={avgRating} />
+          <MetricCard icon={GraduationCap} label="Faculty ID" value={profile.employeeId || 'Pending'} />
+        </section>
+
+        <section className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
+          <div className="rounded-[28px] border border-border-subtle bg-bg-surface p-6 md:p-7">
+            <div className="flex items-center gap-2 mb-4">
+              <UserRound className="w-5 h-5 text-primary-400" />
+              <h2 className="text-xl font-syne font-bold text-text-primary">Professional Summary</h2>
+            </div>
+            <p className="text-sm leading-7 text-text-secondary">
+              {profile.bio || 'No bio added yet. Add a short professional summary from Settings so students understand your background and teaching style.'}
+            </p>
           </div>
 
-          <div className="flex justify-center text-text-muted text-xs py-8">
-            <p>Your profile information is public to students enrolled in your courses.</p>
+          <div className="rounded-[28px] border border-border-subtle bg-bg-surface p-6 md:p-7">
+            <div className="flex items-center gap-2 mb-4">
+              <Mail className="w-5 h-5 text-primary-400" />
+              <h2 className="text-xl font-syne font-bold text-text-primary">Profile Details</h2>
+            </div>
+            <InfoRow label="Email" value={user?.email} />
+            <InfoRow label="Qualification" value={profile.qualification} />
+            <InfoRow label="Experience" value={profile.experience} />
+            <InfoRow label="Specialization" value={profile.specialization} />
           </div>
-
-        </div>
+        </section>
       </div>
     </InstructorLayout>
   );

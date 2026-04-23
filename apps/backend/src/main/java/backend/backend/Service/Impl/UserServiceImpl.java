@@ -49,16 +49,26 @@ public class UserServiceImpl implements UserService {
     public UserResponse updateCurrentUserProfile(UpdateProfileRequest request) {
         User user = securityUtils.getCurrentUser();
 
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+
         // Update avatar if provided
         if (request.getAvatarUrl() != null) {
             user.setAvatarUrl(request.getAvatarUrl());
-            userRepository.save(user);
         }
+
+        if (request.getGithubUsername() != null) {
+            user.setGithubUsername(request.getGithubUsername().isBlank() ? null : request.getGithubUsername().trim());
+        }
+
+        userRepository.save(user);
 
         if (user.getRole() == Role.STUDENT) {
             Student student = studentRepository.findById(user.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
+            if (request.getRollNumber() != null) student.setRollNumber(request.getRollNumber().isBlank() ? null : request.getRollNumber().trim());
             if (request.getBio() != null) student.setBio(request.getBio());
             if (request.getCollege() != null) student.setCollege(request.getCollege());
             if (request.getYearOfStudy() != null) student.setYearOfStudy(request.getYearOfStudy());
@@ -70,6 +80,7 @@ public class UserServiceImpl implements UserService {
             Instructor instructor = instructorRepository.findById(user.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
 
+            if (request.getEmployeeId() != null) instructor.setEmployeeId(request.getEmployeeId().isBlank() ? null : request.getEmployeeId().trim());
             if (request.getBio() != null) instructor.setBio(request.getBio());
             if (request.getQualification() != null) instructor.setQualification(request.getQualification());
             if (request.getExperience() != null) instructor.setExperience(request.getExperience());
@@ -90,7 +101,9 @@ public class UserServiceImpl implements UserService {
 
             profile = UserProfileResponse.builder()
                     .avatarUrl(user.getAvatarUrl())
+                    .githubUsername(user.getGithubUsername())
                     .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
+                    .rollNumber(student.getRollNumber())
                     .college(student.getCollege())
                     .yearOfStudy(student.getYearOfStudy())
                     .bio(student.getBio())
@@ -102,7 +115,9 @@ public class UserServiceImpl implements UserService {
 
             profile = UserProfileResponse.builder()
                     .avatarUrl(user.getAvatarUrl())
+                    .githubUsername(user.getGithubUsername())
                     .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
+                    .employeeId(instructor.getEmployeeId())
                     .qualification(instructor.getQualification())
                     .experience(instructor.getExperience())
                     .specialization(instructor.getSpecialization())

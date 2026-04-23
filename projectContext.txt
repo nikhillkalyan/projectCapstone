@@ -377,7 +377,8 @@ src
 │   │   ├── InstructorChat.jsx
 │   │   ├── InstructorCourses.jsx
 │   │   ├── InstructorDashboard.jsx
-│   │   ├── InstructorProfile.jsx
+│   │   ├── InstructorProfile.jsx                  [UPDATED - simplified into a clean read-only professional profile with GitHub/faculty ID visibility and edit entrypoint]
+│   │   ├── InstructorSettings.jsx                 [NEW - dedicated editable instructor settings page for name, GitHub username, faculty ID, qualification, experience, specialization, bio]
 │   │   ├── InstructorWaitingRoom.jsx
 │   │   ├── LiveTestsPanel.jsx                     [NEW - studio panel to create, schedule, launch, close, inspect, and delete live tests; now shows per-student attempt scores to instructors]
 │   │   ├── ManageCourse.jsx
@@ -395,7 +396,8 @@ src
 │       ├── LiveTestQuiz.jsx                       [NEW - full-screen timed student live test attempt UI with autosubmit and result screen]
 │       ├── StudentChat.jsx
 │       ├── StudentDashboard.jsx
-│       ├── StudentProfile.jsx
+│       ├── StudentProfile.jsx                     [UPDATED - simplified into a clean read-only student profile with GitHub/roll number visibility and edit entrypoint]
+│       ├── StudentSettings.jsx                    [NEW - dedicated editable student settings page for name, GitHub username, roll number, college, year, bio, interests]
 │       └── UniversityCoursePlayer.jsx             [UPDATED - full university course player at /student/university/course/:courseId; sidebar with chapter list + progress ring + weightage panel; chapter content viewer; mark complete; inline quiz with result overlay; deadline badges per chapter; prev/next navigation; live test socket listener + launch button + in-place LiveTestQuiz modal]
 ├── styles
 │   └── glassmorphism.css
@@ -473,6 +475,9 @@ Completed Features / Done
 28. Student Live Test Experience - `useLiveTestSocket.js` and `LiveTestQuiz.jsx` added. `UniversityCoursePlayer.jsx` now listens for websocket notifications, surfaces an active live test CTA, opens a full-screen timed quiz attempt UI, auto-submits on expiry, and shows result feedback inline.
 29. Notification System - persisted `Notification` entity, repository, controller, service, hook, and dropdown UI added. Students now receive bell notifications for live test start/close events and can mark one or all as read.
 30. Live Test Automation - `LiveTestScheduler.java` plus repository queries added so scheduled tests auto-launch and active tests auto-close after their duration without manual instructor action.
+31. Profile Experience Refactor - student and instructor profile pages were redesigned into cleaner modern read-only profile screens, removing unused preference/security clutter and keeping only meaningful identity/academic/professional details.
+32. Real Settings Pages - `StudentSettings.jsx` and `InstructorSettings.jsx` added and routed from the topbar/settings action. Users can now edit profile details from dedicated settings screens instead of the old overloaded profile pages.
+33. GitHub + Identity Fields - profile update/login payloads now support `githubUsername` for both students and instructors, plus missing `rollNumber` for students and `employeeId` for instructors so these can be added later for upcoming collaboration/project features.
 
 To Build Next / Action Items (in priority order)
 1.  Live Test Polish - richer attempt analytics, stronger submission guarding/visibility for instructors, and optional filters/export for submission history.

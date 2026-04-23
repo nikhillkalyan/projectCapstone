@@ -15,17 +15,20 @@ public class UserProfileResponse {
 
     // Common fields
     private String avatarUrl;
+    private String githubUsername;
 
     // University Admin specific
     private String universityName;
 
     // Student specific
+    private String rollNumber;
     private String college;
     private String yearOfStudy;
     private String bio;
     private List<String> interests;
 
     // Instructor specific
+    private String employeeId;
     private String qualification;
     private String experience;
     private String specialization;
