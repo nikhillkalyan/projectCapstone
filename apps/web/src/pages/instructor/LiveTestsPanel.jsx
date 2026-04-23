@@ -12,6 +12,7 @@ import {
   Plus,
   Square,
   Trash2,
+  Trophy,
   X,
   Zap,
 } from 'lucide-react';
@@ -34,6 +35,17 @@ const getStatus = (test) => {
   if (test.isClosed) return 'CLOSED';
   return 'DRAFT';
 };
+
+const formatRelative = (iso) => (
+  iso
+    ? new Date(iso).toLocaleString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    : '-'
+);
 
 function StatusPill({ test }) {
   const status = getStatus(test);
@@ -314,7 +326,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
   const status = getStatus(test);
 
   const loadStats = async () => {
-    if (!expanded && status === 'CLOSED') {
+    if (!expanded && (status === 'CLOSED' || status === 'LIVE')) {
       try {
         const response = await api.get(`/live-tests/${test.id}/stats`);
         setStats(response.data);
@@ -363,6 +375,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
 
   const submissionCount = stats?.submissionCount ?? test.submissionCount;
   const averageScore = stats?.averageScore ?? test.averageScore;
+  const submissions = stats?.submissions ?? test.submissions ?? [];
 
   return (
     <motion.div
@@ -445,7 +458,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
             className="overflow-hidden border-t border-border-subtle/50"
           >
             <div className="p-4 space-y-4">
-              {status === 'CLOSED' && (
+              {(status === 'CLOSED' || status === 'LIVE') && (
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { label: 'Submissions', value: submissionCount ?? '-', color: 'text-primary-400', bg: 'bg-primary-500/10 border-primary-500/20' },
@@ -457,6 +470,68 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
                       <div className={`text-[10px] font-semibold mt-0.5 ${stat.color} opacity-70`}>{stat.label}</div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {(status === 'CLOSED' || status === 'LIVE') && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary-400" />
+                    <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                      Student Attempts ({submissions.length})
+                    </span>
+                  </div>
+
+                  {submissions.length === 0 ? (
+                    <div className="p-4 rounded-xl border border-dashed border-border-subtle text-center">
+                      <p className="text-xs font-semibold text-text-secondary">No student submissions yet</p>
+                      <p className="text-[11px] text-text-muted mt-1">
+                        Scores will appear here as soon as students attempt this live test.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {submissions.map((submission, index) => (
+                        <motion.div
+                          key={submission.submissionId || `${submission.studentId}-${index}`}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="flex items-center gap-3 p-3 bg-bg-elevated/50 rounded-xl border border-border-subtle"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {submission.studentName?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-bold text-text-primary truncate">
+                              {submission.studentName || 'Unknown Student'}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-muted flex-wrap">
+                              {submission.rollNumber && <span>{submission.rollNumber}</span>}
+                              {submission.sectionName && <span>Sec {submission.sectionName}</span>}
+                              <span>{formatRelative(submission.submittedAt)}</span>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <div className={`text-lg font-bold font-syne ${
+                              (submission.score ?? 0) >= (test.passingScore ?? 70)
+                                ? 'text-emerald-400'
+                                : 'text-amber-400'
+                            }`}>
+                              {submission.score != null ? `${submission.score.toFixed(1)}%` : '-'}
+                            </div>
+                            <div className={`text-[10px] font-bold uppercase tracking-wider ${
+                              submission.passed ? 'text-emerald-400/80' : 'text-amber-400/80'
+                            }`}>
+                              {submission.passed ? 'Passed' : 'Needs Retry'}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

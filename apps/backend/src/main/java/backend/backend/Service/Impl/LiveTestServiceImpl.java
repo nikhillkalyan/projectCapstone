@@ -24,6 +24,7 @@ import backend.backend.Repository.StudentRepository;
 import backend.backend.Repository.UserRepository;
 import backend.backend.Service.LiveTestNotificationService;
 import backend.backend.Service.LiveTestService;
+import backend.backend.Service.NotificationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,8 @@ public class LiveTestServiceImpl implements LiveTestService {
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final MarksSheetRepository marksSheetRepository;
-    private final LiveTestNotificationService notificationService;
+    private final LiveTestNotificationService liveTestNotificationService;
+    private final NotificationService notificationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -99,7 +101,8 @@ public class LiveTestServiceImpl implements LiveTestService {
         test.setIsLive(true);
         test.setStartTime(LocalDateTime.now());
         LiveTest saved = liveTestRepository.save(test);
-        notificationService.notifyLiveTestStarted(saved);
+        liveTestNotificationService.notifyLiveTestStarted(saved);
+        notificationService.notifyEnrolledStudentsLiveTestStarted(saved);
         return mapToResponse(saved, true, null, null);
     }
 
@@ -114,7 +117,8 @@ public class LiveTestServiceImpl implements LiveTestService {
         test.setIsClosed(true);
         test.setEndTime(LocalDateTime.now());
         LiveTest saved = liveTestRepository.save(test);
-        notificationService.notifyLiveTestClosed(saved);
+        liveTestNotificationService.notifyLiveTestClosed(saved);
+        notificationService.notifyEnrolledStudentsLiveTestClosed(saved);
 
         Integer submissionCount = submissionRepository.findByLiveTestId(saved.getId()).size();
         Double averageScore = submissionRepository.findAverageScoreByLiveTestId(saved.getId());
@@ -241,6 +245,26 @@ public class LiveTestServiceImpl implements LiveTestService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<LiveTestResponse.SubmissionDto> submissions = includeInstructorView
+                ? submissionRepository.findByLiveTestId(test.getId()).stream()
+                .sorted(Comparator.comparing(LiveTestSubmission::getSubmittedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(submission -> {
+                    Student student = submission.getStudent();
+                    return LiveTestResponse.SubmissionDto.builder()
+                            .submissionId(submission.getId())
+                            .studentId(student.getId())
+                            .studentName(student.getUser() != null ? student.getUser().getName() : null)
+                            .rollNumber(student.getRollNumber())
+                            .sectionName(student.getSection() != null ? student.getSection().getName() : null)
+                            .score(submission.getScore())
+                            .passed(submission.getPassed())
+                            .submittedAt(submission.getSubmittedAt())
+                            .build();
+                })
+                .collect(Collectors.toList())
+                : null;
+
         return LiveTestResponse.builder()
                 .id(test.getId())
                 .title(test.getTitle())
@@ -257,6 +281,7 @@ public class LiveTestServiceImpl implements LiveTestService {
                 .questions(questions)
                 .submissionCount(includeInstructorView ? submissionCount : null)
                 .averageScore(includeInstructorView && averageScore != null ? round2(averageScore) : null)
+                .submissions(submissions)
                 .build();
     }
 

@@ -26,11 +26,25 @@ public class LiveTestResponse {
     private List<QuestionDto> questions;
     private Integer submissionCount;
     private Double averageScore;
+    private List<SubmissionDto> submissions;
 
     @Getter
     @Builder
     public static class QuestionDto {
         private String questionText;
         private List<String> options;
+    }
+
+    @Getter
+    @Builder
+    public static class SubmissionDto {
+        private UUID submissionId;
+        private UUID studentId;
+        private String studentName;
+        private String rollNumber;
+        private String sectionName;
+        private Double score;
+        private Boolean passed;
+        private LocalDateTime submittedAt;
     }
 }
