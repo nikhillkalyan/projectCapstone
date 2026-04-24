@@ -8,8 +8,12 @@ import java.util.UUID;
 
 public interface CourseRepository extends JpaRepository<Course, UUID> {
     List<Course> findByInstructorId(UUID instructorId);
-    
+
+    List<Course> findByInstructorIdAndIsUniversityCourseFalse(UUID instructorId);
+
     List<Course> findByInstructorIdAndIsUniversityCourseTrue(UUID instructorId);
 
     List<Course> findByUniversityIdAndIsUniversityCourseTrue(UUID universityId);
+
+    List<Course> findByIsUniversityCourseFalseOrIsUniversityCourseIsNull();
 }
