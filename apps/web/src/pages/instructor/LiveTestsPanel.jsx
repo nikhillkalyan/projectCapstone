@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Download,
   HelpCircle,
   Loader2,
   Play,
@@ -19,15 +20,17 @@ import {
 import api from '../../lib/api';
 
 const formatDateTime = (iso) => (
-  iso
-    ? new Date(iso).toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-    : '-'
+  iso ? new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }) : '-'
+);
+
+const formatRelative = (iso) => (
+  iso ? new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+  }) : '-'
 );
 
 const getStatus = (test) => {
@@ -36,16 +39,98 @@ const getStatus = (test) => {
   return 'DRAFT';
 };
 
-const formatRelative = (iso) => (
-  iso
-    ? new Date(iso).toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-    : '-'
-);
+function exportSubmissionsCSV(test, submissions) {
+  const headers = ['Student Name', 'Roll Number', 'Section', 'Score (%)', 'Passed', 'Submitted At'];
+  const rows = submissions.map((submission) => [
+    submission.studentName || '',
+    submission.rollNumber || '',
+    submission.sectionName || '',
+    submission.score != null ? submission.score.toFixed(1) : '0',
+    submission.passed ? 'Yes' : 'No',
+    submission.submittedAt ? new Date(submission.submittedAt).toLocaleString('en-IN') : '',
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${test.title.replace(/\s+/g, '_')}_submissions.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function ScoreDistributionChart({ submissions }) {
+  const buckets = [
+    { label: '0-20', min: 0, max: 20, color: '#ef4444' },
+    { label: '21-40', min: 21, max: 40, color: '#f97316' },
+    { label: '41-60', min: 41, max: 60, color: '#f59e0b' },
+    { label: '61-80', min: 61, max: 80, color: '#6C7FD8' },
+    { label: '81-100', min: 81, max: 100, color: '#10b981' },
+  ];
+
+  const counts = buckets.map((bucket) => ({
+    ...bucket,
+    count: submissions.filter((submission) => {
+      const score = submission.score ?? 0;
+      return score >= bucket.min && score <= bucket.max;
+    }).length,
+  }));
+
+  const maxCount = Math.max(...counts.map((bucket) => bucket.count), 1);
+  const passed = submissions.filter((submission) => submission.passed).length;
+  const passRate = submissions.length > 0 ? Math.round((passed / submissions.length) * 100) : 0;
+
+  return (
+    <div className="p-4 bg-bg-elevated/40 border border-border-subtle rounded-xl space-y-4">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Pass Rate</span>
+        <span className="text-xs font-bold text-emerald-400">{passed}/{submissions.length} passed</span>
+      </div>
+      <div className="w-full h-2 bg-bg-elevated rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{
+            width: `${passRate}%`,
+            background: passRate >= 70
+              ? 'linear-gradient(90deg, #10b981, #34d399)'
+              : passRate >= 40
+                ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                : 'linear-gradient(90deg, #ef4444, #f87171)',
+          }}
+        />
+      </div>
+
+      <div className="mt-3">
+        <span className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-3">
+          Score Distribution
+        </span>
+        <div className="flex items-end gap-2 h-20">
+          {counts.map((bucket) => (
+            <div key={bucket.label} className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-[10px] font-bold" style={{ color: bucket.color }}>
+                {bucket.count > 0 ? bucket.count : ''}
+              </span>
+              <div
+                className="w-full rounded-t-md transition-all duration-700 relative group"
+                style={{
+                  height: `${Math.round((bucket.count / maxCount) * 56) + (bucket.count > 0 ? 4 : 0)}px`,
+                  minHeight: bucket.count > 0 ? '8px' : '2px',
+                  background: bucket.count > 0 ? bucket.color : 'rgba(255,255,255,0.05)',
+                  opacity: bucket.count > 0 ? 1 : 0.3,
+                }}
+              />
+              <span className="text-[9px] text-text-muted">{bucket.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function StatusPill({ test }) {
   const status = getStatus(test);
@@ -54,10 +139,12 @@ function StatusPill({ test }) {
     CLOSED: 'bg-bg-elevated border-border-subtle text-text-muted',
     DRAFT: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
   };
-
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${classes[status]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === 'LIVE' ? 'bg-red-400' : status === 'DRAFT' ? 'bg-amber-400' : 'bg-text-muted/40'}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${
+        status === 'LIVE' ? 'bg-red-400' : status === 'DRAFT' ? 'bg-amber-400' : 'bg-text-muted/40'
+      }`}
+      />
       {status}
     </span>
   );
@@ -67,29 +154,17 @@ function QuestionBuilder({ questions, onChange }) {
   const addQuestion = () => {
     onChange([...questions, { questionText: '', options: ['', '', '', ''], correctOptionIndex: 0 }]);
   };
-
-  const removeQuestion = (questionIndex) => {
-    onChange(questions.filter((_, index) => index !== questionIndex));
-  };
-
-  const updateQuestion = (questionIndex, field, value) => {
-    onChange(questions.map((question, index) => (
-      index === questionIndex ? { ...question, [field]: value } : question
-    )));
-  };
-
-  const updateOption = (questionIndex, optionIndex, value) => {
+  const removeQuestion = (questionIndex) => onChange(questions.filter((_, index) => index !== questionIndex));
+  const updateQuestion = (questionIndex, field, value) => (
+    onChange(questions.map((question, index) => (index === questionIndex ? { ...question, [field]: value } : question)))
+  );
+  const updateOption = (questionIndex, optionIndex, value) => (
     onChange(questions.map((question, index) => (
       index === questionIndex
-        ? {
-          ...question,
-          options: question.options.map((option, index2) => (
-            index2 === optionIndex ? value : option
-          )),
-        }
+        ? { ...question, options: question.options.map((option, idx) => (idx === optionIndex ? value : option)) }
         : question
-    )));
-  };
+    )))
+  );
 
   return (
     <div className="space-y-4">
@@ -119,7 +194,9 @@ function QuestionBuilder({ questions, onChange }) {
                 <button
                   onClick={() => updateQuestion(questionIndex, 'correctOptionIndex', optionIndex)}
                   className={`w-5 h-5 rounded-full flex-shrink-0 border-2 transition-all flex items-center justify-center ${
-                    question.correctOptionIndex === optionIndex ? 'bg-emerald-500 border-emerald-500' : 'border-border-subtle hover:border-emerald-500/40'
+                    question.correctOptionIndex === optionIndex
+                      ? 'bg-emerald-500 border-emerald-500'
+                      : 'border-border-subtle hover:border-emerald-500/40'
                   }`}
                 >
                   {question.correctOptionIndex === optionIndex && <div className="w-2 h-2 bg-white rounded-full" />}
@@ -130,7 +207,9 @@ function QuestionBuilder({ questions, onChange }) {
                   onChange={(event) => updateOption(questionIndex, optionIndex, event.target.value)}
                   placeholder={`Option ${optionIndex + 1}`}
                   className={`flex-1 bg-bg-elevated border rounded-lg px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-muted outline-none transition-all ${
-                    question.correctOptionIndex === optionIndex ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border-subtle focus:border-primary-500/50'
+                    question.correctOptionIndex === optionIndex
+                      ? 'border-emerald-500/30 bg-emerald-500/5'
+                      : 'border-border-subtle focus:border-primary-500/50'
                   }`}
                 />
               </div>
@@ -138,7 +217,10 @@ function QuestionBuilder({ questions, onChange }) {
           </div>
         </div>
       ))}
-      <button onClick={addQuestion} className="flex items-center gap-1.5 text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors">
+      <button
+        onClick={addQuestion}
+        className="flex items-center gap-1.5 text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors"
+      >
         <Plus className="w-3.5 h-3.5" /> Add Question
       </button>
     </div>
@@ -146,35 +228,17 @@ function QuestionBuilder({ questions, onChange }) {
 }
 
 function CreateLiveTestForm({ courseId, onCreated, onCancel }) {
-  const [form, setForm] = useState({
-    title: '',
-    durationMinutes: 30,
-    passingScore: 70,
-    scheduledAt: '',
-  });
-  const [questions, setQuestions] = useState([
-    { questionText: '', options: ['', '', '', ''], correctOptionIndex: 0 },
-  ]);
+  const [form, setForm] = useState({ title: '', durationMinutes: 30, passingScore: 70, scheduledAt: '' });
+  const [questions, setQuestions] = useState([{ questionText: '', options: ['', '', '', ''], correctOptionIndex: 0 }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const scheduleInputRef = useRef(null);
-
   const updateField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   const handleCreate = async () => {
-    if (!form.title.trim()) {
-      setError('Title is required.');
-      return;
-    }
-
-    const hasInvalidQuestion = questions.some((question) => (
-      !question.questionText.trim() || question.options.some((option) => !option.trim())
-    ));
-    if (hasInvalidQuestion) {
-      setError('Fill in all questions and options.');
-      return;
-    }
-
+    if (!form.title.trim()) { setError('Title is required.'); return; }
+    const invalid = questions.some((question) => !question.questionText.trim() || question.options.some((option) => !option.trim()));
+    if (invalid) { setError('Fill in all questions and options.'); return; }
     setSubmitting(true);
     setError('');
     try {
@@ -186,8 +250,8 @@ function CreateLiveTestForm({ courseId, onCreated, onCancel }) {
         questions,
       });
       onCreated(response.data);
-    } catch (creationError) {
-      setError(creationError.response?.data?.message || 'Failed to create live test.');
+    } catch (errorResponse) {
+      setError(errorResponse.response?.data?.message || 'Failed to create live test.');
     } finally {
       setSubmitting(false);
     }
@@ -195,9 +259,7 @@ function CreateLiveTestForm({ courseId, onCreated, onCancel }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
       className="border border-amber-500/20 bg-amber-500/3 rounded-2xl p-5 space-y-5"
     >
       <div className="flex items-center justify-between">
@@ -261,28 +323,17 @@ function CreateLiveTestForm({ courseId, onCreated, onCancel }) {
           </div>
           <button
             type="button"
-            onClick={() => {
-              if (scheduleInputRef.current?.showPicker) {
-                scheduleInputRef.current.showPicker();
-              } else {
-                scheduleInputRef.current?.focus();
-              }
-            }}
+            onClick={() => scheduleInputRef.current?.showPicker?.() || scheduleInputRef.current?.focus()}
             className="h-10 px-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl hover:bg-amber-500/20 transition-all flex items-center gap-2 text-xs font-bold"
           >
-            <Calendar className="w-3.5 h-3.5" />
-            Pick
+            <Calendar className="w-3.5 h-3.5" /> Pick
           </button>
         </div>
-        {form.scheduledAt ? (
-          <p className="text-xs text-amber-400/70">
-            This test is scheduled for {formatDateTime(form.scheduledAt)}. Leave this blank if you want to launch it manually.
-          </p>
-        ) : (
-          <p className="text-xs text-text-muted">
-            Leave blank if you want to create the test now and launch it later manually.
-          </p>
-        )}
+        <p className="text-xs text-text-muted">
+          {form.scheduledAt
+            ? `Scheduled for ${formatDateTime(form.scheduledAt)}. Leave blank to launch manually.`
+            : 'Leave blank to create and launch later manually.'}
+        </p>
       </div>
 
       <div>
@@ -295,7 +346,6 @@ function CreateLiveTestForm({ courseId, onCreated, onCancel }) {
       </div>
 
       {error && <p className="text-xs text-red-400">{error}</p>}
-
       <div className="flex justify-end gap-2 pt-1">
         <button
           onClick={onCancel}
@@ -331,7 +381,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
         const response = await api.get(`/live-tests/${test.id}/stats`);
         setStats(response.data);
       } catch (error) {
-        console.warn('Failed to load live test stats:', error);
+        console.warn('Failed to load stats:', error);
       }
     }
   };
@@ -342,7 +392,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       const response = await api.post(`/live-tests/${test.id}/launch`);
       onLaunched(response.data);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to launch live test.');
+      alert(error.response?.data?.message || 'Failed to launch.');
     } finally {
       setLaunching(false);
     }
@@ -354,7 +404,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       const response = await api.post(`/live-tests/${test.id}/close`);
       onClosed(response.data);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to close live test.');
+      alert(error.response?.data?.message || 'Failed to close.');
     } finally {
       setClosing(false);
     }
@@ -366,7 +416,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       await api.delete(`/live-tests/${test.id}`);
       onDeleted(test.id);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to delete live test.');
+      alert(error.response?.data?.message || 'Failed to delete.');
     } finally {
       setDeleting(false);
       setConfirmDelete(false);
@@ -383,7 +433,9 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className={`border rounded-2xl overflow-hidden bg-bg-surface transition-all ${
-        status === 'LIVE' ? 'border-red-500/30 shadow-lg shadow-red-500/5' : 'border-border-subtle hover:border-border-strong'
+        status === 'LIVE'
+          ? 'border-red-500/30 shadow-lg shadow-red-500/5'
+          : 'border-border-subtle hover:border-border-strong'
       }`}
     >
       {status === 'LIVE' && (
@@ -396,11 +448,18 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 p-4 cursor-pointer" onClick={() => { setExpanded((current) => !current); loadStats(); }}>
+      <div
+        className="flex items-center gap-3 p-4 cursor-pointer"
+        onClick={() => { setExpanded((current) => !current); loadStats(); }}
+      >
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
           status === 'LIVE' ? 'bg-red-500/15' : status === 'CLOSED' ? 'bg-bg-elevated' : 'bg-amber-500/10'
-        }`}>
-          <Zap className={`w-5 h-5 ${status === 'LIVE' ? 'text-red-400' : status === 'CLOSED' ? 'text-text-muted' : 'text-amber-400'}`} />
+        }`}
+        >
+          <Zap className={`w-5 h-5 ${
+            status === 'LIVE' ? 'text-red-400' : status === 'CLOSED' ? 'text-text-muted' : 'text-amber-400'
+          }`}
+          />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -411,8 +470,15 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
           <div className="flex items-center gap-3 mt-0.5 text-xs text-text-muted flex-wrap">
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{test.durationMinutes} min</span>
             <span className="flex items-center gap-1"><HelpCircle className="w-3 h-3" />{test.questions?.length || 0} questions</span>
-            {test.scheduledAt && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Scheduled {formatDateTime(test.scheduledAt)}</span>}
+            {test.scheduledAt && (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />Scheduled {formatDateTime(test.scheduledAt)}
+              </span>
+            )}
             {test.startTime && <span>Started {formatDateTime(test.startTime)}</span>}
+            {status === 'CLOSED' && submissionCount != null && (
+              <span className="text-primary-400 font-semibold">{submissionCount} submissions</span>
+            )}
           </div>
         </div>
 
@@ -457,7 +523,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-border-subtle/50"
           >
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-5">
               {(status === 'CLOSED' || status === 'LIVE') && (
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -473,24 +539,38 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
                 </div>
               )}
 
+              {status === 'CLOSED' && submissions.length > 0 && (
+                <ScoreDistributionChart submissions={submissions} />
+              )}
+
               {(status === 'CLOSED' || status === 'LIVE') && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-primary-400" />
-                    <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                      Student Attempts ({submissions.length})
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-primary-400" />
+                      <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                        Student Attempts ({submissions.length})
+                      </span>
+                    </div>
+                    {status === 'CLOSED' && submissions.length > 0 && (
+                      <button
+                        onClick={() => exportSubmissionsCSV(test, submissions)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-bold rounded-xl hover:bg-primary-500/20 transition-all"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Export CSV
+                      </button>
+                    )}
                   </div>
 
                   {submissions.length === 0 ? (
                     <div className="p-4 rounded-xl border border-dashed border-border-subtle text-center">
-                      <p className="text-xs font-semibold text-text-secondary">No student submissions yet</p>
+                      <p className="text-xs font-semibold text-text-secondary">No submissions yet</p>
                       <p className="text-[11px] text-text-muted mt-1">
-                        Scores will appear here as soon as students attempt this live test.
+                        Scores appear here as students attempt the test.
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                       {submissions.map((submission, index) => (
                         <motion.div
                           key={submission.submissionId || `${submission.studentId}-${index}`}
@@ -499,32 +579,51 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
                           transition={{ delay: index * 0.03 }}
                           className="flex items-center gap-3 p-3 bg-bg-elevated/50 rounded-xl border border-border-subtle"
                         >
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          <div className="w-6 text-center text-[10px] font-bold text-text-muted shrink-0">
+                            #{index + 1}
+                          </div>
+
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                             {submission.studentName?.charAt(0)?.toUpperCase() || '?'}
                           </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-bold text-text-primary truncate">
-                              {submission.studentName || 'Unknown Student'}
+                              {submission.studentName || 'Unknown'}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-muted flex-wrap">
                               {submission.rollNumber && <span>{submission.rollNumber}</span>}
-                              {submission.sectionName && <span>Sec {submission.sectionName}</span>}
-                              <span>{formatRelative(submission.submittedAt)}</span>
+                              {submission.sectionName && <span>· Sec {submission.sectionName}</span>}
+                              <span>· {formatRelative(submission.submittedAt)}</span>
+                            </div>
+                          </div>
+
+                          <div className="hidden sm:flex items-center gap-2 w-20 shrink-0">
+                            <div className="flex-1 h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${submission.score ?? 0}%`,
+                                  background: (submission.score ?? 0) >= (test.passingScore ?? 70)
+                                    ? '#10b981'
+                                    : '#f59e0b',
+                                }}
+                              />
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <div className={`text-lg font-bold font-syne ${
+                            <div className={`text-base font-bold font-syne ${
                               (submission.score ?? 0) >= (test.passingScore ?? 70)
-                                ? 'text-emerald-400'
-                                : 'text-amber-400'
-                            }`}>
+                                ? 'text-emerald-400' : 'text-amber-400'
+                            }`}
+                            >
                               {submission.score != null ? `${submission.score.toFixed(1)}%` : '-'}
                             </div>
                             <div className={`text-[10px] font-bold uppercase tracking-wider ${
                               submission.passed ? 'text-emerald-400/80' : 'text-amber-400/80'
-                            }`}>
+                            }`}
+                            >
                               {submission.passed ? 'Passed' : 'Needs Retry'}
                             </div>
                           </div>
@@ -567,9 +666,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       <AnimatePresence>
         {confirmDelete && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 bg-bg-elevated/95 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl"
           >
             <div className="text-center p-6">
@@ -577,7 +674,12 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
               <p className="text-sm font-bold text-text-primary mb-1">Delete this test?</p>
               <p className="text-xs text-text-muted mb-4">This cannot be undone.</p>
               <div className="flex gap-2 justify-center">
-                <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 text-xs text-text-muted bg-bg-surface border border-border-subtle rounded-xl">Cancel</button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="px-4 py-2 text-xs text-text-muted bg-bg-surface border border-border-subtle rounded-xl"
+                >
+                  Cancel
+                </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
@@ -612,26 +714,12 @@ export default function LiveTestsPanel({ courseId }) {
     }
   }, [courseId]);
 
-  useEffect(() => {
-    fetchTests();
-  }, [fetchTests]);
+  useEffect(() => { fetchTests(); }, [fetchTests]);
 
-  const handleCreated = (test) => {
-    setTests((current) => [test, ...current]);
-    setShowCreate(false);
-  };
-
-  const handleLaunched = (test) => {
-    setTests((current) => current.map((item) => (item.id === test.id ? test : item)));
-  };
-
-  const handleClosed = (test) => {
-    setTests((current) => current.map((item) => (item.id === test.id ? test : item)));
-  };
-
-  const handleDeleted = (testId) => {
-    setTests((current) => current.filter((item) => item.id !== testId));
-  };
+  const handleCreated = (test) => { setTests((current) => [test, ...current]); setShowCreate(false); };
+  const handleLaunched = (test) => setTests((current) => current.map((item) => (item.id === test.id ? test : item)));
+  const handleClosed = (test) => setTests((current) => current.map((item) => (item.id === test.id ? test : item)));
+  const handleDeleted = (testId) => setTests((current) => current.filter((item) => item.id !== testId));
 
   const liveTest = tests.find((test) => test.isLive && !test.isClosed);
 
@@ -677,7 +765,7 @@ export default function LiveTestsPanel({ courseId }) {
                 const response = await api.post(`/live-tests/${liveTest.id}/close`);
                 handleClosed(response.data);
               } catch (error) {
-                console.warn('Failed to close active live test:', error);
+                console.warn(error);
               }
             }}
             className="flex items-center gap-1 px-3 py-1.5 bg-red-500/15 border border-red-500/25 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/25 transition-all"
@@ -697,7 +785,7 @@ export default function LiveTestsPanel({ courseId }) {
         <div className="flex flex-col items-center justify-center py-14 text-center border border-dashed border-border-subtle rounded-2xl">
           <Zap className="w-10 h-10 text-text-muted mb-3 opacity-30" />
           <p className="text-text-secondary text-sm font-bold mb-1">No live tests yet</p>
-          <p className="text-text-muted text-xs mb-5">Create a timed quiz and launch it instantly for all enrolled students.</p>
+          <p className="text-text-muted text-xs mb-5">Create a timed quiz and launch it for all enrolled students.</p>
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-bold rounded-xl hover:bg-amber-500/20 transition-all"

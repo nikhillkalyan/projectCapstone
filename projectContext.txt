@@ -220,7 +220,7 @@ src/main/java/backend/backend
 │   │   ├── AuthServiceImpl.java
 │   │   ├── ChapterServiceImpl.java                [UPDATED - deleteChapter, deadline/penalty in add+update]
 │   │   ├── CourseServiceImpl.java
-│   │   ├── LiveTestServiceImpl.java               [NEW - create/launch/close/delete live tests, evaluate submissions, sync live score into marks sheet]
+│   │   ├── LiveTestServiceImpl.java               [UPDATED - create/launch/close/delete live tests, evaluate submissions, sync live score into marks sheet, and now returns ranked instructor submission rows for live/closed tests]
 │   │   ├── MarksServiceImpl.java                  [NEW - calculates attendance/tests/live/project weighted marks, penalties, final score, grade]
 │   │   ├── MessageServiceImpl.java
 │   │   ├── NotificationServiceImpl.java           [NEW - persists notifications, pushes realtime bell updates, mark-read actions]
@@ -380,7 +380,7 @@ src
 │   │   ├── InstructorProfile.jsx                  [UPDATED - simplified into a clean read-only professional profile with GitHub/faculty ID visibility and edit entrypoint]
 │   │   ├── InstructorSettings.jsx                 [NEW - dedicated editable instructor settings page for name, GitHub username, faculty ID, qualification, experience, specialization, bio]
 │   │   ├── InstructorWaitingRoom.jsx
-│   │   ├── LiveTestsPanel.jsx                     [NEW - studio panel to create, schedule, launch, close, inspect, and delete live tests; now shows per-student attempt scores to instructors]
+│   │   ├── LiveTestsPanel.jsx                     [UPDATED - studio panel to create, schedule, launch, close, inspect, and delete live tests; now adds ranked attempt analytics, pass-rate/score-distribution visuals, scrollable history, and CSV export for closed tests]
 │   │   ├── ManageCourse.jsx
 │   │   └── StudentProgress.jsx
 │   ├── LandingPage.jsx
@@ -435,7 +435,7 @@ The Three Tier Structure:
 Phase 1 - University Foundation & Onboarding: Complete.
 Phase 2 - University Courses & Semester Allocation: Complete. Auto-enrollment on allocation now active.
 Phase 3 - Chapter Deadlines, Assessments & Real-Time Marks Engine: Complete for the current scope. Attendance score, tests average, live-tests slot, manual project placeholders, late-penalty deductions, weighted final score, and grade calculation are now exposed to students and instructors.
-Phase 4 - Live Tests & Synchronous Interactions: Core live test flow now built. Instructors can create/schedule/launch/close/delete timed live tests, scheduled tests now auto-launch/auto-close, students receive websocket start/close notifications plus bell notifications, instructors can inspect per-student live test scores, and average live test score now syncs into the marks sheet breakdown. Live classes are still pending.
+Phase 4 - Live Tests & Synchronous Interactions: Completed for the current polish scope. Instructors can create/schedule/launch/close/delete timed live tests, scheduled tests now auto-launch/auto-close, students receive websocket start/close notifications plus bell notifications, duplicate student submissions are guarded at the backend active-test layer, instructors now get ranked submission history plus pass-rate/score-distribution analytics and CSV export, and average live test score syncs into the marks sheet breakdown. Live classes are still pending.
 Phase 5 - Project Space & GitHub Integration: Pending.
 Phase 6 - Final Evaluation, Marks Sheet & Certification: Pending.
 
@@ -471,19 +471,19 @@ Completed Features / Done
 24. Instructor Student Progress View - inside UniversitySpace Studio, instructor can open a Student Progress panel showing enrolled students, class average, passing count, sortable marks/progress rows, penalties, and grades.
 25. Live Tests Backend - LiveTestController, LiveTestService, LiveTestServiceImpl, LiveTestSubmission entity/repository, request/response DTOs, and repository helpers added. Instructors can create, launch, close, delete, and inspect live tests; students can fetch the active test and submit answers.
 26. Live Test Marks Sync - when a student submits a live test, the backend evaluates answers, stores the submission, computes the student's average live test score for that course, and writes it into `MarksSheet.breakdownJson.liveTestsScore` so the marks engine reflects it.
-27. Live Test Studio UI - `LiveTestsPanel.jsx` added into UniversitySpace Studio. Instructors now get a dedicated panel for timed quiz creation, optional schedule entry, question builder, launch/stop controls, delete flow, closed-test stats, and a per-student submissions list with scores/pass status.
+27. Live Test Studio UI - `LiveTestsPanel.jsx` added into UniversitySpace Studio. Instructors now get a dedicated panel for timed quiz creation, optional schedule entry, question builder, launch/stop controls, delete flow, closed-test stats, a ranked per-student submissions list, pass-rate + score-distribution analytics, and CSV export for closed-test history.
 28. Student Live Test Experience - `useLiveTestSocket.js` and `LiveTestQuiz.jsx` added. `UniversityCoursePlayer.jsx` now listens for websocket notifications, surfaces an active live test CTA, opens a full-screen timed quiz attempt UI, auto-submits on expiry, and shows result feedback inline.
 29. Notification System - persisted `Notification` entity, repository, controller, service, hook, and dropdown UI added. Students now receive bell notifications for live test start/close events and can mark one or all as read.
 30. Live Test Automation - `LiveTestScheduler.java` plus repository queries added so scheduled tests auto-launch and active tests auto-close after their duration without manual instructor action.
 31. Profile Experience Refactor - student and instructor profile pages were redesigned into cleaner modern read-only profile screens, removing unused preference/security clutter and keeping only meaningful identity/academic/professional details.
 32. Real Settings Pages - `StudentSettings.jsx` and `InstructorSettings.jsx` added and routed from the topbar/settings action. Users can now edit profile details from dedicated settings screens instead of the old overloaded profile pages.
 33. GitHub + Identity Fields - profile update/login payloads now support `githubUsername` for both students and instructors, plus missing `rollNumber` for students and `employeeId` for instructors so these can be added later for upcoming collaboration/project features.
+34. Live Test Polish - instructor live test responses now return ranked submission rows for live/closed tests, and `LiveTestsPanel.jsx` now adds richer attempt analytics with pass-rate and score-distribution visuals, visible submission counts, scrollable attempt history, and client-side CSV export for closed submissions.
 
 To Build Next / Action Items (in priority order)
-1.  Live Test Polish - richer attempt analytics, stronger submission guarding/visibility for instructors, and optional filters/export for submission history.
-2.  Live Classes (Jitsi Integration) - instructor starts session from Studio, section students notified, join via Jitsi embed inside platform.
-3.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
-4.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
-5.  Marks Review (Uni-Admin) - MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
-6.  Certificate Engine - auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
-7.  History Views - past course history for instructors and students per completed course.
+1.  Live Classes (Jitsi Integration) - instructor starts session from Studio, section students notified, join via Jitsi embed inside platform.
+2.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
+3.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
+4.  Marks Review (Uni-Admin) - MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
+5.  Certificate Engine - auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
+6.  History Views - past course history for instructors and students per completed course.

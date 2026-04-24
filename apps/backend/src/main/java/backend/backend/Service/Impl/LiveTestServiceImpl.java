@@ -245,25 +245,33 @@ public class LiveTestServiceImpl implements LiveTestService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<LiveTestResponse.SubmissionDto> submissions = includeInstructorView
-                ? submissionRepository.findByLiveTestId(test.getId()).stream()
-                .sorted(Comparator.comparing(LiveTestSubmission::getSubmittedAt,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .map(submission -> {
-                    Student student = submission.getStudent();
-                    return LiveTestResponse.SubmissionDto.builder()
-                            .submissionId(submission.getId())
-                            .studentId(student.getId())
-                            .studentName(student.getUser() != null ? student.getUser().getName() : null)
-                            .rollNumber(student.getRollNumber())
-                            .sectionName(student.getSection() != null ? student.getSection().getName() : null)
-                            .score(submission.getScore())
-                            .passed(submission.getPassed())
-                            .submittedAt(submission.getSubmittedAt())
-                            .build();
-                })
-                .collect(Collectors.toList())
-                : null;
+        List<LiveTestResponse.SubmissionDto> submissions = null;
+        if (includeInstructorView && (Boolean.TRUE.equals(test.getIsClosed()) || Boolean.TRUE.equals(test.getIsLive()))) {
+            submissions = submissionRepository.findByLiveTestId(test.getId()).stream()
+                    .map(submission -> {
+                        Student student = submission.getStudent();
+                        User user = student != null ? student.getUser() : null;
+                        String sectionName = student != null && student.getSection() != null
+                                ? student.getSection().getName()
+                                : null;
+
+                        return LiveTestResponse.SubmissionDto.builder()
+                                .submissionId(submission.getId())
+                                .studentId(student != null ? student.getId() : null)
+                                .studentName(user != null ? user.getName() : "Unknown")
+                                .rollNumber(student != null ? student.getRollNumber() : null)
+                                .sectionName(sectionName)
+                                .score(submission.getScore())
+                                .passed(submission.getPassed())
+                                .submittedAt(submission.getSubmittedAt())
+                                .build();
+                    })
+                    .sorted(Comparator.comparing(
+                            LiveTestResponse.SubmissionDto::getScore,
+                            Comparator.nullsLast(Comparator.reverseOrder())
+                    ))
+                    .collect(Collectors.toList());
+        }
 
         return LiveTestResponse.builder()
                 .id(test.getId())
