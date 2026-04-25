@@ -66,37 +66,39 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
   };
 
   return (
-    <motion.div layout className="border border-border-subtle bg-bg-surface rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-3 p-4 cursor-pointer" onClick={() => setExpanded(value => !value)}>
-        <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
-          <Users className="w-4 h-4 text-purple-400" />
+    <motion.div layout className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(155deg,rgba(15,23,42,0.96),rgba(7,13,28,0.94))] shadow-[0_20px_70px_rgba(2,6,23,0.28)]">
+      <div className="flex items-center gap-4 p-5 cursor-pointer" onClick={() => setExpanded(value => !value)}>
+        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500/20 to-sky-500/15 border border-white/10 flex items-center justify-center shrink-0">
+          <Users className="w-5 h-5 text-violet-300" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-text-primary">{group.name}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-base font-bold font-syne text-white">{group.name}</span>
             <GroupStatusBadge status={group.status} />
             {group.assignedByInstructor && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-bold">Instructor Assigned</span>
             )}
           </div>
-          <p className="text-xs text-text-muted mt-0.5">
-            {group.members?.length || 0} members
-            {group.projectTitle && ` · ${group.projectTitle}`}
-          </p>
+          <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-slate-300">
+            <span>{group.members?.length || 0} members</span>
+            {group.projectTitle && <span className="truncate max-w-[320px]">· {group.projectTitle}</span>}
+          </div>
         </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-text-muted" /> : <ChevronDown className="w-4 h-4 text-text-muted" />}
+        <div className="rounded-full border border-white/10 bg-white/5 p-2">
+          {expanded ? <ChevronUp className="w-4 h-4 text-slate-300" /> : <ChevronDown className="w-4 h-4 text-slate-300" />}
+        </div>
       </div>
 
       <AnimatePresence>
         {expanded && (
-          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden border-t border-border-subtle/50">
-            <div className="p-4 space-y-4">
+          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden border-t border-white/10">
+            <div className="p-5 space-y-5">
               <div>
-                <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Members</p>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">Members</p>
                 <div className="flex flex-wrap gap-2">
                   {group.members?.map(member => (
-                    <div key={member.studentId} className="flex items-center gap-2 px-3 py-1.5 bg-bg-elevated border border-border-subtle rounded-xl">
-                      <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-[10px] font-bold">
+                    <div key={member.studentId} className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-2xl">
+                      <div className="w-7 h-7 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 text-[10px] font-bold">
                         {member.name?.charAt(0)}
                       </div>
                       <div>
@@ -113,7 +115,7 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
               </div>
 
               {group.proposal && (
-                <div className="p-4 bg-bg-elevated border border-border-subtle rounded-xl space-y-3">
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-text-muted uppercase tracking-wider">Proposal</p>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${group.proposal.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400' : group.proposal.status === 'REJECTED' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>{group.proposal.status}</span>
@@ -147,11 +149,11 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
               {!group.isProposalApproved && (
                 <div>
                   {!showAssignForm ? (
-                    <button onClick={() => setShowAssignForm(true)} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors">
+                    <button onClick={() => setShowAssignForm(true)} className="flex items-center gap-1.5 text-xs text-orange-300 hover:text-orange-200 font-bold transition-colors">
                       <AlertTriangle className="w-3.5 h-3.5" /> Assign Project to This Group
                     </button>
                   ) : (
-                    <div className="p-4 bg-orange-500/5 border border-orange-500/15 rounded-xl space-y-3">
+                    <div className="p-4 bg-orange-500/5 border border-orange-500/15 rounded-2xl space-y-3">
                       <p className="text-xs font-bold text-orange-400">Assign Project Directly</p>
                       <input
                         type="text"
@@ -184,12 +186,12 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Github className="w-4 h-4 text-text-muted" />
-                      <a href={group.repo.githubUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                      <Github className="w-4 h-4 text-violet-300" />
+                      <a href={group.repo.githubUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-primary-300 hover:text-primary-200 flex items-center gap-1">
                         {group.repo.repoName} <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
-                    <button onClick={() => setShowGithub(value => !value)} className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary font-semibold">
+                    <button onClick={() => setShowGithub(value => !value)} className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white font-semibold">
                       <Eye className="w-3.5 h-3.5" /> {showGithub ? 'Hide' : 'Activity'}
                     </button>
                   </div>
@@ -245,7 +247,7 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                   <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Individual Reports ({group.reports.length})</p>
                   <div className="space-y-1.5">
                     {group.reports.map(report => (
-                      <div key={report.id} className="flex items-center gap-3 p-2.5 bg-bg-elevated border border-border-subtle rounded-lg">
+                      <div key={report.id} className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl">
                         <FileText className="w-3.5 h-3.5 text-text-muted shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-text-primary">{report.studentName}</p>

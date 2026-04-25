@@ -103,56 +103,74 @@ export default function ProjectSpacePanel({ courseId }) {
 
   if (!space) return null;
 
+  const stats = [
+    { label: 'Groups', value: space.groups?.length || 0, tone: 'from-sky-500/20 to-cyan-500/10 text-sky-300' },
+    { label: 'Proposals', value: space.groups?.filter(group => group.proposal).length || 0, tone: 'from-amber-500/20 to-orange-500/10 text-amber-300' },
+    { label: 'Approved', value: space.groups?.filter(group => group.isProposalApproved).length || 0, tone: 'from-emerald-500/20 to-teal-500/10 text-emerald-300' },
+    { label: 'With Repo', value: space.groups?.filter(group => group.repo).length || 0, tone: 'from-violet-500/20 to-fuchsia-500/10 text-violet-300' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="p-5 bg-purple-500/5 border border-purple-500/15 rounded-2xl">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center">
-              <FolderGit2 className="w-5 h-5 text-purple-400" />
+      <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.16),_transparent_28%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(2,6,23,0.94))] p-6 shadow-[0_28px_100px_rgba(2,6,23,0.45)]">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.06),transparent_30%,transparent_70%,rgba(255,255,255,0.04))]" />
+        <div className="relative">
+          <div className="flex items-start justify-between flex-wrap gap-5">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-violet-200">
+                <FolderGit2 className="w-3.5 h-3.5" />
+                Instructor Control Room
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center">
+                  <FolderGit2 className="w-6 h-6 text-violet-300" />
+                </div>
+                <div>
+                  <h4 className="text-2xl font-bold font-syne text-white">Project Space</h4>
+                  <p className="text-sm text-slate-300">Groups of {space.groupSize} · {space.groups?.length || 0} groups formed</p>
+                </div>
+              </div>
+              {space.projectDescription && (
+                <p className="mt-4 max-w-xl rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-slate-200">
+                  {space.projectDescription}
+                </p>
+              )}
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-text-primary">Project Space</h4>
-              <p className="text-xs text-text-muted">Groups of {space.groupSize} · {space.groups?.length || 0} groups formed</p>
+
+            <div className="flex items-center gap-3 text-xs text-slate-300 flex-wrap">
+              {space.isGroupsFormed && (
+                <button
+                  onClick={handleResetGroups}
+                  disabled={resettingGroups}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-amber-200 transition-all hover:bg-amber-500/20 disabled:opacity-50"
+                >
+                  {resettingGroups ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  Re-form Groups
+                </button>
+              )}
+              {space.proposalDeadline && (
+                <span className="inline-flex items-center gap-1.5 rounded-xl border border-sky-400/15 bg-sky-500/10 px-3 py-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  Proposal by {fmt(space.proposalDeadline)}
+                </span>
+              )}
+              {space.projectDeadline && (
+                <span className="inline-flex items-center gap-1.5 rounded-xl border border-fuchsia-400/15 bg-fuchsia-500/10 px-3 py-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  Project by {fmt(space.projectDeadline)}
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-text-muted flex-wrap">
-            {space.isGroupsFormed && (
-              <button
-                onClick={handleResetGroups}
-                disabled={resettingGroups}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/20 text-amber-300 hover:bg-amber-500/10 transition-all disabled:opacity-50"
-              >
-                {resettingGroups ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                Re-form Groups
-              </button>
-            )}
-            {space.proposalDeadline && (
-              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Proposal by {fmt(space.proposalDeadline)}</span>
-            )}
-            {space.projectDeadline && (
-              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Project by {fmt(space.projectDeadline)}</span>
-            )}
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {stats.map(stat => (
+              <div key={stat.label} className={`rounded-[24px] border border-white/10 bg-gradient-to-br ${stat.tone} p-4 backdrop-blur-xl`}>
+                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">{stat.label}</div>
+                <div className="mt-2 text-3xl font-bold font-syne text-white">{stat.value}</div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        {space.projectDescription && (
-          <p className="text-xs text-text-secondary mt-3 leading-relaxed">{space.projectDescription}</p>
-        )}
-
-        <div className="grid grid-cols-4 gap-2 mt-4">
-          {[
-            { label: 'Groups', value: space.groups?.length || 0 },
-            { label: 'Proposals', value: space.groups?.filter(group => group.proposal).length || 0 },
-            { label: 'Approved', value: space.groups?.filter(group => group.isProposalApproved).length || 0 },
-            { label: 'With Repo', value: space.groups?.filter(group => group.repo).length || 0 },
-          ].map(stat => (
-            <div key={stat.label} className="text-center p-2 bg-bg-surface/40 rounded-xl border border-border-subtle/40">
-              <div className="text-lg font-bold font-syne text-purple-400">{stat.value}</div>
-              <div className="text-[10px] text-text-muted font-medium">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </div>
 

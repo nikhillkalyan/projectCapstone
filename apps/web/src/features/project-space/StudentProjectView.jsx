@@ -10,10 +10,10 @@ import { fmt, fmtTime, GroupStatusBadge, STUDENT_DOC_TYPES } from './shared';
 
 function StudentMetricCard({ label, value, helper, accent }) {
   return (
-    <div className={`rounded-2xl border p-4 ${accent}`}>
-      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">{label}</div>
+    <div className={`rounded-[24px] border p-4 backdrop-blur-xl ${accent}`}>
+      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">{label}</div>
       <div className="mt-2 text-2xl font-syne font-extrabold text-text-primary">{value}</div>
-      {helper && <div className="mt-1 text-xs text-text-secondary">{helper}</div>}
+      {helper && <div className="mt-1 text-xs text-slate-300">{helper}</div>}
     </div>
   );
 }
@@ -31,7 +31,7 @@ function StudentDocumentUploader({
   onManualChange,
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-bg-elevated/50 p-4">
+      <div className="rounded-[24px] border border-white/10 bg-slate-950/35 p-4">
       <div>
         <div className="text-sm font-bold text-text-primary">{title}</div>
         <div className="mt-1 text-xs leading-relaxed text-text-secondary">{description}</div>
@@ -282,9 +282,9 @@ export default function StudentProjectView({ courseId, space }) {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <StudentMetricCard label="Members" value={group.members?.length || 0} helper="Allocated to this course" accent="border-white/10 bg-white/5" />
-          <StudentMetricCard label="Proposal" value={group.proposal?.status || 'Draft'} helper={group.proposal?.projectTitle || 'Ready to submit'} accent="border-sky-400/20 bg-sky-500/10" />
-          <StudentMetricCard label="Repository" value={group.repo ? 'Linked' : 'Pending'} helper={group.repo?.repoName || 'Waiting for instructor'} accent="border-violet-400/20 bg-violet-500/10" />
-          <StudentMetricCard label="My Report" value={myReport ? 'Submitted' : 'Pending'} helper={myReport ? fmt(myReport.submittedAt) : 'Upload contribution summary'} accent="border-emerald-400/20 bg-emerald-500/10" />
+          <StudentMetricCard label="Proposal" value={group.proposal?.status || 'Draft'} helper={group.proposal?.projectTitle || 'Ready to submit'} accent="border-sky-400/20 bg-gradient-to-br from-sky-500/16 to-cyan-500/10" />
+          <StudentMetricCard label="Repository" value={group.repo ? 'Linked' : 'Pending'} helper={group.repo?.repoName || 'Waiting for instructor'} accent="border-violet-400/20 bg-gradient-to-br from-violet-500/16 to-fuchsia-500/10" />
+          <StudentMetricCard label="My Report" value={myReport ? 'Submitted' : 'Pending'} helper={myReport ? fmt(myReport.submittedAt) : 'Upload contribution summary'} accent="border-emerald-400/20 bg-gradient-to-br from-emerald-500/16 to-teal-500/10" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -327,7 +327,7 @@ export default function StudentProjectView({ courseId, space }) {
       </div>
 
       {!group.isProposalApproved && (
-        <div className="p-5 bg-bg-surface border border-border-subtle rounded-2xl space-y-4">
+        <div className="p-5 bg-bg-surface border border-border-subtle rounded-[28px] space-y-4 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">
           <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
             <FileText className="w-4 h-4 text-blue-400" /> Project Proposal
           </h4>
@@ -391,7 +391,7 @@ export default function StudentProjectView({ courseId, space }) {
       )}
 
       {group.repo && (
-        <div className="p-5 bg-bg-surface border border-border-subtle rounded-2xl space-y-3">
+        <div className="p-5 bg-bg-surface border border-border-subtle rounded-[28px] space-y-3 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
               <Github className="w-4 h-4 text-text-muted" /> GitHub Repository
@@ -407,7 +407,7 @@ export default function StudentProjectView({ courseId, space }) {
         </div>
       )}
 
-      <div className="p-5 bg-bg-surface border border-border-subtle rounded-2xl space-y-4">
+      <div className="p-5 bg-bg-surface border border-border-subtle rounded-[28px] space-y-4 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">
         <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
           <Upload className="w-4 h-4 text-amber-400" /> Individual Report
         </h4>

@@ -73,40 +73,55 @@ export default function GroupFormation({ courseId, space, onRefresh }) {
 
   return (
     <div className="space-y-5">
-      <div className="p-5 bg-bg-surface border border-border-subtle rounded-2xl">
-        <h4 className="text-sm font-bold text-text-primary mb-1 flex items-center gap-2">
-          <Users className="w-4 h-4 text-purple-400" /> Form Groups
-        </h4>
-        <p className="text-xs text-text-secondary mb-4">
-          Groups of {space.groupSize}. Choose how to distribute the enrolled students.
-        </p>
+      <div className="rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.14),_transparent_30%),linear-gradient(150deg,rgba(15,23,42,0.96),rgba(8,15,32,0.92))] p-6 shadow-[0_24px_80px_rgba(2,6,23,0.32)]">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-purple-200">
+              <Users className="w-3.5 h-3.5" />
+              Formation Engine
+            </div>
+            <h4 className="mt-4 text-xl font-bold font-syne text-white">Form Project Groups</h4>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Build balanced teams for the course, either with a fast random allocation or handpicked manual grouping.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 min-w-[160px]">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Target Size</div>
+            <div className="mt-2 text-3xl font-bold font-syne text-white">{space.groupSize}</div>
+            <div className="text-xs text-slate-300 mt-1">students per team</div>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6 mb-4">
           <button
             onClick={() => setMode('random')}
-            className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${mode === 'random' ? 'border-purple-500/40 bg-purple-500/10' : 'border-border-subtle hover:border-border-strong bg-bg-elevated'}`}
+            className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${mode === 'random' ? 'border-purple-400/40 bg-purple-500/12 shadow-[0_16px_40px_rgba(168,85,247,0.12)]' : 'border-white/10 hover:border-white/20 bg-white/5'}`}
           >
-            <Shuffle className="w-5 h-5 text-purple-400 shrink-0" />
+            <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-400/15 flex items-center justify-center shrink-0">
+              <Shuffle className="w-5 h-5 text-purple-300 shrink-0" />
+            </div>
             <div>
-              <div className="text-sm font-bold text-text-primary">Random</div>
-              <div className="text-xs text-text-muted">Auto-shuffle students</div>
+              <div className="text-sm font-bold text-white">Random Allocation</div>
+              <div className="text-xs text-slate-300">Auto-shuffle students into evenly sized project teams</div>
             </div>
           </button>
           <button
             onClick={() => setMode('manual')}
-            className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${mode === 'manual' ? 'border-purple-500/40 bg-purple-500/10' : 'border-border-subtle hover:border-border-strong bg-bg-elevated'}`}
+            className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${mode === 'manual' ? 'border-purple-400/40 bg-purple-500/12 shadow-[0_16px_40px_rgba(168,85,247,0.12)]' : 'border-white/10 hover:border-white/20 bg-white/5'}`}
           >
-            <UserPlus className="w-5 h-5 text-purple-400 shrink-0" />
+            <div className="w-11 h-11 rounded-2xl bg-sky-500/15 border border-sky-400/15 flex items-center justify-center shrink-0">
+              <UserPlus className="w-5 h-5 text-sky-300 shrink-0" />
+            </div>
             <div>
-              <div className="text-sm font-bold text-text-primary">Manual</div>
-              <div className="text-xs text-text-muted">Pick students yourself</div>
+              <div className="text-sm font-bold text-white">Manual Curation</div>
+              <div className="text-xs text-slate-300">Select students yourself for tighter academic or skill balancing</div>
             </div>
           </button>
         </div>
 
         {mode === 'random' && (
           <div className="space-y-3">
-            <div className="flex items-start gap-2 p-3 bg-amber-500/8 border border-amber-500/20 rounded-xl">
+            <div className="flex items-start gap-2 p-4 bg-amber-500/8 border border-amber-500/20 rounded-2xl">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-300">Students will be shuffled and split into groups of {space.groupSize}. This cannot be undone.</p>
             </div>
@@ -129,16 +144,16 @@ export default function GroupFormation({ courseId, space, onRefresh }) {
             ) : (
               <>
                 {manualGroups.map((group, groupIndex) => (
-                  <div key={groupIndex} className="p-4 bg-bg-elevated border border-border-subtle rounded-xl space-y-3">
+                  <div key={groupIndex} className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={group.name}
                         onChange={e => setManualGroups(groups => groups.map((item, index) => index === groupIndex ? { ...item, name: e.target.value } : item))}
-                        className="flex-1 h-9 bg-bg-surface border border-border-subtle rounded-lg px-3 text-sm font-bold text-text-primary outline-none focus:border-purple-500/50 transition-all"
+                        className="flex-1 h-10 bg-bg-surface/80 border border-white/10 rounded-xl px-3 text-sm font-bold text-text-primary outline-none focus:border-purple-500/50 transition-all"
                       />
                       {manualGroups.length > 1 && (
-                        <button onClick={() => removeGroup(groupIndex)} className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all">
+                        <button onClick={() => removeGroup(groupIndex)} className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-red-400 rounded-xl hover:bg-red-500/10 transition-all">
                           <X className="w-4 h-4" />
                         </button>
                       )}
@@ -156,7 +171,7 @@ export default function GroupFormation({ courseId, space, onRefresh }) {
                             className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all ${
                               inThisGroup ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
                                 : inOtherGroup ? 'bg-bg-surface border-border-subtle text-text-muted opacity-40 cursor-not-allowed'
-                                  : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-purple-500/30 hover:text-purple-400'
+                                  : 'bg-bg-surface/70 border-white/10 text-text-secondary hover:border-purple-500/30 hover:text-purple-400'
                             }`}
                           >
                             {inThisGroup && <Check className="w-3 h-3 inline mr-1" />}
