@@ -4,6 +4,7 @@ import backend.backend.Dto.Response.MarksBreakdownResponse;
 import backend.backend.Dto.Response.StudentMarksResponse;
 import backend.backend.Entity.Chapter;
 import backend.backend.Entity.Course;
+import backend.backend.Entity.CourseAllocation;
 import backend.backend.Entity.Enrollment;
 import backend.backend.Entity.Instructor;
 import backend.backend.Entity.Progress;
@@ -12,6 +13,7 @@ import backend.backend.Entity.User;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
 import backend.backend.Repository.CourseRepository;
+import backend.backend.Repository.CourseAllocationRepository;
 import backend.backend.Repository.EnrollmentRepository;
 import backend.backend.Repository.InstructorRepository;
 import backend.backend.Repository.MarksSheetRepository;
@@ -21,6 +23,7 @@ import backend.backend.Repository.UserRepository;
 import backend.backend.Service.MarksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,7 @@ public class MarksServiceImpl implements MarksService {
     private final StudentRepository studentRepository;
     private final InstructorRepository instructorRepository;
     private final CourseRepository courseRepository;
+    private final CourseAllocationRepository courseAllocationRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ProgressRepository progressRepository;
     private final MarksSheetRepository marksSheetRepository;
@@ -221,6 +225,8 @@ public class MarksServiceImpl implements MarksService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
+        ensureUniversityCourseEnrollments(course);
+
         boolean enrolled = enrollmentRepository.existsByStudentIdAndCourseId(student.getId(), courseId);
         if (!enrolled) {
             throw new UnauthorizedException("You are not enrolled in this course");
@@ -254,6 +260,8 @@ public class MarksServiceImpl implements MarksService {
         if (!course.getInstructor().getId().equals(instructor.getId())) {
             throw new UnauthorizedException("Not your course");
         }
+
+        ensureUniversityCourseEnrollments(course);
 
         List<Enrollment> enrollments = enrollmentRepository.findByCourseId(courseId);
 
@@ -290,6 +298,40 @@ public class MarksServiceImpl implements MarksService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private void ensureUniversityCourseEnrollments(Course course) {
+        if (!Boolean.TRUE.equals(course.getIsUniversityCourse())) {
+            return;
+        }
+
+        List<CourseAllocation> allocations = courseAllocationRepository.findByCourseId(course.getId());
+        for (CourseAllocation allocation : allocations) {
+            if (allocation.getSection() == null) {
+                continue;
+            }
+
+            List<Student> studentsInSection = studentRepository.findBySectionId(allocation.getSection().getId());
+            for (Student student : studentsInSection) {
+                boolean alreadyEnrolled = enrollmentRepository
+                        .existsByStudentIdAndCourseId(student.getId(), course.getId());
+
+                if (!alreadyEnrolled) {
+                    try {
+                        Enrollment enrollment = Enrollment.builder()
+                                .student(student)
+                                .course(course)
+                                .overallProgress(0.0f)
+                                .isCompleted(false)
+                                .build();
+                        enrollmentRepository.save(enrollment);
+                    } catch (DataIntegrityViolationException exception) {
+                        log.debug("Enrollment already created concurrently for student '{}' and course '{}'",
+                                student.getId(), course.getId());
+                    }
+                }
+            }
+        }
     }
 
     private double round2(double value) {

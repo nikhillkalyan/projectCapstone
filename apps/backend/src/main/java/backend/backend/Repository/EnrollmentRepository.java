@@ -9,7 +9,10 @@ import java.util.UUID;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
     Optional<Enrollment> findByStudentIdAndCourseId(UUID studentId, UUID courseId);
+
     List<Enrollment> findByStudentId(UUID studentId);
+
     List<Enrollment> findByCourseId(UUID courseId);
+
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
 }

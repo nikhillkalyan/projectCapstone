@@ -76,6 +76,12 @@ public class Instructor {
     @Column(name = "flagged_at")
     private LocalDateTime flaggedAt;
 
+    // GitHub PAT stored by instructor once — used to call GitHub API for project
+    // monitoring
+    // Fine-grained PAT with read-only access to their repos is sufficient
+    @Column(name = "github_pat", columnDefinition = "TEXT")
+    private String githubPat;
+
     @CreationTimestamp
     @Column(name = "registered_at", updatable = false)
     private LocalDateTime registeredAt;

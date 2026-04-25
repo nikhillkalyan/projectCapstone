@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import { ChatProvider } from './context/ChatContext';
@@ -22,6 +22,8 @@ import FavoriteCourses from './pages/student/FavoriteCourses';
 import Certificate from './pages/student/Certificate';
 import StudentChat from './pages/student/StudentChat';
 import UniversitySpace from './pages/shared/UniversitySpace';
+import ProjectSpacePanel from './pages/instructor/ProjectSpacePanel';
+import StudentLayout from './components/layout/v2/StudentLayout';
 
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import CreateCourse from './pages/instructor/CreateCourse';
@@ -51,6 +53,15 @@ function PrivateRoute({ children, role, requireApproval = false }) {
   return children;
 }
 
+function StudentUniversityProjectPage() {
+  const { courseId } = useParams();
+  return (
+    <StudentLayout>
+      <ProjectSpacePanel courseId={courseId} />
+    </StudentLayout>
+  );
+}
+
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -74,6 +85,7 @@ function App() {
               <Route path="/student/chat" element={<PrivateRoute role="student"><StudentChat /></PrivateRoute>} />
               <Route path="/student/university" element={<PrivateRoute role="student"><UniversitySpace /></PrivateRoute>} />
               <Route path="/student/university/course/:courseId" element={<PrivateRoute role="student"><UniversityCoursePlayer /></PrivateRoute>} />
+              <Route path="/student/university/course/:courseId/project" element={<PrivateRoute role="student"><StudentUniversityProjectPage /></PrivateRoute>} />
               <Route path="/student/profile" element={<PrivateRoute role="student"><StudentProfile /></PrivateRoute>} />
               <Route path="/student/settings" element={<PrivateRoute role="student"><StudentSettings /></PrivateRoute>} />
 

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 import LiveTestsPanel from '../instructor/LiveTestsPanel';
+import ProjectSpacePanel from '../instructor/ProjectSpacePanel';
 import { lookupUniversity, joinUniversitySpace } from '../../api/authApi';
 import api from '../../lib/api';
 import {
@@ -14,7 +15,7 @@ import {
   Edit3, Save, Play, Type, Calendar, Zap, Shield, Target,
   ChevronDown, ChevronUp, Plus, Minus, HelpCircle, Eye,
   EyeOff, GripVertical, Award, TrendingUp, Lock, Unlock,
-  FolderOpen, Settings, Star, Check, RotateCcw
+  FolderOpen, Settings, Star, Check, RotateCcw, FolderGit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,11 +56,10 @@ const DeadlinePill = ({ deadline, showDays = true }) => {
   const past = days !== null && days < 0;
   const urgent = days !== null && days <= 3 && days >= 0;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-      past ? 'bg-red-500/10 border-red-500/25 text-red-400' :
-      urgent ? 'bg-orange-500/10 border-orange-500/25 text-orange-400' :
-        'bg-indigo-500/10 border-indigo-500/25 text-indigo-400'
-    }`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${past ? 'bg-red-500/10 border-red-500/25 text-red-400' :
+        urgent ? 'bg-orange-500/10 border-orange-500/25 text-orange-400' :
+          'bg-indigo-500/10 border-indigo-500/25 text-indigo-400'
+      }`}>
       <Calendar className="w-3 h-3" />
       {past ? `Expired ${fmt(deadline)}` : fmt(deadline)}
       {showDays && !past && days !== null && <span className="opacity-70">· {days}d</span>}
@@ -570,7 +570,7 @@ function ChapterCard({ chapter, index, courseId, onDelete, onUpdate }) {
                   chapterId={chapter.id}
                   courseId={courseId}
                   existingAssessment={chapter.assessment}
-                  onSaved={() => {}}
+                  onSaved={() => { }}
                 />
               )}
             </div>
@@ -717,7 +717,7 @@ function PenaltySettingsPanel({ courseId, defaultPenaltyPerDay, penaltyDescripti
       });
       onSaved({ defaultPenaltyPerDay: +penalty, penaltyDescription: desc });
       setOpen(false);
-    } catch {} finally { setSaving(false); }
+    } catch { } finally { setSaving(false); }
   };
 
   return (
@@ -845,6 +845,10 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
         <LiveTestsPanel courseId={courseId} />
       </div>
 
+      <div className="border-t border-border-subtle pt-5">
+        <ProjectSpacePanel courseId={courseId} />
+      </div>
+
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-primary-400" />
@@ -853,11 +857,10 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowProgress(v => !v)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl border transition-all ${
-              showProgress
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl border transition-all ${showProgress
                 ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400'
                 : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border-strong hover:text-text-secondary'
-            }`}
+              }`}
           >
             <Users className="w-3.5 h-3.5" />
             Student Progress
@@ -1360,11 +1363,10 @@ function StudentCoursesTabV2({ allocations, loading, navigate }) {
               </div>
 
               {a.finalDeadline && (
-                <span className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                  past ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                  urgent ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' :
-                    'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
-                }`}>
+                <span className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${past ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                    urgent ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' :
+                      'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                  }`}>
                   <Calendar className="w-3 h-3" />
                   {past ? 'Expired' : `${days}d left`}
                 </span>
@@ -1410,13 +1412,12 @@ function StudentCoursesTabV2({ allocations, loading, navigate }) {
 
             <button
               onClick={() => navigate(`/student/university/course/${a.courseId}`)}
-              className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
-                completed
+              className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${completed
                   ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
                   : prog > 0
                     ? 'bg-primary-500/10 border border-primary-500/20 text-primary-400 hover:bg-primary-500/20'
                     : 'bg-bg-elevated border border-border-subtle text-text-secondary hover:border-primary-500/30 hover:text-primary-400'
-              }`}
+                }`}
             >
               {completed ? (
                 <><CheckCircle2 className="w-4 h-4" /> View Course</>
@@ -1639,9 +1640,8 @@ function StudentProgressTable({ courseId }) {
   const SortBtn = ({ k, label }) => (
     <button
       onClick={() => toggleSort(k)}
-      className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
-        sortKey === k ? 'text-primary-400' : 'text-text-muted hover:text-text-secondary'
-      }`}
+      className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${sortKey === k ? 'text-primary-400' : 'text-text-muted hover:text-text-secondary'
+        }`}
     >
       {label} {sortKey === k ? (sortDir === 'desc' ? '↓' : '↑') : ''}
     </button>
@@ -1757,6 +1757,50 @@ function StudentProgressTable({ courseId }) {
   );
 }
 
+function StudentProjectSpacePicker({ allocations, navigate }) {
+  if (allocations.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-primary-500/8 border border-primary-500/20 flex items-center justify-center mb-4">
+        <FolderGit2 className="w-8 h-8 text-primary-400" />
+      </div>
+      <h3 className="text-lg font-bold font-syne text-text-primary mb-2">No projects yet</h3>
+      <p className="text-text-secondary text-sm max-w-xs">Your university admin hasn't allocated any courses to your section yet.</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 py-2">
+      <div className="flex items-start gap-3 p-4 bg-primary-500/8 border border-primary-500/20 rounded-xl mb-4">
+        <FolderGit2 className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-primary-300 leading-relaxed">
+          Select a course below to view your assigned project group, submit proposals, and monitor your GitHub repository.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {allocations.map((a, i) => (
+          <motion.div key={a.courseId || a.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            className="p-5 bg-bg-surface border border-border-subtle rounded-2xl hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/5 transition-all group cursor-pointer"
+            onClick={() => navigate(`/student/university/course/${a.courseId}/project`)}>
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-5 h-5 text-primary-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-text-primary leading-snug">{a.courseTitle}</h4>
+                  <div className="text-xs text-text-muted mt-0.5">{a.instructorName}</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary-400 transition-colors" />
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function UniversitySpace() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -1799,7 +1843,7 @@ export default function UniversitySpace() {
     try {
       await api.delete(`/uni-courses/${deleteTarget}`);
       setCourses(cs => cs.filter(c => c.id !== deleteTarget));
-    } catch {} finally { setDeleting(false); setDeleteTarget(null); }
+    } catch { } finally { setDeleting(false); setDeleteTarget(null); }
   };
 
   const Layout = isStudent ? StudentLayout : InstructorLayout;
@@ -1818,6 +1862,7 @@ export default function UniversitySpace() {
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'courses', label: 'My Courses', icon: BookOpen },
     { id: 'marks', label: 'My Marks', icon: Award },
+    { id: 'project', label: 'Project Space', icon: FolderGit2 },
   ];
   const tabs = isStudent ? studentTabs : instructorTabs;
 
@@ -1835,6 +1880,7 @@ export default function UniversitySpace() {
         case 'overview': return <StudentOverviewTabV2 user={user} allocations={allocations} />;
         case 'courses': return <StudentCoursesTabV2 allocations={allocations} loading={loading} navigate={navigate} />;
         case 'marks': return <StudentMarksTab allocations={allocations} loading={loading} />;
+        case 'project': return <StudentProjectSpacePicker allocations={allocations} navigate={navigate} />;
         default: return null;
       }
     }
@@ -1867,11 +1913,10 @@ export default function UniversitySpace() {
             const isActive = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all shrink-0 border-b-2 -mb-px whitespace-nowrap ${
-                  isActive
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all shrink-0 border-b-2 -mb-px whitespace-nowrap ${isActive
                     ? 'text-primary-400 border-primary-500 bg-primary-500/5'
                     : 'text-text-muted border-transparent hover:text-text-secondary hover:bg-bg-surface/60'
-                }`}>
+                  }`}>
                 <Icon className="w-4 h-4" />
                 {tab.label}
                 {tab.id === 'studio' && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
