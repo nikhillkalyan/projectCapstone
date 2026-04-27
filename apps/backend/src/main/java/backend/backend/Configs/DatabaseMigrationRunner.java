@@ -139,6 +139,98 @@ public class DatabaseMigrationRunner {
                     SET is_proposal_approved = FALSE
                     WHERE is_proposal_approved IS NULL
                     """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS project_activity_events (
+                        id UUID PRIMARY KEY,
+                        course_id UUID NOT NULL,
+                        project_space_id UUID NOT NULL,
+                        project_group_id UUID,
+                        actor_user_id UUID,
+                        event_type VARCHAR(60) NOT NULL,
+                        title VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        metadata_json TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS project_group_messages (
+                        id UUID PRIMARY KEY,
+                        course_id UUID NOT NULL,
+                        project_space_id UUID NOT NULL,
+                        project_group_id UUID NOT NULL,
+                        sender_user_id UUID NOT NULL,
+                        message_text TEXT NOT NULL,
+                        is_edited BOOLEAN DEFAULT FALSE,
+                        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS project_group_chat_reads (
+                        id UUID PRIMARY KEY,
+                        project_group_id UUID NOT NULL,
+                        user_id UUID NOT NULL,
+                        last_read_at TIMESTAMP NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT uq_project_group_chat_reads_group_user UNIQUE (project_group_id, user_id)
+                    )
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS github_branch_snapshots (
+                        id UUID PRIMARY KEY,
+                        project_group_id UUID NOT NULL,
+                        project_repo_id UUID NOT NULL,
+                        branch_name VARCHAR(255) NOT NULL,
+                        last_commit_sha VARCHAR(120),
+                        last_commit_message TEXT,
+                        last_commit_author VARCHAR(255),
+                        last_commit_date VARCHAR(255),
+                        synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS github_pull_request_snapshots (
+                        id UUID PRIMARY KEY,
+                        project_group_id UUID NOT NULL,
+                        project_repo_id UUID NOT NULL,
+                        pr_number INTEGER NOT NULL,
+                        title TEXT NOT NULL,
+                        state VARCHAR(30) NOT NULL,
+                        author_name VARCHAR(255),
+                        source_branch VARCHAR(255),
+                        target_branch VARCHAR(255),
+                        created_at_remote VARCHAR(255),
+                        merged_at_remote VARCHAR(255),
+                        pr_url TEXT,
+                        changed_files INTEGER,
+                        additions INTEGER,
+                        deletions INTEGER,
+                        synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS github_commit_snapshots (
+                        id UUID PRIMARY KEY,
+                        project_group_id UUID NOT NULL,
+                        project_repo_id UUID NOT NULL,
+                        commit_sha VARCHAR(120) NOT NULL,
+                        short_sha VARCHAR(20),
+                        commit_message TEXT,
+                        author_name VARCHAR(255),
+                        committed_at VARCHAR(255),
+                        branch_name VARCHAR(255),
+                        commit_url TEXT,
+                        synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
         } catch (Exception e) {
             System.out.println("Could not repair project space schema: " + e.getMessage());
         }

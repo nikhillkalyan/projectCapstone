@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -99,6 +100,21 @@ public class ProjectSpaceController {
             @PathVariable UUID courseId,
             @PathVariable UUID groupId) {
         return ResponseEntity.ok(projectSpaceService.getGitHubActivity(courseId, groupId));
+    }
+
+    @GetMapping("/{courseId}/groups/{groupId}/messages")
+    public ResponseEntity<List<ProjectGroupMessageResponse>> getGroupMessages(
+            @PathVariable UUID courseId,
+            @PathVariable UUID groupId) {
+        return ResponseEntity.ok(projectSpaceService.getGroupMessages(courseId, groupId));
+    }
+
+    @PostMapping("/{courseId}/groups/{groupId}/messages")
+    public ResponseEntity<ProjectGroupMessageResponse> sendGroupMessage(
+            @PathVariable UUID courseId,
+            @PathVariable UUID groupId,
+            @RequestBody SendProjectGroupMessageRequest request) {
+        return ResponseEntity.ok(projectSpaceService.sendGroupMessage(courseId, groupId, request));
     }
 
     // ── Student: upload individual report ──

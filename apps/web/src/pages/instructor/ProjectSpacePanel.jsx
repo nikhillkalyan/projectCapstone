@@ -18,8 +18,8 @@ export default function ProjectSpacePanel({ courseId }) {
   const [loadError, setLoadError] = useState('');
   const [resettingGroups, setResettingGroups] = useState(false);
 
-  const fetchSpace = useCallback(async () => {
-    setLoading(true);
+  const fetchSpace = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setLoadError('');
     try {
       const data = await fetchProjectSpace(courseId);
@@ -34,7 +34,7 @@ export default function ProjectSpacePanel({ courseId }) {
         setLoadError(e.response?.data?.message || 'Failed to load project space');
       }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [courseId]);
 

@@ -3,6 +3,7 @@ package backend.backend.Dto.Response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -11,6 +12,11 @@ public class GitHubActivityResponse {
     private String repoName;
     private String githubUrl;
     private String defaultBranch;
+    private String source;
+    private LocalDateTime syncedAt;
+    private Integer cachedBranchCount;
+    private Integer cachedPullRequestCount;
+    private Integer cachedCommitCount;
     private List<BranchInfo> branches;
     private List<PullRequestInfo> pullRequests;
     private List<CommitInfo> recentCommits;

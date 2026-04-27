@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Eye, ExternalLink, FileText, Github, Link, Loader2, Send, Users, X,
+  AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Eye, ExternalLink, FileText, Github, Link, Loader2, MessageSquareText, Send, Users, X,
 } from 'lucide-react';
 import { assignProject, linkRepo, reviewProposal } from './api';
 import GitHubViewer from './GitHubViewer';
+import GroupChatPanel from './GroupChatPanel';
 import { fmt, GroupStatusBadge } from './shared';
 
 export default function InstructorGroupCard({ group, courseId, onRefresh }) {
   const [expanded, setExpanded] = useState(false);
   const [showGithub, setShowGithub] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [repoForm, setRepoForm] = useState({ githubUrl: '', repoName: '', defaultBranch: 'main' });
   const [assignForm, setAssignForm] = useState({ projectTitle: '', projectDoc: '' });
   const [linkingRepo, setLinkingRepo] = useState(false);
@@ -82,6 +84,10 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
           <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-slate-300">
             <span>{group.members?.length || 0} members</span>
             {group.projectTitle && <span className="truncate max-w-[320px]">· {group.projectTitle}</span>}
+            {group.lastMessage && <span className="truncate max-w-[280px]">· {group.lastMessage.senderName}: {group.lastMessage.messageText}</span>}
+            {group.unreadMessageCount > 0 && (
+              <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-bold text-sky-200">{group.unreadMessageCount} unread</span>
+            )}
           </div>
         </div>
         <div className="rounded-full border border-white/10 bg-white/5 p-2">
@@ -112,6 +118,33 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-muted">
+                      <MessageSquareText className="h-3.5 w-3.5 text-sky-300" />
+                      Collaboration Room
+                    </p>
+                    <p className="mt-1 truncate text-xs text-text-secondary">
+                      {group.lastMessage ? `${group.lastMessage.senderName}: ${group.lastMessage.messageText}` : 'No group messages yet'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowChat(value => !value)}
+                    className="flex items-center gap-1.5 rounded-xl border border-sky-400/20 bg-sky-500/10 px-3 py-2 text-xs font-bold text-sky-300 transition-all hover:bg-sky-500/20"
+                  >
+                    <MessageSquareText className="h-3.5 w-3.5" />
+                    {showChat ? 'Hide Chat' : 'Open Chat'}
+                    {group.unreadMessageCount > 0 && <span className="rounded-full bg-sky-300/20 px-1.5 py-0.5 text-[10px]">{group.unreadMessageCount}</span>}
+                  </button>
+                </div>
+                {showChat && (
+                  <div className="mt-4">
+                    <GroupChatPanel courseId={courseId} group={group} compact readOnly onRead={onRefresh} />
+                  </div>
+                )}
               </div>
 
               {group.proposal && (

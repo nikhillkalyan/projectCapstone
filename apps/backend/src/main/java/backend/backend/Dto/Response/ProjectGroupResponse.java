@@ -11,8 +11,11 @@ import java.util.UUID;
 @Builder
 public class ProjectGroupResponse {
     private UUID id;
+    private UUID courseId;
+    private UUID projectSpaceId;
     private String name;
     private String status;
+    private Integer memberCount;
     private String projectTitle;
     private String rejectionReason;
     private Boolean assignedByInstructor;
@@ -23,6 +26,9 @@ public class ProjectGroupResponse {
     private ProjectProposalResponse proposal;
     private ProjectRepoResponse repo;
     private List<IndividualReportResponse> reports;
+    private List<ProjectActivityEventResponse> recentActivity;
+    private ProjectGroupMessageResponse lastMessage;
+    private Long unreadMessageCount;
 
     @Data
     @Builder

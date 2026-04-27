@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { uploadFileToCloudinary } from '../../lib/cloudinary';
 import { fetchStudentGroup, submitProposal, submitReport } from './api';
 import GitHubViewer from './GitHubViewer';
+import GroupChatPanel from './GroupChatPanel';
 import { fmt, fmtTime, GroupStatusBadge, STUDENT_DOC_TYPES } from './shared';
 
 function StudentMetricCard({ label, value, helper, accent }) {
@@ -107,19 +108,22 @@ export default function StudentProjectView({ courseId, space }) {
   const [reportError, setReportError] = useState('');
   const [groupLoadError, setGroupLoadError] = useState('');
 
-  const loadGroup = useCallback(async () => {
-    setLoading(true);
-    setNoGroup(false);
+  const loadGroup = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true);
+      setNoGroup(false);
+    }
     setGroupLoadError('');
     try {
       const data = await fetchStudentGroup(courseId);
       setGroup(data);
+      if (!silent) setNoGroup(false);
     } catch (e) {
       setGroup(null);
       if (e.response?.status === 404) setNoGroup(true);
       else setGroupLoadError(e.response?.data?.message || 'Failed to load your project group');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [courseId]);
 
@@ -325,6 +329,8 @@ export default function StudentProjectView({ courseId, space }) {
           </div>
         )}
       </div>
+
+      <GroupChatPanel courseId={courseId} group={group} onRead={loadGroup} />
 
       {!group.isProposalApproved && (
         <div className="p-5 bg-bg-surface border border-border-subtle rounded-[28px] space-y-4 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">

@@ -35,6 +35,16 @@ export async function fetchGitHubActivity(courseId, groupId) {
   return response.data;
 }
 
+export async function fetchGroupMessages(courseId, groupId) {
+  const response = await api.get(`/project-space/${courseId}/groups/${groupId}/messages`);
+  return response.data;
+}
+
+export async function sendGroupMessage(courseId, groupId, payload) {
+  const response = await api.post(`/project-space/${courseId}/groups/${groupId}/messages`, payload);
+  return response.data;
+}
+
 export async function reviewProposal(courseId, groupId, payload) {
   const response = await api.put(`/project-space/${courseId}/groups/${groupId}/proposal/review`, payload);
   return response.data;

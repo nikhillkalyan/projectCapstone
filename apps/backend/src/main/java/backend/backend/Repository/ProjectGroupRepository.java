@@ -18,6 +18,8 @@ public interface ProjectGroupRepository extends JpaRepository<ProjectGroup, UUID
 
     List<ProjectGroup> findByProjectSpaceId(UUID projectSpaceId);
 
+    Optional<ProjectGroup> findByIdAndProjectSpaceId(UUID id, UUID projectSpaceId);
+
     List<ProjectGroup> findByProjectSpaceIdAndStatus(UUID projectSpaceId, GroupStatus status);
 
     // Find the group a specific student belongs to within a project space
