@@ -25,6 +25,7 @@ function normalizeBranch(branch, defaultBranch, pullRequestsBySource) {
     isDefault: branch.name === defaultBranch,
     relatedPullRequests,
     latestPullRequest: primaryPullRequest,
+    relatedCommits: [],
   };
 }
 
@@ -55,6 +56,13 @@ export function buildGitHubInsights(activity) {
     map.set(branch.name, branch);
     return map;
   }, new Map());
+
+  commits.forEach(commit => {
+    if (!commit?.branch) return;
+    const branch = branchMap.get(commit.branch);
+    if (!branch) return;
+    branch.relatedCommits.push(commit);
+  });
 
   const contributorMap = new Map();
   commits.forEach(commit => {

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { fetchGitHubActivity } from './api';
 import BranchTreeView from './BranchTreeView';
+import BranchDetailsDrawer from './BranchDetailsDrawer';
 import { buildGitHubInsights } from './githubInsights';
 import { fmtTime } from './shared';
 
@@ -144,6 +145,7 @@ export default function GitHubViewer({ courseId, groupId }) {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const insights = useMemo(() => buildGitHubInsights(activity), [activity]);
+  const [selectedBranchName, setSelectedBranchName] = useState('');
 
   const loadActivity = useCallback(async () => {
     setLoading(true);
@@ -162,6 +164,19 @@ export default function GitHubViewer({ courseId, groupId }) {
     loadActivity();
   }, [loadActivity]);
 
+  useEffect(() => {
+    if (!insights.branches.length) {
+      setSelectedBranchName('');
+      return;
+    }
+
+    if (selectedBranchName && insights.branchMap.has(selectedBranchName)) {
+      return;
+    }
+
+    setSelectedBranchName(insights.branches[0].name);
+  }, [insights, selectedBranchName]);
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-6 text-sm text-text-muted">
@@ -179,6 +194,8 @@ export default function GitHubViewer({ courseId, groupId }) {
   }
 
   if (!activity) return null;
+
+  const selectedBranch = selectedBranchName ? insights.branchMap.get(selectedBranchName) : null;
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
@@ -366,8 +383,15 @@ export default function GitHubViewer({ courseId, groupId }) {
         )}
 
         {activeTab === 'branches' && (
-          <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
-            <BranchTreeView branches={insights.branches} />
+          <div className="grid gap-4 xl:grid-cols-[0.9fr,1.1fr]">
+            <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
+              <BranchTreeView
+                branches={insights.branches}
+                selectedBranchName={selectedBranchName}
+                onSelectBranch={branch => setSelectedBranchName(branch.name)}
+              />
+            </div>
+            <BranchDetailsDrawer branch={selectedBranch} />
           </div>
         )}
 

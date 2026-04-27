@@ -1,9 +1,17 @@
-import { GitBranch, GitPullRequest, Layers3 } from 'lucide-react';
+import { ChevronRight, GitBranch, GitPullRequest, Layers3 } from 'lucide-react';
 import { fmtTime } from './shared';
 
-function BranchNode({ branch }) {
+function BranchNode({ branch, selected, onSelect }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <button
+      type="button"
+      onClick={() => onSelect(branch)}
+      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+        selected
+          ? 'border-sky-400/35 bg-sky-500/10 shadow-[0_12px_40px_rgba(14,165,233,0.12)]'
+          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -32,11 +40,14 @@ function BranchNode({ branch }) {
             {branch.sourceBranch ? `Branches off ${branch.sourceBranch}` : 'Primary project branch'}
           </p>
         </div>
-        {branch.lastCommitSha && (
-          <code className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-1 text-[10px] text-slate-300">
-            {branch.lastCommitSha.slice(0, 7)}
-          </code>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {branch.lastCommitSha && (
+            <code className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-1 text-[10px] text-slate-300">
+              {branch.lastCommitSha.slice(0, 7)}
+            </code>
+          )}
+          <ChevronRight className={`h-4 w-4 ${selected ? 'text-sky-200' : 'text-text-muted'}`} />
+        </div>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -63,11 +74,11 @@ function BranchNode({ branch }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-export default function BranchTreeView({ branches }) {
+export default function BranchTreeView({ branches, selectedBranchName, onSelectBranch }) {
   if (!branches?.length) {
     return (
       <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-text-secondary">
@@ -82,9 +93,17 @@ export default function BranchTreeView({ branches }) {
         <Layers3 className="h-3.5 w-3.5 text-violet-300" />
         Branch Relationship Explorer
       </div>
+      <p className="text-xs text-text-secondary">
+        Select a branch to inspect its review path, branch-specific commits, and PR connections.
+      </p>
       <div className="space-y-3">
         {branches.map(branch => (
-          <BranchNode key={branch.name} branch={branch} />
+          <BranchNode
+            key={branch.name}
+            branch={branch}
+            selected={branch.name === selectedBranchName}
+            onSelect={onSelectBranch}
+          />
         ))}
       </div>
     </div>
