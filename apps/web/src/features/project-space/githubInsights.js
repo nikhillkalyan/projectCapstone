@@ -26,7 +26,64 @@ function normalizeBranch(branch, defaultBranch, pullRequestsBySource) {
     relatedPullRequests,
     latestPullRequest: primaryPullRequest,
     relatedCommits: [],
+    children: [],
+    depth: 0,
   };
+}
+
+function buildBranchTree(branches, branchMap, defaultBranch) {
+  const roots = [];
+
+  branches.forEach(branch => {
+    branch.children = [];
+    branch.depth = 0;
+  });
+
+  branches.forEach(branch => {
+    const parentName = branch.sourceBranch;
+    const parent = parentName ? branchMap.get(parentName) : null;
+
+    if (!parent || parent.name === branch.name) {
+      roots.push(branch);
+      return;
+    }
+
+    parent.children.push(branch);
+    branch.depth = parent.depth + 1;
+  });
+
+  if (!roots.length && defaultBranch && branchMap.has(defaultBranch)) {
+    roots.push(branchMap.get(defaultBranch));
+  }
+
+  const seen = new Set();
+  const dedupedRoots = [];
+
+  roots.forEach(root => {
+    if (!seen.has(root.name)) {
+      seen.add(root.name);
+      dedupedRoots.push(root);
+    }
+  });
+
+  branches.forEach(branch => {
+    if (!seen.has(branch.name)) {
+      seen.add(branch.name);
+      dedupedRoots.push(branch);
+    }
+  });
+
+  const assignDepth = (node, depth, path = new Set()) => {
+    if (path.has(node.name)) return;
+    node.depth = depth;
+    const nextPath = new Set(path);
+    nextPath.add(node.name);
+    node.children.sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0));
+    node.children.forEach(child => assignDepth(child, depth + 1, nextPath));
+  };
+
+  dedupedRoots.forEach(root => assignDepth(root, 0));
+  return dedupedRoots;
 }
 
 export function buildGitHubInsights(activity) {
@@ -63,6 +120,17 @@ export function buildGitHubInsights(activity) {
     if (!branch) return;
     branch.relatedCommits.push(commit);
   });
+
+  const enrichedPullRequests = pullRequests
+    .map(pullRequest => ({
+      ...pullRequest,
+      relatedCommits: commits.filter(commit => commit.branch && commit.branch === pullRequest.sourceBranch),
+    }))
+    .sort((a, b) => {
+      const aDate = safeDate(a.createdAt)?.getTime() || 0;
+      const bDate = safeDate(b.createdAt)?.getTime() || 0;
+      return bDate - aDate;
+    });
 
   const contributorMap = new Map();
   commits.forEach(commit => {
@@ -112,9 +180,9 @@ export function buildGitHubInsights(activity) {
       return (b.pullRequestCount || 0) - (a.pullRequestCount || 0);
     });
 
-  const openPullRequests = pullRequests.filter(pullRequest => pullRequest.state === 'open');
-  const mergedPullRequests = pullRequests.filter(pullRequest => pullRequest.state === 'merged');
-  const closedPullRequests = pullRequests.filter(pullRequest => pullRequest.state === 'closed');
+  const openPullRequests = enrichedPullRequests.filter(pullRequest => pullRequest.state === 'open');
+  const mergedPullRequests = enrichedPullRequests.filter(pullRequest => pullRequest.state === 'merged');
+  const closedPullRequests = enrichedPullRequests.filter(pullRequest => pullRequest.state === 'closed');
 
   const now = Date.now();
   const staleBranches = normalizedBranches.filter(branch => {
@@ -127,14 +195,16 @@ export function buildGitHubInsights(activity) {
     return now - branch.updatedAt.getTime() <= 7 * DAY_MS;
   });
 
-  const totalChangedFiles = pullRequests.reduce((sum, pullRequest) => sum + (pullRequest.changedFiles || 0), 0);
-  const totalAdditions = pullRequests.reduce((sum, pullRequest) => sum + (pullRequest.additions || 0), 0);
-  const totalDeletions = pullRequests.reduce((sum, pullRequest) => sum + (pullRequest.deletions || 0), 0);
+  const totalChangedFiles = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.changedFiles || 0), 0);
+  const totalAdditions = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.additions || 0), 0);
+  const totalDeletions = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.deletions || 0), 0);
+  const branchTree = buildBranchTree(normalizedBranches, branchMap, defaultBranch);
 
   return {
     branches: normalizedBranches,
+    branchTree,
     branchMap,
-    pullRequests,
+    pullRequests: enrichedPullRequests,
     commits,
     contributors,
     openPullRequests,

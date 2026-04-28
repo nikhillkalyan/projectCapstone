@@ -15,6 +15,7 @@ import {
 import { fetchGitHubActivity } from './api';
 import BranchTreeView from './BranchTreeView';
 import BranchDetailsDrawer from './BranchDetailsDrawer';
+import PullRequestDetailsPanel from './PullRequestDetailsPanel';
 import { buildGitHubInsights } from './githubInsights';
 import { fmtTime } from './shared';
 
@@ -61,7 +62,7 @@ function ContributorCard({ contributor }) {
   );
 }
 
-function PullRequestCard({ pullRequest }) {
+function PullRequestCard({ pullRequest, onSelectPullRequest, selected }) {
   const stateTone = pullRequest.state === 'merged'
     ? 'border-violet-400/20 bg-violet-500/10 text-violet-300'
     : pullRequest.state === 'open'
@@ -69,7 +70,15 @@ function PullRequestCard({ pullRequest }) {
       : 'border-red-400/20 bg-red-500/10 text-red-300';
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <button
+      type="button"
+      onClick={() => onSelectPullRequest?.(pullRequest)}
+      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+        selected
+          ? 'border-violet-400/30 bg-violet-500/10'
+          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -104,7 +113,7 @@ function PullRequestCard({ pullRequest }) {
           <div className="mt-1 text-sm font-bold text-text-primary">{pullRequest.createdAt ? fmtTime(pullRequest.createdAt) : '-'}</div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -146,6 +155,7 @@ export default function GitHubViewer({ courseId, groupId }) {
   const [activeTab, setActiveTab] = useState('overview');
   const insights = useMemo(() => buildGitHubInsights(activity), [activity]);
   const [selectedBranchName, setSelectedBranchName] = useState('');
+  const [selectedPullRequestNumber, setSelectedPullRequestNumber] = useState(null);
 
   const loadActivity = useCallback(async () => {
     setLoading(true);
@@ -177,6 +187,19 @@ export default function GitHubViewer({ courseId, groupId }) {
     setSelectedBranchName(insights.branches[0].name);
   }, [insights, selectedBranchName]);
 
+  useEffect(() => {
+    if (!insights.pullRequests.length) {
+      setSelectedPullRequestNumber(null);
+      return;
+    }
+
+    if (selectedPullRequestNumber && insights.pullRequests.some(pullRequest => pullRequest.number === selectedPullRequestNumber)) {
+      return;
+    }
+
+    setSelectedPullRequestNumber(insights.pullRequests[0].number);
+  }, [insights, selectedPullRequestNumber]);
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-6 text-sm text-text-muted">
@@ -196,6 +219,14 @@ export default function GitHubViewer({ courseId, groupId }) {
   if (!activity) return null;
 
   const selectedBranch = selectedBranchName ? insights.branchMap.get(selectedBranchName) : null;
+  const selectedPullRequest = selectedPullRequestNumber
+    ? insights.pullRequests.find(pullRequest => pullRequest.number === selectedPullRequestNumber) || null
+    : null;
+
+  const handleSelectPullRequest = (pullRequest) => {
+    setSelectedPullRequestNumber(pullRequest.number);
+    setActiveTab('prs');
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
@@ -355,7 +386,12 @@ export default function GitHubViewer({ courseId, groupId }) {
                 <div className="mt-4 space-y-3">
                   {insights.openPullRequests.length ? (
                     insights.openPullRequests.slice(0, 3).map(pullRequest => (
-                      <PullRequestCard key={pullRequest.number} pullRequest={pullRequest} />
+                      <PullRequestCard
+                        key={pullRequest.number}
+                        pullRequest={pullRequest}
+                        selected={selectedPullRequestNumber === pullRequest.number}
+                        onSelectPullRequest={handleSelectPullRequest}
+                      />
                     ))
                   ) : (
                     <EmptyState title="No open pull requests" body="Open pull requests will show up here for quick review." />
@@ -387,21 +423,43 @@ export default function GitHubViewer({ courseId, groupId }) {
             <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
               <BranchTreeView
                 branches={insights.branches}
+                branchTree={insights.branchTree}
                 selectedBranchName={selectedBranchName}
                 onSelectBranch={branch => setSelectedBranchName(branch.name)}
               />
             </div>
-            <BranchDetailsDrawer branch={selectedBranch} />
+            <BranchDetailsDrawer
+              branch={selectedBranch}
+              selectedPullRequestNumber={selectedPullRequestNumber}
+              onSelectPullRequest={handleSelectPullRequest}
+            />
           </div>
         )}
 
         {activeTab === 'prs' && (
-          <div className="space-y-3">
-            {insights.pullRequests.length ? insights.pullRequests.map(pullRequest => (
-              <PullRequestCard key={pullRequest.number} pullRequest={pullRequest} />
-            )) : (
-              <EmptyState title="No pull requests found" body="This repository snapshot does not include pull requests yet." />
-            )}
+          <div className="grid gap-4 xl:grid-cols-[0.85fr,1.15fr]">
+            <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
+              <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
+                <GitPullRequest className="h-4 w-4 text-violet-300" />
+                Pull Request Queue
+              </div>
+              <p className="mt-2 text-xs text-text-secondary">
+                Select a pull request to inspect branch flow, related commits, and code-change volume.
+              </p>
+              <div className="mt-4 space-y-3">
+                {insights.pullRequests.length ? insights.pullRequests.map(pullRequest => (
+                  <PullRequestCard
+                    key={pullRequest.number}
+                    pullRequest={pullRequest}
+                    selected={selectedPullRequestNumber === pullRequest.number}
+                    onSelectPullRequest={handleSelectPullRequest}
+                  />
+                )) : (
+                  <EmptyState title="No pull requests found" body="This repository snapshot does not include pull requests yet." />
+                )}
+              </div>
+            </div>
+            <PullRequestDetailsPanel pullRequest={selectedPullRequest} />
           </div>
         )}
 

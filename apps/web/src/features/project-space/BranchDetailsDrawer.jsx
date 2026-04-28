@@ -10,7 +10,7 @@ function StatPill({ label, value, tone = 'text-text-primary' }) {
   );
 }
 
-function LinkedPullRequestCard({ pullRequest }) {
+function LinkedPullRequestCard({ pullRequest, onSelectPullRequest, selected }) {
   const stateTone = pullRequest.state === 'merged'
     ? 'border-violet-400/20 bg-violet-500/10 text-violet-300'
     : pullRequest.state === 'open'
@@ -18,7 +18,15 @@ function LinkedPullRequestCard({ pullRequest }) {
       : 'border-red-400/20 bg-red-500/10 text-red-300';
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <button
+      type="button"
+      onClick={() => onSelectPullRequest?.(pullRequest)}
+      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+        selected
+          ? 'border-violet-400/30 bg-violet-500/10'
+          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -41,7 +49,7 @@ function LinkedPullRequestCard({ pullRequest }) {
         <span>{pullRequest.deletions ?? 0} deletions</span>
         {pullRequest.createdAt && <span>Opened {fmtTime(pullRequest.createdAt)}</span>}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -70,7 +78,7 @@ function BranchCommitCard({ commit }) {
   );
 }
 
-export default function BranchDetailsDrawer({ branch }) {
+export default function BranchDetailsDrawer({ branch, selectedPullRequestNumber, onSelectPullRequest }) {
   if (!branch) {
     return (
       <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
@@ -197,7 +205,12 @@ export default function BranchDetailsDrawer({ branch }) {
             </div>
             <div className="mt-4 space-y-3">
               {branch.relatedPullRequests?.length ? branch.relatedPullRequests.map(pullRequest => (
-                <LinkedPullRequestCard key={pullRequest.number} pullRequest={pullRequest} />
+                <LinkedPullRequestCard
+                  key={pullRequest.number}
+                  pullRequest={pullRequest}
+                  selected={selectedPullRequestNumber === pullRequest.number}
+                  onSelectPullRequest={onSelectPullRequest}
+                />
               )) : (
                 <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/25 px-4 py-6 text-center text-xs text-text-secondary">
                   No linked pull requests were found for this branch in the current snapshot.
