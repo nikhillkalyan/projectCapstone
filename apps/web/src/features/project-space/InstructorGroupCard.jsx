@@ -19,6 +19,7 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
   const [showRepoForm, setShowRepoForm] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [error, setError] = useState('');
+  const missingReports = Math.max((group.members?.length || 0) - (group.reports?.length || 0), 0);
 
   const handleLinkRepo = async () => {
     if (!repoForm.githubUrl.trim() || !repoForm.repoName.trim()) {
@@ -88,6 +89,9 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
             {group.unreadMessageCount > 0 && (
               <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-bold text-sky-200">{group.unreadMessageCount} unread</span>
             )}
+            {missingReports > 0 && (
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-200">{missingReports} reports missing</span>
+            )}
           </div>
         </div>
         <div className="rounded-full border border-white/10 bg-white/5 p-2">
@@ -117,6 +121,25 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-4">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">Proposal</div>
+                  <div className="mt-2 text-lg font-bold text-white">{group.proposal?.status || 'Not submitted'}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">Repository</div>
+                  <div className="mt-2 text-lg font-bold text-white">{group.repo ? 'Linked' : 'Pending'}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">Reports</div>
+                  <div className="mt-2 text-lg font-bold text-white">{group.reports?.length || 0}/{group.members?.length || 0}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">Chat Status</div>
+                  <div className="mt-2 text-lg font-bold text-white">{group.lastMessage ? 'Active' : 'Quiet'}</div>
                 </div>
               </div>
 
@@ -228,7 +251,7 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                       <Eye className="w-3.5 h-3.5" /> {showGithub ? 'Hide' : 'Activity'}
                     </button>
                   </div>
-                  {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} />}
+                  {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} variant="instructor" />}
                 </div>
               ) : (
                 <div>

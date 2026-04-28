@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  AlertCircle, AlertTriangle, CheckCircle2, Clock, ExternalLink, Eye, FileText, FolderGit2, Github, Loader2, Send, Upload, Users,
+  AlertCircle, AlertTriangle, CheckCircle2, Clock, ExternalLink, Eye, FileText, FolderGit2, Github, Loader2, Send, Sparkles, Upload, Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { uploadFileToCloudinary } from '../../lib/cloudinary';
 import { fetchStudentGroup, submitProposal, submitReport } from './api';
 import GitHubViewer from './GitHubViewer';
 import GroupChatPanel from './GroupChatPanel';
+import ProjectActivityTimeline from './ProjectActivityTimeline';
 import { fmt, fmtTime, GroupStatusBadge, STUDENT_DOC_TYPES } from './shared';
 
 function StudentMetricCard({ label, value, helper, accent }) {
@@ -84,6 +85,57 @@ function StudentDocumentUploader({
             <AlertCircle className="w-4 h-4 shrink-0" />
             {error}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NextStepCard({ group, myReport, onOpenRepo }) {
+  const steps = [];
+
+  if (!group.proposal) {
+    steps.push('Submit your team proposal to move the project into review.');
+  } else if (group.proposal.status === 'PENDING') {
+    steps.push('Wait for instructor review and prepare for feedback or approval.');
+  } else if (group.proposal.status === 'REJECTED') {
+    steps.push('Revise the proposal using instructor feedback and resubmit it.');
+  }
+
+  if (!group.repo && group.isProposalApproved) {
+    steps.push('Wait for the repository to be linked, then begin your branch-based implementation flow.');
+  }
+
+  if (group.repo && !myReport) {
+    steps.push('Track your team repository progress and submit your individual report when your contribution is complete.');
+  }
+
+  if (myReport) {
+    steps.push('Stay aligned with team progress, open pull requests, and any remaining delivery work.');
+  }
+
+  const primaryStep = steps[0] || 'Keep collaborating with your team and monitor the latest project activity.';
+
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(8,47,73,0.9),rgba(15,23,42,0.96))] p-5 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-200">
+            <Sparkles className="h-3.5 w-3.5" />
+            What To Do Next
+          </div>
+          <p className="mt-4 text-base font-bold text-white">{primaryStep}</p>
+          <p className="mt-2 text-sm text-slate-300">
+            This student view is intentionally lighter so your team can focus on immediate action instead of every engineering diagnostic at once.
+          </p>
+        </div>
+        {group.repo && (
+          <button
+            onClick={onOpenRepo}
+            className="shrink-0 rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-xs font-bold text-cyan-200 transition-all hover:bg-cyan-500/20"
+          >
+            Open Repo View
+          </button>
         )}
       </div>
     </div>
@@ -330,7 +382,18 @@ export default function StudentProjectView({ courseId, space }) {
         )}
       </div>
 
+      <NextStepCard group={group} myReport={myReport} onOpenRepo={() => setShowGithub(true)} />
+
       <GroupChatPanel courseId={courseId} group={group} onRead={loadGroup} />
+
+      <ProjectActivityTimeline
+        title="Team Activity Timeline"
+        subtitle="A chronological view of your project group's key decisions, submissions, and workspace movement."
+        events={group.recentActivity || []}
+        emptyTitle="No team activity yet"
+        emptyBody="Once your team starts submitting proposals, linking repos, and sharing progress, the timeline will build the story here."
+        compact
+      />
 
       {!group.isProposalApproved && (
         <div className="p-5 bg-bg-surface border border-border-subtle rounded-[28px] space-y-4 shadow-[0_20px_70px_rgba(2,6,23,0.18)]">
@@ -409,7 +472,7 @@ export default function StudentProjectView({ courseId, space }) {
           <a href={group.repo.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-primary-400 hover:text-primary-300 transition-colors">
             {group.repo.repoName} <ExternalLink className="w-3.5 h-3.5" />
           </a>
-          {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} />}
+          {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} variant="student" />}
         </div>
       )}
 

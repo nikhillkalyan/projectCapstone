@@ -15,6 +15,7 @@ import {
 import { fetchGitHubActivity } from './api';
 import BranchTreeView from './BranchTreeView';
 import BranchDetailsDrawer from './BranchDetailsDrawer';
+import CommitDetailsPanel from './CommitDetailsPanel';
 import PullRequestDetailsPanel from './PullRequestDetailsPanel';
 import { buildGitHubInsights } from './githubInsights';
 import { fmtTime } from './shared';
@@ -148,7 +149,7 @@ function CommitCard({ commit }) {
   );
 }
 
-export default function GitHubViewer({ courseId, groupId }) {
+export default function GitHubViewer({ courseId, groupId, variant = 'instructor' }) {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -156,6 +157,7 @@ export default function GitHubViewer({ courseId, groupId }) {
   const insights = useMemo(() => buildGitHubInsights(activity), [activity]);
   const [selectedBranchName, setSelectedBranchName] = useState('');
   const [selectedPullRequestNumber, setSelectedPullRequestNumber] = useState(null);
+  const [selectedCommitSha, setSelectedCommitSha] = useState('');
 
   const loadActivity = useCallback(async () => {
     setLoading(true);
@@ -200,6 +202,19 @@ export default function GitHubViewer({ courseId, groupId }) {
     setSelectedPullRequestNumber(insights.pullRequests[0].number);
   }, [insights, selectedPullRequestNumber]);
 
+  useEffect(() => {
+    if (!insights.commits.length) {
+      setSelectedCommitSha('');
+      return;
+    }
+
+    if (selectedCommitSha && insights.commits.some(commit => commit.sha === selectedCommitSha)) {
+      return;
+    }
+
+    setSelectedCommitSha(insights.commits[0].sha || '');
+  }, [insights, selectedCommitSha]);
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-6 text-sm text-text-muted">
@@ -222,11 +237,21 @@ export default function GitHubViewer({ courseId, groupId }) {
   const selectedPullRequest = selectedPullRequestNumber
     ? insights.pullRequests.find(pullRequest => pullRequest.number === selectedPullRequestNumber) || null
     : null;
+  const selectedCommit = selectedCommitSha
+    ? insights.commits.find(commit => commit.sha === selectedCommitSha) || null
+    : null;
 
   const handleSelectPullRequest = (pullRequest) => {
     setSelectedPullRequestNumber(pullRequest.number);
     setActiveTab('prs');
   };
+
+  const handleSelectCommit = (commit) => {
+    setSelectedCommitSha(commit.sha || '');
+    setActiveTab('commits');
+  };
+
+  const isStudentVariant = variant === 'student';
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
@@ -234,7 +259,10 @@ export default function GitHubViewer({ courseId, groupId }) {
     { id: 'prs', label: 'Pull Requests', icon: GitPullRequest, count: insights.pullRequests.length },
     { id: 'commits', label: 'Commits', icon: GitCommit, count: insights.commits.length },
     { id: 'contributors', label: 'Contributors', icon: Users, count: insights.contributors.length },
-  ];
+  ].filter(tab => {
+    if (!isStudentVariant) return true;
+    return ['overview', 'branches', 'prs'].includes(tab.id);
+  });
 
   return (
     <div className="space-y-4">
@@ -243,7 +271,7 @@ export default function GitHubViewer({ courseId, groupId }) {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200">
               <Github className="h-3.5 w-3.5" />
-              Engineering Dashboard
+              {isStudentVariant ? 'Team Repository View' : 'Engineering Dashboard'}
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
@@ -266,6 +294,7 @@ export default function GitHubViewer({ courseId, groupId }) {
                 {activity.source === 'LIVE' ? 'Live sync' : 'Cached snapshot'}
               </span>
               {activity.syncedAt && <span>Synced {fmtTime(activity.syncedAt)}</span>}
+              {isStudentVariant && <span>Focused on branch and PR awareness for your team</span>}
             </div>
           </div>
 
@@ -360,7 +389,7 @@ export default function GitHubViewer({ courseId, groupId }) {
               <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
                 <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
                   <Users className="h-4 w-4 text-violet-300" />
-                  Top Contributors
+                  {isStudentVariant ? 'Active Contributors' : 'Top Contributors'}
                 </div>
                 <div className="mt-4 space-y-3">
                   {insights.contributors.length ? (
@@ -377,7 +406,7 @@ export default function GitHubViewer({ courseId, groupId }) {
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className={`grid gap-4 ${isStudentVariant ? 'xl:grid-cols-1' : 'xl:grid-cols-2'}`}>
               <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
                 <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
                   <GitPullRequest className="h-4 w-4 text-emerald-300" />
@@ -399,21 +428,23 @@ export default function GitHubViewer({ courseId, groupId }) {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
-                <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
-                  <GitCommit className="h-4 w-4 text-amber-300" />
-                  Recent Commits
+              {!isStudentVariant && (
+                <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
+                  <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
+                    <GitCommit className="h-4 w-4 text-amber-300" />
+                    Recent Commits
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    {insights.commits.length ? (
+                      insights.commits.slice(0, 4).map(commit => (
+                        <CommitCard key={commit.sha || `${commit.message}-${commit.date}`} commit={commit} />
+                      ))
+                    ) : (
+                      <EmptyState title="No commits in snapshot" body="Commit activity will appear here after the next repository sync." />
+                    )}
+                  </div>
                 </div>
-                <div className="mt-4 space-y-3">
-                  {insights.commits.length ? (
-                    insights.commits.slice(0, 4).map(commit => (
-                      <CommitCard key={commit.sha || `${commit.message}-${commit.date}`} commit={commit} />
-                    ))
-                  ) : (
-                    <EmptyState title="No commits in snapshot" body="Commit activity will appear here after the next repository sync." />
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </>
         )}
@@ -432,6 +463,8 @@ export default function GitHubViewer({ courseId, groupId }) {
               branch={selectedBranch}
               selectedPullRequestNumber={selectedPullRequestNumber}
               onSelectPullRequest={handleSelectPullRequest}
+              selectedCommitSha={selectedCommitSha}
+              onSelectCommit={handleSelectCommit}
             />
           </div>
         )}
@@ -463,17 +496,44 @@ export default function GitHubViewer({ courseId, groupId }) {
           </div>
         )}
 
-        {activeTab === 'commits' && (
-          <div className="space-y-3">
-            {insights.commits.length ? insights.commits.map(commit => (
-              <CommitCard key={commit.sha || `${commit.message}-${commit.date}`} commit={commit} />
-            )) : (
-              <EmptyState title="No commits found" body="Commit activity will show here once the repository sync succeeds." />
-            )}
+        {!isStudentVariant && activeTab === 'commits' && (
+          <div className="grid gap-4 xl:grid-cols-[0.85fr,1.15fr]">
+            <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
+              <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
+                <GitCommit className="h-4 w-4 text-sky-300" />
+                Commit Timeline
+              </div>
+              <p className="mt-2 text-xs text-text-secondary">
+                Select a commit to inspect branch context, PR traceability, and recent engineering movement.
+              </p>
+              <div className="mt-4 space-y-3">
+                {insights.commits.length ? insights.commits.map(commit => (
+                  <button
+                    key={commit.sha || `${commit.message}-${commit.date}`}
+                    type="button"
+                    onClick={() => handleSelectCommit(commit)}
+                    className={`w-full text-left rounded-2xl border transition-all ${
+                      selectedCommitSha && commit.sha === selectedCommitSha
+                        ? 'border-sky-400/30 bg-sky-500/10'
+                        : 'border-transparent hover:border-white/15'
+                    }`}
+                  >
+                    <CommitCard commit={commit} />
+                  </button>
+                )) : (
+                  <EmptyState title="No commits found" body="Commit activity will show here once the repository sync succeeds." />
+                )}
+              </div>
+            </div>
+            <CommitDetailsPanel
+              commit={selectedCommit}
+              selectedPullRequestNumber={selectedPullRequestNumber}
+              onSelectPullRequest={handleSelectPullRequest}
+            />
           </div>
         )}
 
-        {activeTab === 'contributors' && (
+        {!isStudentVariant && activeTab === 'contributors' && (
           <div className="grid gap-3 lg:grid-cols-2">
             {insights.contributors.length ? insights.contributors.map(contributor => (
               <ContributorCard key={contributor.author} contributor={contributor} />

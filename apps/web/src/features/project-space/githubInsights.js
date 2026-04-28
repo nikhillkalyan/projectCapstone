@@ -114,13 +114,6 @@ export function buildGitHubInsights(activity) {
     return map;
   }, new Map());
 
-  commits.forEach(commit => {
-    if (!commit?.branch) return;
-    const branch = branchMap.get(commit.branch);
-    if (!branch) return;
-    branch.relatedCommits.push(commit);
-  });
-
   const enrichedPullRequests = pullRequests
     .map(pullRequest => ({
       ...pullRequest,
@@ -132,8 +125,39 @@ export function buildGitHubInsights(activity) {
       return bDate - aDate;
     });
 
+  const pullRequestsBySourceBranch = enrichedPullRequests.reduce((map, pullRequest) => {
+    if (!pullRequest?.sourceBranch) return map;
+    if (!map.has(pullRequest.sourceBranch)) {
+      map.set(pullRequest.sourceBranch, []);
+    }
+    map.get(pullRequest.sourceBranch).push(pullRequest);
+    return map;
+  }, new Map());
+
+  const enrichedCommits = commits
+    .map(commit => ({
+      ...commit,
+      relatedPullRequests: pullRequestsBySourceBranch.get(commit.branch) || [],
+    }))
+    .sort((a, b) => {
+      const aDate = safeDate(a.date)?.getTime() || 0;
+      const bDate = safeDate(b.date)?.getTime() || 0;
+      return bDate - aDate;
+    });
+
+  normalizedBranches.forEach(branch => {
+    branch.relatedCommits = [];
+  });
+
+  enrichedCommits.forEach(commit => {
+    if (!commit?.branch) return;
+    const branch = branchMap.get(commit.branch);
+    if (!branch) return;
+    branch.relatedCommits.push(commit);
+  });
+
   const contributorMap = new Map();
-  commits.forEach(commit => {
+  enrichedCommits.forEach(commit => {
     const author = normalizedAuthor(commit.author);
     const current = contributorMap.get(author) || {
       author,
@@ -195,6 +219,12 @@ export function buildGitHubInsights(activity) {
     return now - branch.updatedAt.getTime() <= 7 * DAY_MS;
   });
 
+  normalizedBranches.forEach(branch => {
+    const branchContributors = new Set(branch.relatedCommits.map(commit => normalizedAuthor(commit.author)));
+    branch.activeContributorCount = branchContributors.size;
+    branch.linkedOpenPullRequestCount = branch.relatedPullRequests.filter(pullRequest => pullRequest.state === 'open').length;
+  });
+
   const totalChangedFiles = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.changedFiles || 0), 0);
   const totalAdditions = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.additions || 0), 0);
   const totalDeletions = enrichedPullRequests.reduce((sum, pullRequest) => sum + (pullRequest.deletions || 0), 0);
@@ -205,7 +235,7 @@ export function buildGitHubInsights(activity) {
     branchTree,
     branchMap,
     pullRequests: enrichedPullRequests,
-    commits,
+    commits: enrichedCommits,
     contributors,
     openPullRequests,
     mergedPullRequests,

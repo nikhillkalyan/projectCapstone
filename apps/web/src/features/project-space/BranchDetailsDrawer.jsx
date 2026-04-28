@@ -78,7 +78,13 @@ function BranchCommitCard({ commit }) {
   );
 }
 
-export default function BranchDetailsDrawer({ branch, selectedPullRequestNumber, onSelectPullRequest }) {
+export default function BranchDetailsDrawer({
+  branch,
+  selectedPullRequestNumber,
+  onSelectPullRequest,
+  selectedCommitSha,
+  onSelectCommit,
+}) {
   if (!branch) {
     return (
       <div className="rounded-[24px] border border-white/10 bg-bg-surface p-5">
@@ -150,6 +156,10 @@ export default function BranchDetailsDrawer({ branch, selectedPullRequestNumber,
               <StatPill label="Base Branch" value={branch.sourceBranch || 'None'} />
               <StatPill label="Target Branch" value={branch.latestPullRequest?.targetBranch || (branch.isDefault ? branch.name : branch.sourceBranch || 'Unknown')} />
             </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <StatPill label="Contributors" value={branch.activeContributorCount || 0} />
+              <StatPill label="Open PRs" value={branch.linkedOpenPullRequestCount || 0} tone={branch.linkedOpenPullRequestCount ? 'text-emerald-300' : 'text-text-primary'} />
+            </div>
             <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/35 p-3">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">Latest Commit Message</div>
               <div className="mt-2 text-sm font-semibold text-text-primary">
@@ -165,7 +175,18 @@ export default function BranchDetailsDrawer({ branch, selectedPullRequestNumber,
             </div>
             <div className="mt-4 space-y-3">
               {branch.relatedCommits?.length ? branch.relatedCommits.map(commit => (
-                <BranchCommitCard key={commit.sha || `${commit.message}-${commit.date}`} commit={commit} />
+                <button
+                  key={commit.sha || `${commit.message}-${commit.date}`}
+                  type="button"
+                  onClick={() => onSelectCommit?.(commit)}
+                  className={`w-full text-left rounded-2xl border transition-all ${
+                    selectedCommitSha && commit.sha === selectedCommitSha
+                      ? 'border-sky-400/30 bg-sky-500/10'
+                      : 'border-transparent hover:border-white/15'
+                  }`}
+                >
+                  <BranchCommitCard commit={commit} />
+                </button>
               )) : (
                 <div className="rounded-xl border border-dashed border-white/10 bg-slate-950/25 px-4 py-6 text-center text-xs text-text-secondary">
                   No branch-specific commits were found in the current snapshot.

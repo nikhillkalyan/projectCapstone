@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import CreateSpaceForm from '../../features/project-space/CreateSpaceForm';
 import GroupFormation from '../../features/project-space/GroupFormation';
 import InstructorGroupCard from '../../features/project-space/InstructorGroupCard';
+import ProjectActivityTimeline from '../../features/project-space/ProjectActivityTimeline';
 import StudentProjectView from '../../features/project-space/StudentProjectView';
 import { fetchProjectSpace, resetProjectGroups } from '../../features/project-space/api';
 import { fmt } from '../../features/project-space/shared';
@@ -177,6 +178,14 @@ export default function ProjectSpacePanel({ courseId }) {
       {!space.isGroupsFormed && (
         <GroupFormation courseId={courseId} space={space} onRefresh={fetchSpace} />
       )}
+
+      <ProjectActivityTimeline
+        title="Course Project Timeline"
+        subtitle="A unified chronological feed of project-space events across the course, useful for spotting motion, review bottlenecks, and missing progress."
+        events={space.recentActivity || []}
+        emptyTitle="No course activity yet"
+        emptyBody="The timeline will populate as groups are formed, proposals are reviewed, repositories are linked, and project milestones move forward."
+      />
 
       {space.isGroupsFormed && space.groups?.length > 0 && (
         <div className="space-y-3">
