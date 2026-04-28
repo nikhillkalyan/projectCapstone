@@ -3,6 +3,7 @@ package backend.backend.Dto.Response;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -22,6 +23,9 @@ public class StudentMarksResponse {
     private Double totalPenalty;
     private Double finalScore;
     private String grade;
+    private String marksSheetStatus;
+    private LocalDateTime approvedAt;
+    private Boolean lockedFinal;
 
     private Integer completedChapters;
     private Integer totalChapters;

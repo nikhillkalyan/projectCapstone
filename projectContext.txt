@@ -10,403 +10,528 @@ EduForge is structured as a monorepo containing 4 main components:
 3. uni-admin: The dedicated portal for university-level administrators.
 4. backend: The Spring Boot Java backend powering all portals.
 
-Here is the essential directory structure of the application (excluding node_modules, build directories, and configuration boilerplate):
+Here is the current project directory structure (excluding node_modules, dist/target outputs, and temporary debug artifacts):
 
 ------------------------------
 1. admin (Tier 1 Admin panel)
 ------------------------------
-src
-├── assets
-│   ├── hero.png
-│   ├── logo.svg
-│   ├── react.svg
-│   └── vite.svg
-├── components
-│   ├── layout
-│   │   ├── AdminLayout.jsx
-│   │   ├── ProtectedRoute.jsx
-│   │   ├── Sidebar.jsx
-│   │   └── Topbar.jsx
-│   ├── shared
-│   │   ├── AuditLog.jsx
-│   │   ├── MessageThread.jsx
-│   │   ├── StatCard.jsx
-│   │   └── StatusBadge.jsx
-│   └── ui
-│       ├── Badge.jsx
-│       ├── Button.jsx
-│       ├── Card.jsx
-│       ├── Modal.jsx
-│       ├── Spinner.jsx
-│       ├── Table.jsx
-│       └── Toast.jsx
-├── context
-│   ├── AuthContext.jsx
-│   └── ToastContext.jsx
-├── hooks
-│   ├── useAuth.js
-│   ├── useInstructors.js
-│   └── useToast.js
-├── pages
-│   ├── auth
-│   │   └── AdminLogin.jsx
-│   ├── dashboard
-│   │   └── Dashboard.jsx
-│   ├── instructors
-│   │   ├── InstructorList.jsx
-│   │   └── InstructorReview.jsx
-│   └── universities
-│       └── Universities.jsx
-├── services
-│   ├── api.js
-│   ├── authService.js
-│   └── instructorService.js
-└── utils
-    ├── constants.js
-    └── formatDate.js
-App.css
-App.jsx
-main.jsx
-index.css
+apps/admin
+|-- public
+|   |-- favicon.svg
+|   \-- icons.svg
+|-- src
+|   |-- assets
+|   |   |-- hero.png
+|   |   |-- logo.svg
+|   |   |-- react.svg
+|   |   \-- vite.svg
+|   |-- components
+|   |   |-- layout
+|   |   |   |-- AdminLayout.jsx
+|   |   |   |-- ProtectedRoute.jsx
+|   |   |   |-- Sidebar.jsx
+|   |   |   \-- Topbar.jsx
+|   |   |-- shared
+|   |   |   |-- AuditLog.jsx
+|   |   |   |-- MessageThread.jsx
+|   |   |   |-- StatCard.jsx
+|   |   |   \-- StatusBadge.jsx
+|   |   \-- ui
+|   |       |-- Badge.jsx
+|   |       |-- Button.jsx
+|   |       |-- Card.jsx
+|   |       |-- Modal.jsx
+|   |       |-- Spinner.jsx
+|   |       |-- Table.jsx
+|   |       \-- Toast.jsx
+|   |-- context
+|   |   |-- AuthContext.jsx
+|   |   \-- ToastContext.jsx
+|   |-- hooks
+|   |   |-- useAuth.js
+|   |   |-- useInstructors.js
+|   |   \-- useToast.js
+|   |-- pages
+|   |   |-- auth
+|   |   |   \-- AdminLogin.jsx
+|   |   |-- dashboard
+|   |   |   \-- Dashboard.jsx
+|   |   |-- instructors
+|   |   |   |-- InstructorList.jsx
+|   |   |   \-- InstructorReview.jsx
+|   |   \-- universities
+|   |       \-- Universities.jsx
+|   |-- services
+|   |   |-- api.js
+|   |   |-- authService.js
+|   |   \-- instructorService.js
+|   |-- utils
+|   |   |-- constants.js
+|   |   \-- formatDate.js
+|   |-- App.css
+|   |-- App.jsx
+|   |-- index.css
+|   \-- main.jsx
+|-- .gitignore
+|-- eslint.config.js
+|-- index.html
+|-- package.json
+|-- postcss.config.js
+|-- README.md
+|-- tailwind.config.js
+\-- vite.config.js
 
 ------------------------------
 2. backend (Spring Boot)
 ------------------------------
-src/main/java/backend/backend
-├── Advices
-│   └── GlobalExceptionHandler.java
-├── Configs
-│   ├── DatabaseMigrationRunner.java
-│   ├── DataInitializer.java
-│   ├── LiveTestScheduler.java                    [NEW - auto-launches scheduled live tests and auto-closes expired ones every 30s]
-│   ├── SecurityConfig.java
-│   └── WebSocketConfig.java
-├── Controller
-│   ├── AdminController.java
-│   ├── AuthController.java
-│   ├── ChapterController.java                    [UPDATED - added DELETE /{chapterId} endpoint]
-│   ├── CourseController.java
-│   ├── LiveTestController.java                   [NEW - create/list/launch/close/delete live tests + student active/submit endpoints]
-│   ├── MarksController.java                      [NEW - added GET /marks/student/course/{courseId} and GET /marks/instructor/course/{courseId}/students]
-│   ├── MessageController.java
-│   ├── ProgressController.java
-│   ├── StudentController.java
-│   ├── UniversityContextController.java
-│   ├── UniversityController.java
-│   ├── UniversityCourseController.java           [UPDATED - added GET /student/my-enrollments endpoint]
-│   ├── UniversityUsersController.java
-│   └── UserController.java
-├── Dto
-│   ├── Request
-│   │   ├── CreateAssessmentRequest.java
-│   │   ├── CreateBranchRequest.java
-│   │   ├── CreateChapterRequest.java              [UPDATED - added deadline, penaltyPerDay fields]
-│   │   ├── CreateCourseRequest.java
-│   │   ├── CreateLiveTestRequest.java             [NEW - title, duration, passing score, optional schedule, question builder payload]
-│   │   ├── CreateReviewRequest.java
-│   │   ├── CreateSectionRequest.java
-│   │   ├── CreateUniversityRequest.java
-│   │   ├── CreateUniversityCourseRequest.java
-│   │   ├── CreateUniversityCourseAllocationRequest.java
-│   │   ├── FlagRequest.java
-│   │   ├── InstructorSignupRequest.java
-│   │   ├── JoinUniversityRequest.java
-│   │   ├── LoginRequest.java
-│   │   ├── RejectRequest.java
-│   │   ├── SendMessageRequest.java
-│   │   ├── StudentSignupRequest.java
-│   │   ├── SubmitAssessmentRequest.java
-│   │   ├── SubmitLiveTestRequest.java             [NEW - ordered answers array for student live test submission]
-│   │   ├── UpdateChapterRequest.java              [UPDATED - added deadline, penaltyPerDay, isPublished]
-│   │   ├── UpdateCourseRequest.java
-│   │   ├── UpdateProfileRequest.java
-│   │   └── UpdateUniversityCourseSettingsRequest.java
-│   └── Response
-│       ├── AdminStatsResponse.java
-│       ├── AssessmentResponse.java
-│       ├── AssessmentResultResponse.java
-│       ├── AuthResponse.java
-│       ├── BranchResponse.java
-│       ├── ChapterResponse.java                   [UPDATED - added deadline, penaltyPerDay, isPublished, createdAt]
-│       ├── ContactResponse.java
-│       ├── CourseAllocationResponse.java
-│       ├── CourseProgressResponse.java
-│       ├── CourseResponse.java
-│       ├── EnrollmentResponse.java
-│       ├── InstructorAdminResponse.java
-│       ├── InstructorSummaryResponse.java
-│       ├── LiveTestNotificationPayload.java       [NEW - websocket payload for LIVE_TEST_STARTED / LIVE_TEST_CLOSED]
-│       ├── LiveTestResponse.java                  [NEW - instructor/student live test payload with questions, aggregate stats, and per-student submission rows]
-│       ├── NotificationResponse.java              [NEW - bell dropdown notification payload with type, read status, course link]
-│       ├── LiveTestResultResponse.java            [NEW - student submission result with score, pass/fail, correct answers]
-│       ├── MarksBreakdownResponse.java            [NEW - student-facing marks breakdown with raw scores, weighted totals, penalties, final score, grade]
-│       ├── MessageResponse.java
-│       ├── OptionResponse.java
-│       ├── ProgressResponse.java
-│       ├── QuestionResponse.java
-│       ├── ReviewResponse.java
-│       ├── SectionResponse.java
-│       ├── StudentMarksResponse.java              [NEW - instructor-facing row per student for course marks/progress table]
-│       ├── StudentProgressSummaryResponse.java
-│       ├── StudentSummaryResponse.java
-│       ├── StudentUniCourseResponse.java          [NEW - enrolled course with progress snapshot for student university space]
-│       ├── UniAdminDashboardResponse.java
-│       ├── UniversityCourseResponse.java
-│       ├── UniversityLookupResponse.java
-│       ├── UniversityResponse.java
-│       ├── UserProfileResponse.java
-│       └── UserResponse.java
-├── Entity
-│   ├── Assessment.java
-│   ├── Branch.java
-│   ├── Chapter.java                               [UPDATED - added deadline, penaltyPerDay, isPublished, createdAt]
-│   ├── Course.java                                [UPDATED - added weightTests, weightAttendance, weightLiveTests, weightProject, rejectionReason, defaultPenaltyPerDay, penaltyDescription]
-│   ├── CourseAllocation.java
-│   ├── Enrollment.java
-│   ├── Instructor.java
-│   ├── LiveTest.java                               [UPDATED - scheduledAt, start/end time, isClosed, createdAt for timed live quizzes]
-│   ├── LiveTestSubmission.java                     [NEW - student answers JSON + score/passed per live test]
-│   ├── MarksSheet.java
-│   ├── Message.java
-│   ├── Notification.java                         [NEW - persisted per-user notifications for live tests and course updates]
-│   ├── Option.java
-│   ├── Progress.java
-│   ├── ProjectGroup.java
-│   ├── ProjectRepo.java
-│   ├── Question.java
-│   ├── Review.java
-│   ├── Section.java
-│   ├── Student.java
-│   ├── University.java
-│   └── User.java
-├── Enums
-│   ├── ApprovalStatus.java
-│   ├── ChapterType.java
-│   ├── CourseLevel.java
-│   ├── MessageStatus.java
-│   └── Role.java
-├── Exceptions
-│   ├── BadRequestException.java
-│   ├── ResourceNotFoundException.java
-│   └── UnauthorizedException.java
-├── Repository
-│   ├── AssessmentRepository.java
-│   ├── BranchRepository.java
-│   ├── ChapterRepository.java
-│   ├── CourseAllocationRepository.java
-│   ├── CourseRepository.java                      [UPDATED - added findByInstructorIdAndIsUniversityCourseTrue, findByUniversityIdAndIsUniversityCourseTrue]
-│   ├── EnrollmentRepository.java
-│   ├── InstructorRepository.java
-│   ├── LiveTestRepository.java                     [UPDATED - active/live course lookup helpers]
-│   ├── LiveTestSubmissionRepository.java           [NEW - submission lookup, average score, exists checks]
-│   ├── MarksSheetRepository.java                  [UPDATED - added findByStudentIdAndCourseId, findByCourseIdAndIsApprovedByUniAdminFalse]
-│   ├── MessageRepository.java
-│   ├── NotificationRepository.java                [NEW - user notifications feed + unread count + mark-all-read update]
-│   ├── ProgressRepository.java
-│   ├── ProjectGroupRepository.java
-│   ├── ProjectRepoRepository.java
-│   ├── ReviewRepository.java
-│   ├── SectionRepository.java
-│   ├── StudentRepository.java                     [UPDATED - added findBySectionId]
-│   ├── UniversityRepository.java
-│   └── UserRepository.java
-├── Security
-│   ├── CustomUserDetailsService.java
-│   ├── JwtAuthFilter.java
-│   └── JwtUtil.java
-├── Service
-│   ├── Impl
-│   │   ├── AdminServiceImpl.java
-│   │   ├── AuthServiceImpl.java
-│   │   ├── ChapterServiceImpl.java                [UPDATED - deleteChapter, deadline/penalty in add+update]
-│   │   ├── CourseServiceImpl.java
-│   │   ├── LiveTestServiceImpl.java               [UPDATED - create/launch/close/delete live tests, evaluate submissions, sync live score into marks sheet, and now returns ranked instructor submission rows for live/closed tests]
-│   │   ├── MarksServiceImpl.java                  [NEW - calculates attendance/tests/live/project weighted marks, penalties, final score, grade]
-│   │   ├── MessageServiceImpl.java
-│   │   ├── NotificationServiceImpl.java           [NEW - persists notifications, pushes realtime bell updates, mark-read actions]
-│   │   ├── ProgressServiceImpl.java
-│   │   ├── StudentServiceImpl.java
-│   │   ├── UniversityContextServiceImpl.java
-│   │   ├── UniversityCourseServiceImpl.java       [UPDATED - allocateCourse now auto-enrolls all students in section; added getStudentEnrolledCourses returning progress snapshot]
-│   │   ├── UniversityServiceImpl.java
-│   │   └── UserServiceImpl.java
-│   ├── AdminService.java
-│   ├── AuthService.java
-│   ├── ChapterService.java                        [UPDATED - added deleteChapter to interface]
-│   ├── CourseService.java
-│   ├── LiveTestNotificationService.java           [NEW - abstraction for websocket pushes to enrolled students]
-│   ├── LiveTestService.java                       [NEW - instructor/student live test operations]
-│   ├── MarksService.java                          [NEW - student marks + instructor course marks interface]
-│   ├── MessageService.java
-│   ├── NotificationService.java                   [NEW - notification feed + live test/course update events]
-│   ├── ProgressService.java
-│   ├── StudentService.java
-│   ├── UniversityContextService.java
-│   ├── UniversityCourseService.java               [UPDATED - added getStudentEnrolledCourses to interface]
-│   ├── UniversityService.java
-│   └── UserService.java
-└── Utils
-    └── SecurityUtils.java
-BackendApplication.java
-src/main/resources
-└── application.properties
+apps/backend
+|-- src
+|   |-- main
+|   |   |-- java
+|   |   |   \-- backend
+|   |   |       \-- backend
+|   |   |           |-- Advices
+|   |   |           |   \-- GlobalExceptionHandler.java
+|   |   |           |-- Configs
+|   |   |           |   |-- DatabaseMigrationRunner.java
+|   |   |           |   |-- DataInitializer.java
+|   |   |           |   |-- LiveTestScheduler.java
+|   |   |           |   |-- RestTemplateConfig.java
+|   |   |           |   |-- SecurityConfig.java
+|   |   |           |   \-- WebSocketConfig.java
+|   |   |           |-- Controller
+|   |   |           |   |-- AdminController.java
+|   |   |           |   |-- AuthController.java
+|   |   |           |   |-- ChapterController.java
+|   |   |           |   |-- CourseController.java
+|   |   |           |   |-- LiveTestController.java
+|   |   |           |   |-- MarksController.java
+|   |   |           |   |-- MessageController.java
+|   |   |           |   |-- NotificationController.java
+|   |   |           |   |-- ProgressController.java
+|   |   |           |   |-- ProjectSpaceController.java
+|   |   |           |   |-- StudentController.java
+|   |   |           |   |-- UniversityContextController.java
+|   |   |           |   |-- UniversityController.java
+|   |   |           |   |-- UniversityCourseController.java
+|   |   |           |   |-- UniversityUsersController.java
+|   |   |           |   \-- UserController.java
+|   |   |           |-- Dto
+|   |   |           |   |-- Request
+|   |   |           |   |   |-- AssignProjectRequest.java
+|   |   |           |   |   |-- CreateAssessmentRequest.java
+|   |   |           |   |   |-- CreateBranchRequest.java
+|   |   |           |   |   |-- CreateChapterRequest.java
+|   |   |           |   |   |-- CreateCourseRequest.java
+|   |   |           |   |   |-- CreateLiveTestRequest.java
+|   |   |           |   |   |-- CreateProjectSpaceRequest.java
+|   |   |           |   |   |-- CreateReviewRequest.java
+|   |   |           |   |   |-- CreateSectionRequest.java
+|   |   |           |   |   |-- CreateUniversityCourseAllocationRequest.java
+|   |   |           |   |   |-- CreateUniversityCourseRequest.java
+|   |   |           |   |   |-- CreateUniversityRequest.java
+|   |   |           |   |   |-- FlagRequest.java
+|   |   |           |   |   |-- FinalMarksSheetRowUpdateRequest.java
+|   |   |           |   |   |-- InstructorSignupRequest.java
+|   |   |           |   |   |-- JoinUniversityRequest.java
+|   |   |           |   |   |-- LinkRepoRequest.java
+|   |   |           |   |   |-- LoginRequest.java
+|   |   |           |   |   |-- ManualGroupRequest.java
+|   |   |           |   |   |-- RandomGroupRequest.java
+|   |   |           |   |   |-- RejectRequest.java
+|   |   |           |   |   |-- ReviewProposalRequest.java
+|   |   |           |   |   |-- ReturnMarksSheetRequest.java
+|   |   |           |   |   |-- SendMessageRequest.java
+|   |   |           |   |   |-- SendProjectGroupMessageRequest.java
+|   |   |           |   |   |-- StudentSignupRequest.java
+|   |   |           |   |   |-- SubmitAssessmentRequest.java
+|   |   |           |   |   |-- SubmitLiveTestRequest.java
+|   |   |           |   |   |-- SubmitProposalRequest.java
+|   |   |           |   |   |-- SubmitReportRequest.java
+|   |   |           |   |   |-- UpdateChapterRequest.java
+|   |   |           |   |   |-- UpdateCourseRequest.java
+|   |   |           |   |   |-- UpdateProfileRequest.java
+|   |   |           |   |   |-- UpsertFinalMarksSheetRequest.java
+|   |   |           |   |   \-- UpdateUniversityCourseSettingsRequest.java
+|   |   |           |   \-- Response
+|   |   |           |       |-- AdminStatsResponse.java
+|   |   |           |       |-- AssessmentResponse.java
+|   |   |           |       |-- AssessmentResultResponse.java
+|   |   |           |       |-- AuthResponse.java
+|   |   |           |       |-- BranchResponse.java
+|   |   |           |       |-- CertificateRecordResponse.java
+|   |   |           |       |-- ChapterResponse.java
+|   |   |           |       |-- ContactResponse.java
+|   |   |           |       |-- CourseAllocationResponse.java
+|   |   |           |       |-- CourseProgressResponse.java
+|   |   |           |       |-- CourseResponse.java
+|   |   |           |       |-- EnrollmentResponse.java
+|   |   |           |       |-- FinalMarksSheetResponse.java
+|   |   |           |       |-- FinalMarksSheetRowResponse.java
+|   |   |           |       |-- FinalMarksSheetSummaryResponse.java
+|   |   |           |       |-- GitHubActivityResponse.java
+|   |   |           |       |-- IndividualReportResponse.java
+|   |   |           |       |-- InstructorAdminResponse.java
+|   |   |           |       |-- InstructorSummaryResponse.java
+|   |   |           |       |-- LiveTestNotificationPayload.java
+|   |   |           |       |-- LiveTestResponse.java
+|   |   |           |       |-- LiveTestResultResponse.java
+|   |   |           |       |-- MarksBreakdownResponse.java
+|   |   |           |       |-- MarksSheetListItemResponse.java
+|   |   |           |       |-- MessageResponse.java
+|   |   |           |       |-- NotificationResponse.java
+|   |   |           |       |-- OptionResponse.java
+|   |   |           |       |-- ProgressResponse.java
+|   |   |           |       |-- ProjectActivityEventResponse.java
+|   |   |           |       |-- ProjectGroupMessageResponse.java
+|   |   |           |       |-- ProjectGroupResponse.java
+|   |   |           |       |-- ProjectProposalResponse.java
+|   |   |           |       |-- ProjectRepoResponse.java
+|   |   |           |       |-- ProjectSpaceResponse.java
+|   |   |           |       |-- QuestionResponse.java
+|   |   |           |       |-- ReviewResponse.java
+|   |   |           |       |-- SectionResponse.java
+|   |   |           |       |-- StudentApprovedFinalMarksResponse.java
+|   |   |           |       |-- StudentMarksResponse.java
+|   |   |           |       |-- StudentProgressSummaryResponse.java
+|   |   |           |       |-- StudentSummaryResponse.java
+|   |   |           |       |-- StudentUniCourseResponse.java
+|   |   |           |       |-- UniAdminDashboardResponse.java
+|   |   |           |       |-- UniversityCourseResponse.java
+|   |   |           |       |-- UniversityLookupResponse.java
+|   |   |           |       |-- UniversityResponse.java
+|   |   |           |       |-- UserProfileResponse.java
+|   |   |           |       \-- UserResponse.java
+|   |   |           |-- Entity
+|   |   |           |   |-- Assessment.java
+|   |   |           |   |-- Branch.java
+|   |   |           |   |-- Chapter.java
+|   |   |           |   |-- Course.java
+|   |   |           |   |-- CourseAllocation.java
+|   |   |           |   |-- Enrollment.java
+|   |   |           |   |-- GitHubBranchSnapshot.java
+|   |   |           |   |-- GitHubCommitSnapshot.java
+|   |   |           |   |-- GitHubPullRequestSnapshot.java
+|   |   |           |   |-- IndividualReport.java
+|   |   |           |   |-- Instructor.java
+|   |   |           |   |-- LiveTest.java
+|   |   |           |   |-- LiveTestSubmission.java
+|   |   |           |   |-- MarksSheet.java
+|   |   |           |   |-- Message.java
+|   |   |           |   |-- Notification.java
+|   |   |           |   |-- Option.java
+|   |   |           |   |-- Progress.java
+|   |   |           |   |-- ProjectActivityEvent.java
+|   |   |           |   |-- ProjectGroup.java
+|   |   |           |   |-- ProjectGroupChatRead.java
+|   |   |           |   |-- ProjectGroupMessage.java
+|   |   |           |   |-- ProjectProposal.java
+|   |   |           |   |-- ProjectRepo.java
+|   |   |           |   |-- ProjectSpace.java
+|   |   |           |   |-- Question.java
+|   |   |           |   |-- Review.java
+|   |   |           |   |-- Section.java
+|   |   |           |   |-- Student.java
+|   |   |           |   |-- University.java
+|   |   |           |   \-- User.java
+|   |   |           |-- Enums
+|   |   |           |   |-- ApprovalStatus.java
+|   |   |           |   |-- ChapterType.java
+|   |   |           |   |-- CourseLevel.java
+|   |   |           |   |-- GroupStatus.java
+|   |   |           |   |-- MarksSheetStatus.java
+|   |   |           |   |-- MessageStatus.java
+|   |   |           |   \-- Role.java
+|   |   |           |-- Exceptions
+|   |   |           |   |-- BadRequestException.java
+|   |   |           |   |-- ResourceNotFoundException.java
+|   |   |           |   \-- UnauthorizedException.java
+|   |   |           |-- Repository
+|   |   |           |   |-- AssessmentRepository.java
+|   |   |           |   |-- BranchRepository.java
+|   |   |           |   |-- ChapterRepository.java
+|   |   |           |   |-- CourseAllocationRepository.java
+|   |   |           |   |-- CourseRepository.java
+|   |   |           |   |-- EnrollmentRepository.java
+|   |   |           |   |-- GitHubBranchSnapshotRepository.java
+|   |   |           |   |-- GitHubCommitSnapshotRepository.java
+|   |   |           |   |-- GitHubPullRequestSnapshotRepository.java
+|   |   |           |   |-- IndividualReportRepository.java
+|   |   |           |   |-- InstructorRepository.java
+|   |   |           |   |-- LiveTestRepository.java
+|   |   |           |   |-- LiveTestSubmissionRepository.java
+|   |   |           |   |-- MarksSheetRepository.java
+|   |   |           |   |-- MessageRepository.java
+|   |   |           |   |-- NotificationRepository.java
+|   |   |           |   |-- ProgressRepository.java
+|   |   |           |   |-- ProjectActivityEventRepository.java
+|   |   |           |   |-- ProjectGroupChatReadRepository.java
+|   |   |           |   |-- ProjectGroupMessageRepository.java
+|   |   |           |   |-- ProjectGroupRepository.java
+|   |   |           |   |-- ProjectProposalRepository.java
+|   |   |           |   |-- ProjectRepoRepository.java
+|   |   |           |   |-- ProjectSpaceRepository.java
+|   |   |           |   |-- ReviewRepository.java
+|   |   |           |   |-- SectionRepository.java
+|   |   |           |   |-- StudentRepository.java
+|   |   |           |   |-- UniversityRepository.java
+|   |   |           |   \-- UserRepository.java
+|   |   |           |-- Security
+|   |   |           |   |-- CustomUserDetailsService.java
+|   |   |           |   |-- JwtAuthFilter.java
+|   |   |           |   \-- JwtUtil.java
+|   |   |           |-- Service
+|   |   |           |   |-- Impl
+|   |   |           |   |   |-- AdminServiceImpl.java
+|   |   |           |   |   |-- AuthServiceImpl.java
+|   |   |           |   |   |-- ChapterServiceImpl.java
+|   |   |           |   |   |-- CourseServiceImpl.java
+|   |   |           |   |   |-- LiveTestServiceImpl.java
+|   |   |           |   |   |-- MarksServiceImpl.java
+|   |   |           |   |   |-- MessageServiceImpl.java
+|   |   |           |   |   |-- NotificationServiceImpl.java
+|   |   |           |   |   |-- ProgressServiceImpl.java
+|   |   |           |   |   |-- ProjectSpaceServiceImpl.java
+|   |   |           |   |   |-- StudentServiceImpl.java
+|   |   |           |   |   |-- UniversityContextServiceImpl.java
+|   |   |           |   |   |-- UniversityCourseServiceImpl.java
+|   |   |           |   |   |-- UniversityServiceImpl.java
+|   |   |           |   |   \-- UserServiceImpl.java
+|   |   |           |   |-- AdminService.java
+|   |   |           |   |-- AuthService.java
+|   |   |           |   |-- ChapterService.java
+|   |   |           |   |-- CourseService.java
+|   |   |           |   |-- LiveTestNotificationService.java
+|   |   |           |   |-- LiveTestService.java
+|   |   |           |   |-- MarksService.java
+|   |   |           |   |-- MessageService.java
+|   |   |           |   |-- NotificationService.java
+|   |   |           |   |-- ProgressService.java
+|   |   |           |   |-- ProjectSpaceService.java
+|   |   |           |   |-- StudentService.java
+|   |   |           |   |-- UniversityContextService.java
+|   |   |           |   |-- UniversityCourseService.java
+|   |   |           |   |-- UniversityService.java
+|   |   |           |   \-- UserService.java
+|   |   |           \-- Utils
+|   |   |               \-- SecurityUtils.java
+|   |   \-- resources
+|   |       |-- application.properties
+|   |       \-- application.properties.example
+|   \-- test
+|       \-- java
+|           \-- backend
+|               \-- backend
+|                   \-- BackendApplicationTests.java
+|-- .gitattributes
+|-- .gitignore
+|-- mvnw
+|-- mvnw.cmd
+\-- pom.xml
 
 ------------------------------
 3. uni-admin (Tier 2 Admin panel)
 ------------------------------
-src
-├── assets
-│   ├── hero.png
-│   ├── react.svg
-│   └── vite.svg
-├── components
-│   └── layout
-│       ├── DashboardLayout.css
-│       ├── DashboardLayout.jsx
-│       ├── ProtectedRoute.jsx
-│       ├── Sidebar.css
-│       ├── Sidebar.jsx
-│       ├── Topbar.css
-│       └── Topbar.jsx
-├── context
-│   └── AuthContext.jsx
-├── pages
-│   ├── allocations
-│   │   ├── Allocations.css
-│   │   └── Allocations.jsx
-│   ├── auth
-│   │   ├── Login.css
-│   │   └── Login.jsx
-│   ├── branches
-│   │   ├── Branches.css
-│   │   └── Branches.jsx
-│   ├── certificates
-│   │   └── Certificates.jsx
-│   ├── courses
-│   │   └── CoursePool.jsx
-│   ├── dashboard
-│   │   ├── Dashboard.css
-│   │   └── Dashboard.jsx
-│   ├── history
-│   │   └── History.jsx
-│   ├── instructors
-│   │   └── Instructors.jsx
-│   ├── marks
-│   │   └── MarksReview.jsx
-│   └── students
-│       └── Students.jsx
-├── services
-│   └── api.js
-└── styles
-    └── shared.css
-App.css
-App.jsx
-index.css
-main.jsx
+apps/uni-admin
+|-- public
+|   |-- favicon.svg
+|   \-- icons.svg
+|-- src
+|   |-- assets
+|   |   |-- hero.png
+|   |   |-- react.svg
+|   |   \-- vite.svg
+|   |-- components
+|   |   \-- layout
+|   |       |-- DashboardLayout.css
+|   |       |-- DashboardLayout.jsx
+|   |       |-- ProtectedRoute.jsx
+|   |       |-- Sidebar.css
+|   |       |-- Sidebar.jsx
+|   |       |-- Topbar.css
+|   |       \-- Topbar.jsx
+|   |-- context
+|   |   \-- AuthContext.jsx
+|   |-- pages
+|   |   |-- allocations
+|   |   |   |-- Allocations.css
+|   |   |   \-- Allocations.jsx
+|   |   |-- auth
+|   |   |   |-- Login.css
+|   |   |   \-- Login.jsx
+|   |   |-- branches
+|   |   |   |-- Branches.css
+|   |   |   \-- Branches.jsx
+|   |   |-- certificates
+|   |   |   \-- Certificates.jsx
+|   |   |-- courses
+|   |   |   \-- CoursePool.jsx
+|   |   |-- dashboard
+|   |   |   |-- Dashboard.css
+|   |   |   \-- Dashboard.jsx
+|   |   |-- history
+|   |   |   \-- History.jsx
+|   |   |-- instructors
+|   |   |   \-- Instructors.jsx
+|   |   |-- marks
+|   |   |   \-- MarksReview.jsx
+|   |   \-- students
+|   |       \-- Students.jsx
+|   |-- services
+|   |   |-- api.js
+|   |   \-- marksApi.js
+|   |-- styles
+|   |   \-- shared.css
+|   |-- App.css
+|   |-- App.jsx
+|   |-- index.css
+|   \-- main.jsx
+|-- .gitignore
+|-- eslint.config.js
+|-- index.html
+|-- package.json
+|-- README.md
+\-- vite.config.js
 
 ------------------------------
 4. web (Client Portals)
 ------------------------------
-src
-├── api
-│   ├── authApi.js
-│   ├── courseApi.js
-│   ├── messageApi.js
-│   ├── progressApi.js
-│   └── studentApi.js
-├── assets
-│   └── react.svg
-├── components
-│   ├── layout
-│   │   ├── AdminSidebar.jsx
-│   │   ├── InstructorSidebar.jsx
-│   │   ├── StudentSidebar.jsx
-│   │   └── v2
-│   │       ├── AppShell.jsx
-│   │       ├── InstructorLayout.jsx
-│   │       ├── Sidebar.jsx
-│   │       ├── StudentLayout.jsx
-│   │       └── Topbar.jsx                        [UPDATED - live bell dropdown with unread badge + realtime notification feed]
-│   ├── shared
-│   │   ├── Assessment.jsx
-│   │   ├── ChatWindow.jsx
-│   │   ├── CourseCard.jsx
-│   │   ├── EmptyState.jsx
-│   │   ├── NotificationDropdown.jsx             [NEW - bell dropdown with unread state, type icon, relative time, course deep link]
-│   │   ├── ReviewCard.jsx
-│   │   ├── SectionShell.jsx
-│   │   └── StatCard.jsx
-│   └── ui
-│       ├── Badge.jsx
-│       ├── Button.jsx
-│       ├── Card.jsx
-│       ├── Dialog.jsx
-│       ├── Dropdown.jsx
-│       ├── index.js
-│       ├── Input.jsx
-│       ├── Modal.jsx
-│       ├── Skeleton.jsx
-│       ├── Spinner.jsx
-│       └── Tabs.jsx
-├── context
-│   ├── AppContext.jsx
-│   ├── AuthContext.jsx
-│   └── ChatContext.jsx
-├── data
-│   └── mockDatabase.js
-├── hooks
-│   ├── useLiveTestSocket.js                       [NEW - subscribes student player to /topic/course/{courseId}/live-test via SockJS/STOMP]
-│   └── useNotifications.js                        [NEW - polls /notifications/my and listens to /topic/notifications/{userId}]
-├── lib
-│   ├── api.js
-│   └── utils.js
-├── pages
-│   ├── admin
-│   │   ├── AdminDashboard.jsx
-│   │   ├── InstructorVerification.jsx
-│   │   └── UserManagement.jsx
-│   ├── auth
-│   │   ├── InstructorLogin.jsx
-│   │   ├── InstructorSignup.jsx
-│   │   ├── StudentLogin.jsx
-│   │   ├── StudentSignup.jsx
-│   │   └── _AuthPages.jsx
-│   ├── instructor
-│   │   ├── CreateCourse.jsx
-│   │   ├── CreateUniversityCourse.jsx
-│   │   ├── InstructorChat.jsx
-│   │   ├── InstructorCourses.jsx
-│   │   ├── InstructorDashboard.jsx
-│   │   ├── InstructorProfile.jsx                  [UPDATED - simplified into a clean read-only professional profile with GitHub/faculty ID visibility and edit entrypoint]
-│   │   ├── InstructorSettings.jsx                 [NEW - dedicated editable instructor settings page for name, GitHub username, faculty ID, qualification, experience, specialization, bio]
-│   │   ├── InstructorWaitingRoom.jsx
-│   │   ├── LiveTestsPanel.jsx                     [UPDATED - studio panel to create, schedule, launch, close, inspect, and delete live tests; now adds ranked attempt analytics, pass-rate/score-distribution visuals, scrollable history, and CSV export for closed tests]
-│   │   ├── ManageCourse.jsx
-│   │   └── StudentProgress.jsx
-│   ├── LandingPage.jsx
-│   ├── shared
-│   │   └── UniversitySpace.jsx                   [UPDATED - StudentCoursesTab is now rich cards with progress bars, weightage pills, Continue/Start button; StudentOverviewTab shows completed/in-progress/avg stats; fetchData uses /uni-courses/student/my-enrollments; added Student My Marks tab with CourseMarksCard; added instructor Student Progress table inside Studio; integrated LiveTestsPanel into Studio]
-│   └── student
-│       ├── Certificate.jsx
-│       ├── CourseDetails.jsx
-│       ├── CoursePlayer.jsx
-│       ├── EnrolledCourses.jsx
-│       ├── ExploreCourses.jsx
-│       ├── FavoriteCourses.jsx
-│       ├── LiveTestQuiz.jsx                       [NEW - full-screen timed student live test attempt UI with autosubmit and result screen]
-│       ├── StudentChat.jsx
-│       ├── StudentDashboard.jsx
-│       ├── StudentProfile.jsx                     [UPDATED - simplified into a clean read-only student profile with GitHub/roll number visibility and edit entrypoint]
-│       ├── StudentSettings.jsx                    [NEW - dedicated editable student settings page for name, GitHub username, roll number, college, year, bio, interests]
-│       └── UniversityCoursePlayer.jsx             [UPDATED - full university course player at /student/university/course/:courseId; sidebar with chapter list + progress ring + weightage panel; chapter content viewer; mark complete; inline quiz with result overlay; deadline badges per chapter; prev/next navigation; live test socket listener + launch button + in-place LiveTestQuiz modal]
-├── styles
-│   └── glassmorphism.css
-├── theme
-│   └── design-tokens.js
-App.jsx                                            [UPDATED - added /student/university/course/:courseId route]
-main.jsx
-index.css
-theme.js
+apps/web
+|-- public
+|   \-- vite.svg
+|-- src
+|   |-- api
+|   |   |-- authApi.js
+|   |   |-- courseApi.js
+|   |   |-- marksApi.js
+|   |   |-- messageApi.js
+|   |   |-- progressApi.js
+|   |   \-- studentApi.js
+|   |-- assets
+|   |   \-- react.svg
+|   |-- components
+|   |   |-- layout
+|   |   |   |-- AdminSidebar.jsx
+|   |   |   |-- InstructorSidebar.jsx
+|   |   |   |-- StudentSidebar.jsx
+|   |   |   \-- v2
+|   |   |       |-- AppShell.jsx
+|   |   |       |-- InstructorLayout.jsx
+|   |   |       |-- Sidebar.jsx
+|   |   |       |-- StudentLayout.jsx
+|   |   |       \-- Topbar.jsx
+|   |   |-- shared
+|   |   |   |-- Assessment.jsx
+|   |   |   |-- ChatWindow.jsx
+|   |   |   |-- CourseCard.jsx
+|   |   |   |-- EmptyState.jsx
+|   |   |   |-- NotificationDropdown.jsx
+|   |   |   |-- ReviewCard.jsx
+|   |   |   |-- SectionShell.jsx
+|   |   |   \-- StatCard.jsx
+|   |   \-- ui
+|   |       |-- Badge.jsx
+|   |       |-- Button.jsx
+|   |       |-- Card.jsx
+|   |       |-- Dialog.jsx
+|   |       |-- Dropdown.jsx
+|   |       |-- index.js
+|   |       |-- Input.jsx
+|   |       |-- Modal.jsx
+|   |       |-- Skeleton.jsx
+|   |       |-- Spinner.jsx
+|   |       \-- Tabs.jsx
+|   |-- context
+|   |   |-- AppContext.jsx
+|   |   |-- AuthContext.jsx
+|   |   \-- ChatContext.jsx
+|   |-- data
+|   |   \-- mockDatabase.js
+|   |-- features
+|   |   |-- project-space
+|   |   |   |-- api.js
+|   |   |   |-- BranchDetailsDrawer.jsx
+|   |   |   |-- BranchTreeView.jsx
+|   |   |   |-- CommitDetailsPanel.jsx
+|   |   |   |-- CreateSpaceForm.jsx
+|   |   |   |-- githubInsights.js
+|   |   |   |-- GitHubViewer.jsx
+|   |   |   |-- GroupChatPanel.jsx
+|   |   |   |-- GroupFormation.jsx
+|   |   |   |-- InstructorGroupCard.jsx
+|   |   |   |-- LazyGitHubViewer.jsx
+|   |   |   |-- ProjectActivityTimeline.jsx
+|   |   |   |-- PullRequestDetailsPanel.jsx
+|   |   |   |-- shared.jsx
+|   |   |   \-- StudentProjectView.jsx
+|   |   \-- university-space
+|   |       \-- FinalMarksSheetPanel.jsx
+|   |-- hooks
+|   |   |-- useLiveTestSocket.js
+|   |   \-- useNotifications.js
+|   |-- lib
+|   |   |-- api.js
+|   |   |-- cloudinary.js
+|   |   \-- utils.js
+|   |-- pages
+|   |   |-- admin
+|   |   |   |-- AdminDashboard.jsx
+|   |   |   |-- InstructorVerification.jsx
+|   |   |   \-- UserManagement.jsx
+|   |   |-- auth
+|   |   |   |-- InstructorLogin.jsx
+|   |   |   |-- InstructorSignup.jsx
+|   |   |   |-- StudentLogin.jsx
+|   |   |   |-- StudentSignup.jsx
+|   |   |   \-- _AuthPages.jsx
+|   |   |-- instructor
+|   |   |   |-- CreateCourse.jsx
+|   |   |   |-- CreateUniversityCourse.jsx
+|   |   |   |-- InstructorChat.jsx
+|   |   |   |-- InstructorCourses.jsx
+|   |   |   |-- InstructorDashboard.jsx
+|   |   |   |-- InstructorProfile.jsx
+|   |   |   |-- InstructorSettings.jsx
+|   |   |   |-- InstructorWaitingRoom.jsx
+|   |   |   |-- LiveTestsPanel.jsx
+|   |   |   |-- ManageCourse.jsx
+|   |   |   |-- ProjectSpacePanel.jsx
+|   |   |   \-- StudentProgress.jsx
+|   |   |-- shared
+|   |   |   \-- UniversitySpace.jsx
+|   |   |-- student
+|   |   |   |-- Certificate.jsx
+|   |   |   |-- CourseDetails.jsx
+|   |   |   |-- CoursePlayer.jsx
+|   |   |   |-- EnrolledCourses.jsx
+|   |   |   |-- ExploreCourses.jsx
+|   |   |   |-- FavoriteCourses.jsx
+|   |   |   |-- LiveTestQuiz.jsx
+|   |   |   |-- StudentChat.jsx
+|   |   |   |-- StudentDashboard.jsx
+|   |   |   |-- StudentProfile.jsx
+|   |   |   |-- StudentSettings.jsx
+|   |   |   \-- UniversityCoursePlayer.jsx
+|   |   \-- LandingPage.jsx
+|   |-- styles
+|   |   \-- glassmorphism.css
+|   |-- theme
+|   |   \-- design-tokens.js
+|   |-- App.jsx
+|   |-- index.css
+|   |-- main.jsx
+|   \-- theme.js
+|-- .env.example
+|-- .gitignore
+|-- components.json
+|-- eslint.config.js
+|-- index.html
+|-- jsconfig.json
+|-- package.json
+|-- postcss.config.js
+|-- tailwind.config.js
+|-- video_storage_architecture.md
+\-- vite.config.js
 
 
 ============================================================
@@ -436,8 +561,8 @@ Phase 1 - University Foundation & Onboarding: Complete.
 Phase 2 - University Courses & Semester Allocation: Complete. Auto-enrollment on allocation now active.
 Phase 3 - Chapter Deadlines, Assessments & Real-Time Marks Engine: Complete for the current scope. Attendance score, tests average, live-tests slot, manual project placeholders, late-penalty deductions, weighted final score, and grade calculation are now exposed to students and instructors.
 Phase 4 - Live Tests & Synchronous Interactions: Completed for the current polish scope. Instructors can create/schedule/launch/close/delete timed live tests, scheduled tests now auto-launch/auto-close, students receive websocket start/close notifications plus bell notifications, duplicate student submissions are guarded at the backend active-test layer, instructors now get ranked submission history plus pass-rate/score-distribution analytics and CSV export, and average live test score syncs into the marks sheet breakdown. Live classes are still pending.
-Phase 5 - Project Space & GitHub Integration: Pending.
-Phase 6 - Final Evaluation, Marks Sheet & Certification: Pending.
+Phase 5 - Project Space & GitHub Integration: Complete for the current scope.
+Phase 6 - Final Evaluation, Marks Sheet & Certification: Complete for the current scope. Instructors can now prepare/save/submit final marks sheets, uni-admin can review/approve/return them, and approved sheets now drive certificates and history records.
 
 
 ============================================================
@@ -479,11 +604,14 @@ Completed Features / Done
 32. Real Settings Pages - `StudentSettings.jsx` and `InstructorSettings.jsx` added and routed from the topbar/settings action. Users can now edit profile details from dedicated settings screens instead of the old overloaded profile pages.
 33. GitHub + Identity Fields - profile update/login payloads now support `githubUsername` for both students and instructors, plus missing `rollNumber` for students and `employeeId` for instructors so these can be added later for upcoming collaboration/project features.
 34. Live Test Polish - instructor live test responses now return ranked submission rows for live/closed tests, and `LiveTestsPanel.jsx` now adds richer attempt analytics with pass-rate and score-distribution visuals, visible submission counts, scrollable attempt history, and client-side CSV export for closed submissions.
+35. Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
+36. Final Marks Sheet Workflow (Backend) - `MarksSheet` now supports workflow status, submit/approve/return metadata, locked final score/grade, and instructor remarks. New service/controller/DTO flows support instructor draft save and submission, uni-admin review actions, approved certificate access, and approved history listing.
+37. Instructor Final Marks Sheet UI - a dedicated `FinalMarksSheetPanel.jsx` now lives inside University Space Studio. Instructors can view automatic attendance/tests/live-test marks, fill project/viva/moderation/adjustment fields, see recalculated totals and summary, save drafts, and submit the sheet for admin review.
+38. Uni-Admin Marks Review + Certificates + History - `MarksReview.jsx`, `Certificates.jsx`, and `History.jsx` are now backed by real APIs. Uni-admin can inspect submitted sheets in detail, approve or return them with correction reasons, and view approved certificate/history records across the university.
+39. Certificate Gating by Approved Final Marks - student `Certificate.jsx` now depends on uni-admin-approved final marks sheet data instead of simple completion/final-assessment style eligibility. The shown certificate score and grade come from the locked approved record.
 
 To Build Next / Action Items (in priority order)
-1.  Live Classes (Jitsi Integration) - instructor starts session from Studio, section students notified, join via Jitsi embed inside platform.
-2.  Project Space + GitHub Integration - group formation (random/selective), proposal flow, GitHub repo creation via API per team, Git tree visualization, PR monitoring, weekly activity reports, individual contribution report upload.
-3.  Final Marks Sheet - auto-populated from all evaluation categories using weightage system. Instructor reviews/adjusts, submits to uni-admin before course deadline.
-4.  Marks Review (Uni-Admin) - MarksReview.jsx: uni-admin reviews submitted marks sheets, approves or sends back for correction.
-5.  Certificate Engine - auto-generates certificates post marks-sheet approval. Student downloads from platform. Verified university badge on public EduForge profile.
-6.  History Views - past course history for instructors and students per completed course.
+1.  Live Classes / Synchronous Sessions - real instructor-led live classroom flow is still pending beyond the live test system.
+2.  Instructor + Student History Expansion - surface richer completed-course history directly inside the web portal for instructors and students, not just the uni-admin side.
+3.  Certificate Polish - improve issuance metadata, public verification presentation, and share/download polish if needed.
+4.  Final Marks Sheet Refinements - optionally extend manual evaluation rules later with rubric-style project/viva breakdowns, semester exports, or stronger moderation controls.

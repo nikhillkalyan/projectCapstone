@@ -1,5 +1,6 @@
 package backend.backend.Entity;
 
+import backend.backend.Enums.MarksSheetStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,6 +36,36 @@ public class MarksSheet {
 
     @Column(name = "total_score")
     private Double totalScore;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    @Builder.Default
+    private MarksSheetStatus status = MarksSheetStatus.DRAFT;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by_id")
+    private User approvedBy;
+
+    @Column(name = "returned_at")
+    private LocalDateTime returnedAt;
+
+    @Column(name = "return_reason", columnDefinition = "TEXT")
+    private String returnReason;
+
+    @Column(name = "locked_final_score")
+    private Double lockedFinalScore;
+
+    @Column(name = "locked_grade", length = 5)
+    private String lockedGrade;
+
+    @Column(name = "instructor_remarks", columnDefinition = "TEXT")
+    private String instructorRemarks;
 
     @Column(name = "is_approved_by_uni_admin")
     @Builder.Default

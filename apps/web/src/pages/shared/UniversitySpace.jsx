@@ -5,7 +5,9 @@ import StudentLayout from '../../components/layout/v2/StudentLayout';
 import InstructorLayout from '../../components/layout/v2/InstructorLayout';
 import LiveTestsPanel from '../instructor/LiveTestsPanel';
 import ProjectSpacePanel from '../instructor/ProjectSpacePanel';
+import FinalMarksSheetPanel from '../../features/university-space/FinalMarksSheetPanel';
 import { lookupUniversity, joinUniversitySpace } from '../../api/authApi';
+import { getStudentMarks } from '../../api/marksApi';
 import api from '../../lib/api';
 import {
   Building2, CheckCircle2, ArrowRight, Loader2, AlertCircle,
@@ -849,6 +851,10 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
         <ProjectSpacePanel courseId={courseId} />
       </div>
 
+      <div className="border-t border-border-subtle pt-5">
+        <FinalMarksSheetPanel courseId={courseId} />
+      </div>
+
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-primary-400" />
@@ -1455,7 +1461,7 @@ function CourseMarksCard({ courseId, courseTitle }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/marks/student/course/${courseId}`)
+    getStudentMarks(courseId)
       .then(response => setMarks(response.data))
       .catch(() => setMarks(null))
       .finally(() => setLoading(false));
@@ -1484,8 +1490,20 @@ function CourseMarksCard({ courseId, courseTitle }) {
           </div>
           <div className="min-w-0">
             <h4 className="text-sm font-bold text-text-primary truncate">{courseTitle}</h4>
-            <div className="text-xs text-text-muted mt-0.5">
-              {marks.completedChapters}/{marks.totalChapters} chapters done
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <div className="text-xs text-text-muted">
+                {marks.completedChapters}/{marks.totalChapters} chapters done
+              </div>
+              {marks.marksSheetStatus && marks.marksSheetStatus !== 'DRAFT' && (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${marks.marksSheetStatus === 'APPROVED'
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                    : marks.marksSheetStatus === 'SUBMITTED'
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                      : 'bg-red-500/10 border-red-500/20 text-red-300'
+                  }`}>
+                  {marks.marksSheetStatus}
+                </span>
+              )}
             </div>
           </div>
         </div>

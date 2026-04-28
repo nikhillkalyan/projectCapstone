@@ -47,6 +47,51 @@ public class DatabaseMigrationRunner {
         // not create the new tables/columns cleanly.
         try {
             jdbcTemplate.execute("""
+                    ALTER TABLE marks_sheets
+                    ADD COLUMN IF NOT EXISTS status VARCHAR(20),
+                    ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP,
+                    ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP,
+                    ADD COLUMN IF NOT EXISTS approved_by_id UUID,
+                    ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP,
+                    ADD COLUMN IF NOT EXISTS return_reason TEXT,
+                    ADD COLUMN IF NOT EXISTS locked_final_score DOUBLE PRECISION,
+                    ADD COLUMN IF NOT EXISTS locked_grade VARCHAR(5),
+                    ADD COLUMN IF NOT EXISTS instructor_remarks TEXT
+                    """);
+
+            jdbcTemplate.update("""
+                    UPDATE marks_sheets
+                    SET status = CASE
+                        WHEN is_approved_by_uni_admin = TRUE THEN 'APPROVED'
+                        ELSE 'DRAFT'
+                    END
+                    WHERE status IS NULL
+                    """);
+
+            jdbcTemplate.update("""
+                    UPDATE marks_sheets
+                    SET locked_final_score = total_score
+                    WHERE locked_final_score IS NULL
+                      AND total_score IS NOT NULL
+                      AND is_approved_by_uni_admin = TRUE
+                    """);
+
+            jdbcTemplate.update("""
+                    UPDATE marks_sheets
+                    SET locked_grade = CASE
+                        WHEN total_score >= 90 THEN 'S'
+                        WHEN total_score >= 80 THEN 'A'
+                        WHEN total_score >= 70 THEN 'B'
+                        WHEN total_score >= 60 THEN 'C'
+                        WHEN total_score >= 50 THEN 'D'
+                        ELSE 'F'
+                    END
+                    WHERE locked_grade IS NULL
+                      AND total_score IS NOT NULL
+                      AND is_approved_by_uni_admin = TRUE
+                    """);
+
+            jdbcTemplate.execute("""
                     CREATE TABLE IF NOT EXISTS project_spaces (
                         id UUID PRIMARY KEY,
                         course_id UUID NOT NULL UNIQUE,

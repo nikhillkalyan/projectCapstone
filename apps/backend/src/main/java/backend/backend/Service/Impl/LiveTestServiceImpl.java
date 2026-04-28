@@ -11,6 +11,7 @@ import backend.backend.Entity.LiveTestSubmission;
 import backend.backend.Entity.MarksSheet;
 import backend.backend.Entity.Student;
 import backend.backend.Entity.User;
+import backend.backend.Enums.MarksSheetStatus;
 import backend.backend.Exceptions.BadRequestException;
 import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
@@ -306,8 +307,13 @@ public class LiveTestServiceImpl implements LiveTestService {
                 .orElseGet(() -> MarksSheet.builder()
                         .course(course)
                         .student(student)
+                        .status(MarksSheetStatus.DRAFT)
                         .isApprovedByUniAdmin(false)
                         .build());
+
+        if (marksSheet.getStatus() == MarksSheetStatus.SUBMITTED || marksSheet.getStatus() == MarksSheetStatus.APPROVED) {
+            return;
+        }
 
         Map<String, Object> breakdown = deserializeBreakdown(marksSheet.getBreakdownJson());
         breakdown.put("liveTestsScore", round2(averageScore));

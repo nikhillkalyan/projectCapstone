@@ -6,7 +6,7 @@ import StudentLayout from '../../components/layout/v2/StudentLayout';
 import { motion } from 'framer-motion';
 import { Download, Share2, Award, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { getCourseById } from '../../api/courseApi';
-import { getCourseProgress } from '../../api/progressApi';
+import { getApprovedFinalMarks } from '../../api/marksApi';
 
 export default function Certificate() {
   const { courseId } = useParams();
@@ -15,21 +15,29 @@ export default function Certificate() {
   const certRef = useRef(null);
   
   const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(null);
+  const [finalMarks, setFinalMarks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [courseRes, progRes] = await Promise.all([
+        const [courseRes, marksRes] = await Promise.allSettled([
           getCourseById(courseId),
-          getCourseProgress(courseId)
+          getApprovedFinalMarks(courseId)
         ]);
-        setCourse(courseRes.data);
-        setProgress(progRes.data);
-      } catch (err) {
-        console.error("Failed to load certificate data", err);
+        if (courseRes.status === 'fulfilled') {
+          setCourse(courseRes.value.data);
+        } else {
+          console.error("Failed to load course data", courseRes.reason);
+          setCourse(null);
+        }
+        if (marksRes.status === 'fulfilled') {
+          setFinalMarks(marksRes.value.data);
+        } else {
+          console.error("Approved final marks not available", marksRes.reason);
+          setFinalMarks(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -37,7 +45,7 @@ export default function Certificate() {
     if (courseId) fetchData();
   }, [courseId]);
 
-  const isEligible = progress?.isCompleted || progress?.grandAssessmentResult?.passed;
+  const isEligible = finalMarks?.status === 'APPROVED';
 
   if (loading) {
     return (
@@ -58,7 +66,7 @@ export default function Certificate() {
           </div>
           <h2 className="font-syne text-2xl font-bold text-text-primary mb-2">Certificate Unavailable</h2>
           <p className="text-text-secondary max-w-md mb-8">
-            You need to complete all modules and pass the final assessment for <span className="text-primary-400 font-medium">{course?.title || 'this course'}</span> to earn your certificate.
+            Your certificate for <span className="text-primary-400 font-medium">{course?.title || 'this course'}</span> will unlock once the university admin approves the final marks sheet.
           </p>
           <button
             onClick={() => navigate(`/student/course/${courseId}`)}
@@ -71,9 +79,11 @@ export default function Certificate() {
     );
   }
 
-  // Use today's date if completedAt is missing from progress
-  const completedDate = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
-  const finalScore = progress?.grandAssessmentResult?.score || 100;
+  const completedDate = finalMarks?.approvedAt
+    ? new Date(finalMarks.approvedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+  const finalScore = finalMarks?.finalScore || 0;
+  const finalGrade = finalMarks?.grade || 'F';
 
   const handleDownload = () => {
     setIsDownloading(true);
@@ -134,11 +144,11 @@ export default function Certificate() {
                     <div class="cert-body">This strictly verifies that</div>
                     <div class="cert-name">${user.name}</div>
                     
-                    <div class="cert-body">has successfully completed the curriculum for</div>
+                    <div class="cert-body">has successfully completed the approved requirements for</div>
                     <div class="cert-course">"${course.title}"</div>
                     
                     <div class="cert-score-wrap">
-                        <span class="cert-score-label">Final Assessment Score</span>
+                        <span class="cert-score-label">Approved Final Score</span>
                         <span class="cert-score">${finalScore}%</span>
                     </div>
                     
@@ -235,7 +245,7 @@ export default function Certificate() {
               </h2>
 
               <p className="text-text-secondary text-base sm:text-lg print:text-gray-600">
-                has successfully completed the curriculum for
+                has successfully completed the approved requirements for
               </p>
 
               {/* Course Title */}
@@ -247,10 +257,19 @@ export default function Certificate() {
             {/* Score Block */}
             <div className="relative z-10 inline-flex items-center gap-4 sm:gap-6 bg-success-500/8 border border-success-400/20 px-6 sm:px-8 py-3 sm:py-4 rounded-full mb-16 sm:mb-24 print:bg-gray-100 print:border-gray-300">
               <span className="text-text-secondary text-xs sm:text-sm uppercase tracking-widest font-medium print:text-gray-600">
-                Final Assessment Score
+                Approved Final Score
               </span>
               <span className="font-syne font-extrabold text-2xl sm:text-3xl text-success-400 print:text-black">
                 {finalScore}%
+              </span>
+            </div>
+
+            <div className="relative z-10 inline-flex items-center gap-4 bg-primary-500/8 border border-primary-500/20 px-5 py-2 rounded-full mb-10 print:bg-gray-100 print:border-gray-300">
+              <span className="text-text-secondary text-xs sm:text-sm uppercase tracking-widest font-medium print:text-gray-600">
+                Grade
+              </span>
+              <span className="font-syne font-extrabold text-xl sm:text-2xl text-primary-300 print:text-black">
+                {finalGrade}
               </span>
             </div>
 
