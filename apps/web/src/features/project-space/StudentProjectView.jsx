@@ -5,8 +5,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { uploadFileToCloudinary } from '../../lib/cloudinary';
 import { fetchStudentGroup, submitProposal, submitReport } from './api';
-import GitHubViewer from './GitHubViewer';
 import GroupChatPanel from './GroupChatPanel';
+import LazyGitHubViewer from './LazyGitHubViewer';
 import ProjectActivityTimeline from './ProjectActivityTimeline';
 import { fmt, fmtTime, GroupStatusBadge, STUDENT_DOC_TYPES } from './shared';
 
@@ -472,7 +472,7 @@ export default function StudentProjectView({ courseId, space }) {
           <a href={group.repo.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-primary-400 hover:text-primary-300 transition-colors">
             {group.repo.repoName} <ExternalLink className="w-3.5 h-3.5" />
           </a>
-          {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} variant="student" />}
+          {showGithub && <LazyGitHubViewer courseId={courseId} groupId={group.id} variant="student" />}
         </div>
       )}
 

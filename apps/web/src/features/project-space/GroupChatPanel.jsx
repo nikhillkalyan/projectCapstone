@@ -138,8 +138,22 @@ export default function GroupChatPanel({ courseId, group, compact = false, readO
   }, [loadMessages]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => loadMessages({ silent: true }), 6000);
-    return () => window.clearInterval(timer);
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadMessages({ silent: true });
+    };
+    const interval = window.setInterval(tick, 6000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadMessages({ silent: true });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [loadMessages]);
 
   const handleSubmit = async (event) => {

@@ -159,11 +159,11 @@ export default function GitHubViewer({ courseId, groupId, variant = 'instructor'
   const [selectedPullRequestNumber, setSelectedPullRequestNumber] = useState(null);
   const [selectedCommitSha, setSelectedCommitSha] = useState('');
 
-  const loadActivity = useCallback(async () => {
+  const loadActivity = useCallback(async ({ force = false } = {}) => {
     setLoading(true);
     setError('');
     try {
-      const data = await fetchGitHubActivity(courseId, groupId);
+      const data = await fetchGitHubActivity(courseId, groupId, { force });
       setActivity(data);
     } catch (e) {
       setError(e.response?.data?.message || 'Failed to fetch GitHub activity');
@@ -298,7 +298,7 @@ export default function GitHubViewer({ courseId, groupId, variant = 'instructor'
             </div>
           </div>
 
-          <button onClick={loadActivity} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-slate-200 transition-all hover:bg-white/10">
+          <button onClick={() => loadActivity({ force: true })} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-slate-200 transition-all hover:bg-white/10">
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </button>

@@ -1,5 +1,8 @@
 import api from '../../lib/api';
 
+const GITHUB_ACTIVITY_CACHE_TTL_MS = 45_000;
+const gitHubActivityCache = new Map();
+
 export async function fetchProjectSpace(courseId) {
   const response = await api.get(`/project-space/${courseId}`);
   return response.data;
@@ -30,8 +33,21 @@ export async function fetchInstructorCourseStudents(courseId) {
   return response.data;
 }
 
-export async function fetchGitHubActivity(courseId, groupId) {
+export async function fetchGitHubActivity(courseId, groupId, options = {}) {
+  const { force = false } = options;
+  const cacheKey = `${courseId}:${groupId}`;
+  const cached = gitHubActivityCache.get(cacheKey);
+  const now = Date.now();
+
+  if (!force && cached && now - cached.cachedAt < GITHUB_ACTIVITY_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
   const response = await api.get(`/project-space/${courseId}/groups/${groupId}/github`);
+  gitHubActivityCache.set(cacheKey, {
+    data: response.data,
+    cachedAt: now,
+  });
   return response.data;
 }
 

@@ -4,8 +4,8 @@ import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Eye, ExternalLink, FileText, Github, Link, Loader2, MessageSquareText, Send, Users, X,
 } from 'lucide-react';
 import { assignProject, linkRepo, reviewProposal } from './api';
-import GitHubViewer from './GitHubViewer';
 import GroupChatPanel from './GroupChatPanel';
+import LazyGitHubViewer from './LazyGitHubViewer';
 import { fmt, GroupStatusBadge } from './shared';
 
 export default function InstructorGroupCard({ group, courseId, onRefresh }) {
@@ -251,7 +251,7 @@ export default function InstructorGroupCard({ group, courseId, onRefresh }) {
                       <Eye className="w-3.5 h-3.5" /> {showGithub ? 'Hide' : 'Activity'}
                     </button>
                   </div>
-                  {showGithub && <GitHubViewer courseId={courseId} groupId={group.id} variant="instructor" />}
+                  {showGithub && <LazyGitHubViewer courseId={courseId} groupId={group.id} variant="instructor" />}
                 </div>
               ) : (
                 <div>
