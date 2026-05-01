@@ -2,3 +2,5 @@
 app.admin.name=Super Admin
 app.admin.email=admin@lms.com
 app.admin.password=your_strong_password_here
+
+gemini.api.key=YOUR_ACTUAL_API_KEY_HERE

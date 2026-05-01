@@ -101,6 +101,7 @@ apps/backend
 |   |   |           |   \-- WebSocketConfig.java
 |   |   |           |-- Controller
 |   |   |           |   |-- AdminController.java
+|   |   |           |   |-- AiController.java
 |   |   |           |   |-- AuthController.java
 |   |   |           |   |-- ChapterController.java
 |   |   |           |   |-- CourseController.java
@@ -118,6 +119,7 @@ apps/backend
 |   |   |           |   \-- UserController.java
 |   |   |           |-- Dto
 |   |   |           |   |-- Request
+|   |   |           |   |   |-- AiPromptRequest.java
 |   |   |           |   |   |-- AssignProjectRequest.java
 |   |   |           |   |   |-- CreateAssessmentRequest.java
 |   |   |           |   |   |-- CreateBranchRequest.java
@@ -198,6 +200,7 @@ apps/backend
 |   |   |           |       |-- StudentUniCourseResponse.java
 |   |   |           |       |-- UniAdminDashboardResponse.java
 |   |   |           |       |-- UniversityCourseResponse.java
+29. AI Integration - Gemini AI added for course creation, quiz generation, project summarization, and marks analysis via AiController, AiService, and aiApi.js.
 |   |   |           |       |-- UniversityLookupResponse.java
 |   |   |           |       |-- UniversityResponse.java
 |   |   |           |       |-- UserProfileResponse.java
@@ -283,6 +286,7 @@ apps/backend
 |   |   |           |-- Service
 |   |   |           |   |-- Impl
 |   |   |           |   |   |-- AdminServiceImpl.java
+|   |   |           |   |   |-- AiServiceImpl.java
 |   |   |           |   |   |-- AuthServiceImpl.java
 |   |   |           |   |   |-- ChapterServiceImpl.java
 |   |   |           |   |   |-- CourseServiceImpl.java
@@ -298,6 +302,7 @@ apps/backend
 |   |   |           |   |   |-- UniversityServiceImpl.java
 |   |   |           |   |   \-- UserServiceImpl.java
 |   |   |           |   |-- AdminService.java
+|   |   |           |   |-- AiService.java
 |   |   |           |   |-- AuthService.java
 |   |   |           |   |-- ChapterService.java
 |   |   |           |   |-- CourseService.java
@@ -401,6 +406,7 @@ apps/web
 |   \-- vite.svg
 |-- src
 |   |-- api
+|   |   |-- aiApi.js
 |   |   |-- authApi.js
 |   |   |-- courseApi.js
 |   |   |-- marksApi.js
@@ -528,6 +534,12 @@ apps/web
 |-- index.html
 |-- jsconfig.json
 |-- package.json
+|-- patch_ai_api.cjs
+|-- patch_create_course.cjs
+|-- patch_group_card.cjs
+|-- patch_live_tests.cjs
+|-- patch_marks.cjs
+|-- patch_uni_course.cjs
 |-- postcss.config.js
 |-- tailwind.config.js
 |-- video_storage_architecture.md
@@ -615,3 +627,4 @@ To Build Next / Action Items (in priority order)
 2.  Instructor + Student History Expansion - surface richer completed-course history directly inside the web portal for instructors and students, not just the uni-admin side.
 3.  Certificate Polish - improve issuance metadata, public verification presentation, and share/download polish if needed.
 4.  Final Marks Sheet Refinements - optionally extend manual evaluation rules later with rubric-style project/viva breakdowns, semester exports, or stronger moderation controls.
+\n29. AI Integration - Gemini AI added for course creation, quiz generation, project summarization, and marks analysis via AiController, AiService, and aiApi.js.
