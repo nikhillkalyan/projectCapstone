@@ -21,7 +21,7 @@ export default function CourseDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [enrolling, setEnrolling] = useState(false);
-    const { rateCourse } = useApp();
+    const { rateCourse, showNotification } = useApp();
     
     // Auth-based progress checks
     const [isEnrolled, setIsEnrolled] = useState(false);
@@ -82,7 +82,7 @@ export default function CourseDetails() {
             navigate(`/student/course/${courseId}/learn`);
         } catch (err) {
             console.error("Failed to enroll", err);
-            alert(err.response?.data?.error || "Failed to enroll. Please try again.");
+            showNotification(err.response?.data?.error || "Failed to enroll. Please try again.", 'error');
             setEnrolling(false);
         }
     };
@@ -316,7 +316,7 @@ export default function CourseDetails() {
                                 disableAnimation={true}
                             >
                                 <div className="prose prose-invert max-w-none whitespace-pre-line text-[0.95rem] leading-loose text-text-secondary">
-                                    {course.longDescription || course.description || "Course description placeholder. This area will focus cleanly on typography."}
+                                    {course.longDescription || course.description || "A full course overview will appear here once the instructor adds the detailed syllabus and learning path."}
                                 </div>
                             </SectionShell>
 

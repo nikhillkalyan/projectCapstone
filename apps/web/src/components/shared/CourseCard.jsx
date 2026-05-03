@@ -34,7 +34,7 @@ export default function CourseCard({
 
   const navigate = useNavigate();
   const { user, updateLocalUser } = useAuth();
-  const { toggleFavorite, rateCourse } = useApp();
+  const { toggleFavorite, rateCourse, showNotification } = useApp();
 
   // Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -94,7 +94,7 @@ export default function CourseCard({
       navigate(`/student/course/${course.id}/learn`);
     } catch (err) {
       console.error("Failed to enroll", err);
-      alert(err.response?.data?.error || "Failed to enroll. Please try again.");
+      showNotification(err.response?.data?.error || "Failed to enroll. Please try again.", 'error');
     }
   };
 

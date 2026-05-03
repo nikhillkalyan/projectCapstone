@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import { getCourseById, getChapters, submitReview as submitCourseReview } from '../../api/courseApi';
 import { enrollInCourse as apiEnroll, toggleFavorite as apiToggleFav, getFavoriteCourses, getEnrolledCourses } from '../../api/studentApi';
 import { getCourseProgress as apiGetProgress, markChapterComplete as apiMarkChapter, submitChapterAssessment as apiSubmitAssessment, submitGrandAssessment as apiSubmitGrand } from '../../api/progressApi';
@@ -42,6 +43,7 @@ export default function CoursePlayer() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showNotification } = useApp();
   
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -154,7 +156,7 @@ export default function CoursePlayer() {
     try {
         await apiMarkChapter(courseId, activeChapter.id);
         setProgressData(prev => ({ ...prev, [activeChapter.id]: { ...prev[activeChapter.id], completed: true } }));
-        alert(`Chapter "${activeChapter.title}" marked complete!`);
+        showNotification(`Chapter "${activeChapter.title}" marked complete!`);
         // update overall progress locally roughly
         setOverallProgress(prev => Math.min(100, prev + Math.floor(100 / (course.chapters?.length || 1))));
     } catch(err) {
@@ -203,7 +205,7 @@ export default function CoursePlayer() {
         console.error("Failed to submit review", err);
     } finally {
         setShowRating(false);
-        alert('Thank you for your feedback!');
+        showNotification('Thank you for your feedback!');
     }
   };
 
@@ -213,7 +215,7 @@ export default function CoursePlayer() {
           setIsEnrolled(true);
       } catch(err) {
           console.error("Enrollment failed", err);
-          alert("Failed to enroll. Please try again.");
+          showNotification(err.response?.data?.error || "Failed to enroll. Please try again.", 'error');
       }
   };
 

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import api from '../../lib/api';
 import { aiApi } from '../../api/aiApi';
+import { useApp } from '../../context/AppContext';
 import Modal from '../../components/ui/Modal';
 
 const formatDateTime = (iso) => (
@@ -445,6 +446,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const status = getStatus(test);
+  const { showNotification } = useApp();
 
   const loadStats = async () => {
     if (!expanded && (status === 'CLOSED' || status === 'LIVE')) {
@@ -463,7 +465,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       const response = await api.post(`/live-tests/${test.id}/launch`);
       onLaunched(response.data);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to launch.');
+      showNotification(error.response?.data?.message || 'Failed to launch.', 'error');
     } finally {
       setLaunching(false);
     }
@@ -475,7 +477,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       const response = await api.post(`/live-tests/${test.id}/close`);
       onClosed(response.data);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to close.');
+      showNotification(error.response?.data?.message || 'Failed to close.', 'error');
     } finally {
       setClosing(false);
     }
@@ -487,7 +489,7 @@ function LiveTestCard({ test, onLaunched, onClosed, onDeleted }) {
       await api.delete(`/live-tests/${test.id}`);
       onDeleted(test.id);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to delete.');
+      showNotification(error.response?.data?.message || 'Failed to delete.', 'error');
     } finally {
       setDeleting(false);
       setConfirmDelete(false);
