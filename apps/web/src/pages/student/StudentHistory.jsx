@@ -269,10 +269,20 @@ export default function StudentHistory() {
         const [historyResults, progressResults] = await Promise.all([
           Promise.all(
             universityEnrollments.map(async (enrollment) => {
-              const [marksRes, certificateRes] = await Promise.allSettled([
-                getStudentMarks(enrollment.courseId),
-                getApprovedFinalMarks(enrollment.courseId),
-              ]);
+              const marksRes = await getStudentMarks(enrollment.courseId)
+                .then((response) => ({ status: 'fulfilled', value: response }))
+                .catch((reason) => ({ status: 'rejected', reason }));
+
+              let certificateRes = { status: 'fulfilled', value: { data: null } };
+
+              if (
+                marksRes.status === 'fulfilled' &&
+                marksRes.value?.data?.marksSheetStatus === 'APPROVED'
+              ) {
+                certificateRes = await getApprovedFinalMarks(enrollment.courseId)
+                  .then((response) => ({ status: 'fulfilled', value: response }))
+                  .catch((reason) => ({ status: 'rejected', reason }));
+              }
 
               return {
                 ...enrollment,
