@@ -4,9 +4,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
+  Download,
   FileSpreadsheet,
   Loader2,
   Lock,
+  Printer,
   RefreshCw,
   Save,
   Send,
@@ -120,6 +122,151 @@ const summariseRows = (rows) => {
     highestScore: Number(Math.max(...scores).toFixed(2)),
     lowestScore: Number(Math.min(...scores).toFixed(2)),
   };
+};
+
+const csvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+const triggerDownload = (blob, fileName) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const toFileSafe = (value) => String(value || 'marks_sheet').trim().replace(/[^a-zA-Z0-9_-]+/g, '_');
+
+const exportMarksSheetCsv = (sheet, rows) => {
+  if (!sheet) return;
+
+  const headers = [
+    'Student Name',
+    'Roll Number',
+    'Branch',
+    'Section',
+    'Attendance Score',
+    'Tests Score',
+    'Live Tests Score',
+    'Project Bucket',
+    'Late Penalty',
+    'Adjustment',
+    'Final Score',
+    'Grade',
+    'Remarks',
+  ];
+
+  const lines = [
+    headers.map(csvValue).join(','),
+    ...(rows || []).map((row) => ([
+      row.studentName,
+      row.rollNumber,
+      row.branchName,
+      row.sectionName,
+      row.attendanceScore,
+      row.testsScore,
+      row.liveTestsScore,
+      row.projectScore,
+      row.latePenalty,
+      row.adjustmentScore,
+      row.finalScore,
+      row.grade,
+      row.instructorRemarks,
+    ].map(csvValue).join(','))),
+  ];
+
+  triggerDownload(
+    new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' }),
+    `${toFileSafe(sheet.courseTitle)}_final_marks_sheet.csv`
+  );
+};
+
+const openMarksSheetPrintView = (sheet, rows, summary) => {
+  if (!sheet) return;
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    throw new Error('Please allow popups to print the marks sheet.');
+  }
+
+  const tableRows = (rows || []).map((row) => `
+    <tr>
+      <td>${row.studentName || '-'}</td>
+      <td>${row.rollNumber || '-'}</td>
+      <td>${row.branchName || '-'}</td>
+      <td>${row.sectionName || '-'}</td>
+      <td>${row.attendanceScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.testsScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.liveTestsScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.projectScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.latePenalty?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.adjustmentScore ?? 0}</td>
+      <td>${row.finalScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.grade || '-'}</td>
+      <td>${row.instructorRemarks || '-'}</td>
+    </tr>
+  `).join('');
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>${sheet.courseTitle} - Final Marks Sheet</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
+          h1 { margin-bottom: 8px; }
+          .meta { margin-bottom: 18px; color: #4b5563; font-size: 13px; }
+          .summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+          .card { border: 1px solid #d1d5db; border-radius: 10px; padding: 12px; }
+          .card strong { display: block; font-size: 20px; margin-bottom: 4px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; vertical-align: top; }
+          th { background: #f3f4f6; }
+          @media print { body { margin: 10px; } }
+        </style>
+      </head>
+      <body>
+        <h1>${sheet.courseTitle}</h1>
+        <div class="meta">
+          Instructor: ${sheet.instructorName || 'Unknown'}<br />
+          Branch / Year: ${sheet.targetBranch || '-'} ${sheet.targetYear ? `/ ${sheet.targetYear}` : ''}<br />
+          Status: ${sheet.status || '-'}<br />
+          Submitted: ${sheet.submittedAt ? new Date(sheet.submittedAt).toLocaleString('en-IN') : '-'}<br />
+          Approved: ${sheet.approvedAt ? new Date(sheet.approvedAt).toLocaleString('en-IN') : '-'}
+        </div>
+        <div class="summary">
+          <div class="card"><strong>${summary?.totalStudents || 0}</strong>Students</div>
+          <div class="card"><strong>${summary?.classAverage || 0}%</strong>Average</div>
+          <div class="card"><strong>${summary?.passCount || 0}</strong>Pass</div>
+          <div class="card"><strong>${summary?.failCount || 0}</strong>Fail</div>
+          <div class="card"><strong>${summary?.highestScore || 0} / ${summary?.lowestScore || 0}</strong>High / Low</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Roll</th>
+              <th>Branch</th>
+              <th>Section</th>
+              <th>Attendance</th>
+              <th>Tests</th>
+              <th>Live</th>
+              <th>Project</th>
+              <th>Penalty</th>
+              <th>Adjustment</th>
+              <th>Final</th>
+              <th>Grade</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  window.setTimeout(() => printWindow.print(), 300);
 };
 
 function StatusBadge({ status }) {
@@ -612,6 +759,26 @@ function FinalMarksSheetPanel({ courseId }) {
     }
   };
 
+  const handleExportCsv = () => {
+    try {
+      exportMarksSheetCsv(sheet, previewRows);
+      setNotice('CSV export started.');
+      setError('');
+    } catch (err) {
+      setError(err.message || 'Failed to export CSV.');
+    }
+  };
+
+  const handlePrint = () => {
+    try {
+      openMarksSheetPrintView(sheet, previewRows, previewSummary);
+      setNotice('Print view opened.');
+      setError('');
+    } catch (err) {
+      setError(err.message || 'Failed to open print view.');
+    }
+  };
+
   if (loading) return <FinalMarksSheetSkeleton />;
 
   if (!sheet) {
@@ -658,6 +825,22 @@ function FinalMarksSheetPanel({ courseId }) {
               >
                 <Sparkles className="h-3.5 w-3.5 group-hover:animate-pulse" />
                 AI Analysis
+              </button>
+
+              <button
+                onClick={handleExportCsv}
+                className="flex items-center gap-1.5 rounded-xl border border-border-subtle px-3 py-2 text-xs font-bold text-text-muted transition-all hover:border-border-default hover:text-text-secondary"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export CSV
+              </button>
+
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 rounded-xl border border-border-subtle px-3 py-2 text-xs font-bold text-text-muted transition-all hover:border-border-default hover:text-text-secondary"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Print / PDF
               </button>
 
               <button

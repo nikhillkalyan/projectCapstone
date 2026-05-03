@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   AlertCircle,
   CheckCircle,
+  Download,
   Eye,
   FileSpreadsheet,
   Loader2,
+  Printer,
   RotateCcw,
   X,
   XCircle,
@@ -28,6 +30,155 @@ const STATUS_CONFIG = {
 
 const fmtDateTime = (value) =>
   value ? new Date(value).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '-';
+
+const csvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+const triggerDownload = (blob, fileName) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const toFileSafe = (value) => String(value || 'marks_sheet').trim().replace(/[^a-zA-Z0-9_-]+/g, '_');
+
+const exportMarksSheetCsv = (detail) => {
+  if (!detail) return;
+
+  const rows = detail.rows || [];
+  const headers = [
+    'Student Name',
+    'Roll Number',
+    'Branch',
+    'Section',
+    'Attendance Score',
+    'Tests Score',
+    'Live Tests Score',
+    'Project Bucket',
+    'Late Penalty',
+    'Adjustment',
+    'Final Score',
+    'Grade',
+    'Remarks',
+  ];
+
+  const lines = [
+    headers.map(csvValue).join(','),
+    ...rows.map((row) => ([
+      row.studentName,
+      row.rollNumber,
+      row.branchName,
+      row.sectionName,
+      row.attendanceScore,
+      row.testsScore,
+      row.liveTestsScore,
+      row.projectScore,
+      row.latePenalty,
+      row.adjustmentScore,
+      row.finalScore,
+      row.grade,
+      row.instructorRemarks,
+    ].map(csvValue).join(','))),
+  ];
+
+  triggerDownload(
+    new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' }),
+    `${toFileSafe(detail.courseTitle)}_final_marks_sheet.csv`
+  );
+};
+
+const openMarksSheetPrintView = (detail) => {
+  if (!detail) return;
+
+  const rows = detail.rows || [];
+  const summary = detail.summary || {};
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) {
+    throw new Error('Please allow popups to print the marks sheet.');
+  }
+
+  const tableRows = rows.map((row) => `
+    <tr>
+      <td>${row.studentName || '-'}</td>
+      <td>${row.rollNumber || '-'}</td>
+      <td>${row.branchName || '-'}</td>
+      <td>${row.sectionName || '-'}</td>
+      <td>${row.attendanceScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.testsScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.liveTestsScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.projectScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.latePenalty?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.adjustmentScore ?? 0}</td>
+      <td>${row.finalScore?.toFixed?.(1) ?? '-'}</td>
+      <td>${row.grade || '-'}</td>
+      <td>${row.instructorRemarks || '-'}</td>
+    </tr>
+  `).join('');
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>${detail.courseTitle} - Final Marks Sheet</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
+          h1 { margin-bottom: 8px; }
+          .meta { margin-bottom: 18px; color: #4b5563; font-size: 13px; }
+          .summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+          .card { border: 1px solid #d1d5db; border-radius: 10px; padding: 12px; }
+          .card strong { display: block; font-size: 20px; margin-bottom: 4px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; vertical-align: top; }
+          th { background: #f3f4f6; }
+          @media print { body { margin: 10px; } }
+        </style>
+      </head>
+      <body>
+        <h1>${detail.courseTitle}</h1>
+        <div class="meta">
+          Instructor: ${detail.instructorName || 'Unknown'}<br />
+          Branch / Year: ${detail.targetBranch || '-'} ${detail.targetYear ? `/ ${detail.targetYear}` : ''}<br />
+          Status: ${detail.status || '-'}<br />
+          Submitted: ${fmtDateTime(detail.submittedAt)}<br />
+          Approved: ${fmtDateTime(detail.approvedAt)}
+        </div>
+        <div class="summary">
+          <div class="card"><strong>${summary.totalStudents || 0}</strong>Students</div>
+          <div class="card"><strong>${summary.classAverage || 0}%</strong>Average</div>
+          <div class="card"><strong>${summary.passCount || 0}</strong>Pass</div>
+          <div class="card"><strong>${summary.failCount || 0}</strong>Fail</div>
+          <div class="card"><strong>${summary.highestScore || 0} / ${summary.lowestScore || 0}</strong>High / Low</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Roll</th>
+              <th>Branch</th>
+              <th>Section</th>
+              <th>Attendance</th>
+              <th>Tests</th>
+              <th>Live</th>
+              <th>Project</th>
+              <th>Penalty</th>
+              <th>Adjustment</th>
+              <th>Final</th>
+              <th>Grade</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  window.setTimeout(() => printWindow.print(), 300);
+};
 
 function StatusBadge({ status }) {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
@@ -63,6 +214,8 @@ function MarksSheetModal({
   onClose,
   onApprove,
   onReturn,
+  onExportCsv,
+  onPrint,
   actionLoading,
   returnReason,
   setReturnReason,
@@ -92,6 +245,17 @@ function MarksSheetModal({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <button className="btn-secondary" onClick={onExportCsv}>
+              <Download size={14} />
+              Export CSV
+            </button>
+            <button className="btn-secondary" onClick={onPrint}>
+              <Printer size={14} />
+              Print / PDF
+            </button>
+          </div>
+
           {detail.returnReason && (
             <div className="form-error-banner" style={{ marginBottom: 0 }}>
               <AlertCircle size={15} />
@@ -266,6 +430,22 @@ export default function MarksReview() {
     }
   };
 
+  const handleExportCsv = () => {
+    try {
+      exportMarksSheetCsv(detail);
+    } catch (err) {
+      setError(err.message || 'Failed to export CSV.');
+    }
+  };
+
+  const handlePrint = () => {
+    try {
+      openMarksSheetPrintView(detail);
+    } catch (err) {
+      setError(err.message || 'Failed to open print view.');
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -362,6 +542,8 @@ export default function MarksReview() {
         onClose={() => setDetail(null)}
         onApprove={handleApprove}
         onReturn={handleReturn}
+        onExportCsv={handleExportCsv}
+        onPrint={handlePrint}
         actionLoading={actionLoading}
         returnReason={returnReason}
         setReturnReason={setReturnReason}

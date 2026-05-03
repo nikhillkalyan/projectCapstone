@@ -68,6 +68,19 @@ function StatusPill({ children, status }) {
   );
 }
 
+function SourcePill({ type = 'university' }) {
+  const isUniversity = type === 'university';
+  return (
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] ${
+      isUniversity
+        ? 'border-primary-400/20 bg-primary-500/10 text-primary-300'
+        : 'border-amber-400/20 bg-amber-500/10 text-amber-300'
+    }`}>
+      {isUniversity ? 'University' : 'Public'}
+    </span>
+  );
+}
+
 function ActionButton({ onClick, children, variant = 'primary' }) {
   const className = variant === 'secondary'
     ? 'border border-border-subtle bg-bg-surface text-text-secondary hover:text-text-primary'
@@ -90,11 +103,12 @@ function CertificateCard({ item, navigate }) {
         <div>
           <div className="mb-2 flex items-center gap-2">
             <StatusPill status="APPROVED">Issued</StatusPill>
+            <SourcePill type="university" />
             <span className="text-xs text-text-secondary">Certificate</span>
           </div>
           <h3 className="text-lg font-bold text-text-primary">{item.courseTitle}</h3>
           <p className="mt-1 text-sm text-text-secondary">
-            {item.instructorName || 'Instructor'} • {item.targetBranch || '-'} {item.targetYear ? `• ${item.targetYear}` : ''}
+            {item.instructorName || 'Instructor'} - {item.targetBranch || '-'} {item.targetYear ? `- ${item.targetYear}` : ''}
           </p>
         </div>
         <div className="rounded-2xl bg-success-500/10 p-3 text-success-300">
@@ -134,12 +148,13 @@ function ResultCard({ item, navigate }) {
     <div className="glass rounded-2xl border border-border-subtle p-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <div className="mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <StatusPill status={item.marks?.marksSheetStatus}>{item.marks?.marksSheetStatus || 'DRAFT'}</StatusPill>
+            <SourcePill type="university" />
           </div>
           <h3 className="text-lg font-bold text-text-primary">{item.courseTitle}</h3>
           <p className="mt-1 text-sm text-text-secondary">
-            {item.instructorName || 'Instructor'} • {item.sectionName || '-'}
+            {item.instructorName || 'Instructor'} - {item.sectionName || '-'}
           </p>
         </div>
         <div className="rounded-2xl bg-primary-500/10 p-3 text-primary-300">
@@ -187,6 +202,7 @@ function MilestoneCard({ course, navigate }) {
         <div>
           <div className="mb-2 flex items-center gap-2">
             <StatusPill status="APPROVED">Completed</StatusPill>
+            <SourcePill type={course.isUniversityCourse ? 'university' : 'public'} />
             <span className="text-xs text-text-secondary">Learning milestone</span>
           </div>
           <h3 className="text-lg font-bold text-text-primary">{course.title}</h3>
@@ -432,7 +448,7 @@ export default function StudentHistory() {
                 <EmptyState
                   icon={FileCheck2}
                   title="No final result records yet"
-                  description="Once a university course begins moving through the marks workflow, you’ll be able to track it here."
+                  description="Once a university course begins moving through the marks workflow, you'll be able to track it here."
                   isCompact
                 />
               ) : (

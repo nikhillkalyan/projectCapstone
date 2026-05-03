@@ -69,6 +69,14 @@ function TonePill({ children, tone }) {
   );
 }
 
+function SourcePill() {
+  return (
+    <span className="inline-flex items-center rounded-full border border-primary-400/20 bg-primary-500/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary-300">
+      University Workflow
+    </span>
+  );
+}
+
 function ActionButton({ onClick, children, variant = 'primary' }) {
   const className = variant === 'secondary'
     ? 'border border-border-subtle bg-bg-surface text-text-secondary hover:text-text-primary'
@@ -95,10 +103,11 @@ function HistoryCard({ item, navigate }) {
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <TonePill tone={getCourseApprovalTone(item.approvalStatus)}>{item.approvalStatus}</TonePill>
             <TonePill tone={getMarksTone(sheet?.status || 'DRAFT')}>{sheet?.status || 'DRAFT'}</TonePill>
+            <SourcePill />
           </div>
           <h3 className="text-lg font-bold text-text-primary">{item.title}</h3>
           <p className="mt-1 text-sm text-text-secondary">
-            {item.targetBranchName || '-'} {item.targetYear ? `• ${item.targetYear}` : ''} • {item.universityName || 'University'}
+            {item.targetBranchName || '-'} {item.targetYear ? `- ${item.targetYear}` : ''} - {item.universityName || 'University'}
           </p>
         </div>
         <div className="rounded-2xl bg-primary-500/10 p-3 text-primary-300">
