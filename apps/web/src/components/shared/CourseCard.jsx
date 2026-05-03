@@ -24,15 +24,17 @@ export default function CourseCard({
   favorited = false,
   size = 'normal',
   completed = false,
-  score = null
+  score = null,
+  progress = 0,
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [favoritePending, setFavoritePending] = useState(false);
   const hoverTimeoutRef = useRef(null);
 
   const navigate = useNavigate();
   const { user, updateLocalUser } = useAuth();
-  const { toggleFavorite, getCourseProgress, rateCourse } = useApp();
+  const { toggleFavorite, rateCourse } = useApp();
 
   // Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -42,7 +44,7 @@ export default function CourseCard({
   const hasReviewed = course.reviews?.some(r => r.studentId === user?.id);
 
   const cfg = categoryConfig[course.category] || categoryConfig.AIML;
-  const progress = enrolled ? getCourseProgress(course.id) : 0;
+  const courseProgress = enrolled ? Math.max(0, Math.min(100, Number(progress) || 0)) : 0;
   const imgHeight = size === 'small' ? 'h-36' : 'h-48';
   const borderColor = completed ? 'border-success-400/20' : 'border-border-subtle';
 
@@ -96,9 +98,16 @@ export default function CourseCard({
     }
   };
 
-  const handleFavorite = (e) => {
+  const handleFavorite = async (e) => {
     e.stopPropagation();
-    toggleFavorite(course.id);
+    if (favoritePending) return;
+
+    setFavoritePending(true);
+    try {
+      await toggleFavorite(course.id);
+    } finally {
+      setFavoritePending(false);
+    }
   };
 
   const renderCardInner = (isOverlay = false) => (
@@ -159,11 +168,11 @@ export default function CourseCard({
         )}
 
         {/* Progress Bar overlay */}
-        {enrolled && progress > 0 && !completed && (
+        {enrolled && courseProgress > 0 && !completed && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-border-subtle overflow-hidden">
             <div
               className="h-full bg-gradient-accent"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${courseProgress}%` }}
             />
           </div>
         )}
@@ -229,7 +238,7 @@ export default function CourseCard({
                     className="flex flex-1 cursor-pointer flex-row items-center justify-center gap-2 rounded-lg bg-gradient-primary py-3 text-[0.85rem] font-semibold text-white shadow-glow transition-all hover:scale-[1.02] active:scale-95"
                   >
                     <Play className="w-4 h-4 fill-current" />
-                    {progress > 0 ? 'Resume Course' : 'Start Course'}
+                    {courseProgress > 0 ? 'Resume Course' : 'Start Course'}
                   </button>
                 ) : (
                   <button
@@ -243,6 +252,7 @@ export default function CourseCard({
 
                 <button
                   onClick={handleFavorite}
+                  disabled={favoritePending}
                   className={`flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-all hover:scale-[1.05] active:scale-95 ${favorited
                     ? 'border border-error-400/30 bg-error-500/15 text-error-400'
                     : 'bg-white/[0.03] border border-border-subtle text-text-secondary hover:text-white'
@@ -264,7 +274,7 @@ export default function CourseCard({
                 className="flex flex-1 flex-row items-center justify-center gap-2 rounded-lg bg-gradient-primary py-2 text-[0.8rem] font-semibold text-white shadow-glow"
               >
                 <Play className="w-4 h-4 fill-current" />
-                {progress > 0 ? 'Continue' : 'Start Learning'}
+                {courseProgress > 0 ? 'Continue' : 'Start Learning'}
               </button>
             ) : (
               <button

@@ -10,6 +10,13 @@ import { lookupUniversity, joinUniversitySpace } from '../../api/authApi';
 import { getStudentMarks } from '../../api/marksApi';
 import api from '../../lib/api';
 import {
+  ChapterCardSkeleton,
+  CourseCardSkeleton,
+  InstructorCourseCardSkeleton,
+  MarksCardSkeleton,
+  StudentRowSkeleton,
+} from '../../components/shared/Skeletons';
+import {
   Building2, CheckCircle2, ArrowRight, Loader2, AlertCircle,
   BookOpen, PlusCircle, LayoutGrid, Clock, Trash2, Send,
   AlertTriangle, FileText, BarChart2, GitBranch, ChevronRight,
@@ -722,7 +729,7 @@ function StudentProgressTable({ courseId }) {
     </button>
   );
 
-  if (loading) return <div className="space-y-2">{[1, 2, 3, 4].map(i => <div key={i} className="h-12 bg-bg-elevated rounded-xl animate-pulse" />)}</div>;
+  if (loading) return <StudentRowSkeleton count={4} />;
   if (rows.length === 0) return (
     <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border-subtle rounded-2xl">
       <Users className="w-10 h-10 text-text-muted mb-3 opacity-30" />
@@ -824,11 +831,9 @@ function StudioTab({ courseId, course, onCourseUpdate }) {
   const overdue = chapters.filter(c => isPast(c.deadline)).length;
 
   if (loading) return (
-    <div className="flex items-center justify-center py-24">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-        <span className="text-xs text-text-muted">Loading studio...</span>
-      </div>
+    <div className="space-y-6">
+      <div className="h-36 animate-pulse rounded-2xl border border-border-subtle bg-bg-surface" />
+      <ChapterCardSkeleton count={3} />
     </div>
   );
 
@@ -1071,7 +1076,7 @@ function CourseMarksCard({ courseId, courseTitle }) {
     getStudentMarks(courseId).then(r => setMarks(r.data)).catch(() => setMarks(null)).finally(() => setLoading(false));
   }, [courseId]);
 
-  if (loading) return <div className="h-40 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />;
+  if (loading) return <MarksCardSkeleton />;
   if (!marks) return null;
   const activeCats = MARK_CATS.filter(cat => marks[cat.wKey] > 0);
 
@@ -1207,9 +1212,7 @@ function InstructorOverviewTab({ user, courses }) {
 
 function InstructorCoursesTab({ courses, loading, onDelete, onStudio }) {
   if (loading) return (
-    <div className="space-y-3">
-      {[1, 2, 3].map(i => <div key={i} className="h-28 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />)}
-    </div>
+    <InstructorCourseCardSkeleton count={3} />
   );
   if (courses.length === 0) return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -1315,8 +1318,8 @@ function StudentOverviewTab({ user, allocations }) {
 
 function StudentCoursesTab({ allocations, loading, navigate }) {
   if (loading) return (
-    <div className="space-y-3">
-      {[1, 2, 3].map(i => <div key={i} className="h-36 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />)}
+    <div className="space-y-4">
+      {[1, 2, 3].map(i => <CourseCardSkeleton key={i} />)}
     </div>
   );
   if (allocations.length === 0) return (
@@ -1401,7 +1404,11 @@ function StudentCoursesTab({ allocations, loading, navigate }) {
 }
 
 function StudentMarksTab({ allocations, loading }) {
-  if (loading) return <div className="space-y-3">{[1, 2].map(i => <div key={i} className="h-40 bg-bg-surface border border-border-subtle rounded-2xl animate-pulse" />)}</div>;
+  if (loading) return (
+    <div className="space-y-4">
+      {[1, 2].map(i => <MarksCardSkeleton key={i} />)}
+    </div>
+  );
   if (allocations.length === 0) return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="w-16 h-16 rounded-2xl bg-primary-500/8 border border-primary-500/20 flex items-center justify-center mb-4"><Award className="w-8 h-8 text-primary-400" /></div>

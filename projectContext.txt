@@ -623,8 +623,6 @@ Completed Features / Done
 39. Certificate Gating by Approved Final Marks - student `Certificate.jsx` now depends on uni-admin-approved final marks sheet data instead of simple completion/final-assessment style eligibility. The shown certificate score and grade come from the locked approved record.
 
 To Build Next / Action Items (in priority order)
-1.  Live Classes / Synchronous Sessions - real instructor-led live classroom flow is still pending beyond the live test system.
 2.  Instructor + Student History Expansion - surface richer completed-course history directly inside the web portal for instructors and students, not just the uni-admin side.
 3.  Certificate Polish - improve issuance metadata, public verification presentation, and share/download polish if needed.
 4.  Final Marks Sheet Refinements - optionally extend manual evaluation rules later with rubric-style project/viva breakdowns, semester exports, or stronger moderation controls.
-\n29. AI Integration - Gemini AI added for course creation, quiz generation, project summarization, and marks analysis via AiController, AiService, and aiApi.js.

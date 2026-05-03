@@ -1,9 +1,13 @@
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2, Info, X, TriangleAlert } from 'lucide-react';
 import { db } from '../data/mockDatabase';
 import { useAuth } from './AuthContext';
 import { submitReview } from '../api/courseApi';
+import {
+  getFavoriteCourses as fetchFavoriteCourses,
+  toggleFavorite as toggleFavoriteCourse,
+} from '../api/studentApi';
 
 const AppContext = createContext(null);
 
@@ -29,6 +33,7 @@ const toastStyles = {
 export function AppProvider({ children }) {
   const { user, updateUser } = useAuth();
   const [notification, setNotification] = useState(null);
+  const [favoriteCourseIds, setFavoriteCourseIds] = useState([]);
   const notificationTimer = useRef(null);
 
   const showNotification = (message, type = 'success') => {
@@ -42,6 +47,36 @@ export function AppProvider({ children }) {
     setNotification(null);
   };
 
+  const refreshFavoriteCourses = async ({ suppressError = false } = {}) => {
+    if (!user || user.role !== 'student') {
+      setFavoriteCourseIds([]);
+      return [];
+    }
+
+    try {
+      const response = await fetchFavoriteCourses();
+      const favorites = response.data || [];
+      setFavoriteCourseIds(favorites.map(course => course.id).filter(Boolean));
+      return favorites;
+    } catch (error) {
+      if (!suppressError) {
+        showNotification('Failed to refresh favorites', 'error');
+      }
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (!user || user.role !== 'student') {
+      setFavoriteCourseIds([]);
+      return;
+    }
+
+    refreshFavoriteCourses({ suppressError: true }).catch(err => {
+      console.error('Failed to load favorite courses', err);
+    });
+  }, [user]);
+
   const enrollCourse = (courseId) => {
     if (!user || user.role !== 'student') return;
     if (user.enrolledCourses?.includes(courseId)) return;
@@ -52,13 +87,21 @@ export function AppProvider({ children }) {
     showNotification('Successfully enrolled in course!');
   };
 
-  const toggleFavorite = (courseId) => {
-    if (!user || user.role !== 'student') return;
-    const favs = user.favoriteCourses || [];
-    const isFav = favs.includes(courseId);
-    const updated = isFav ? favs.filter(id => id !== courseId) : [...favs, courseId];
-    updateUser({ favoriteCourses: updated });
-    showNotification(isFav ? 'Removed from favorites' : 'Added to favorites!');
+  const toggleFavorite = async (courseId) => {
+    if (!user || user.role !== 'student') return false;
+
+    const isFav = favoriteCourseIds.includes(courseId);
+
+    try {
+      await toggleFavoriteCourse(courseId);
+      await refreshFavoriteCourses({ suppressError: true });
+      showNotification(isFav ? 'Removed from favorites' : 'Added to favorites!');
+      return !isFav;
+    } catch (error) {
+      console.error('Failed to toggle favorite', error);
+      showNotification(error.response?.data?.error || 'Failed to update favorites', 'error');
+      return isFav;
+    }
   };
 
   const updateProgress = (courseId, chapterId, data) => {
@@ -127,21 +170,13 @@ export function AppProvider({ children }) {
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   };
 
-  const getCourseProgress = (courseId) => {
-    const course = db.courses.find(c => c.id === courseId);
-    if (!course || !user) return 0;
-    const progress = user.progress?.[courseId] || {};
-    const totalChapters = course.chapters?.length || 0;
-    const completed = Object.values(progress).filter(p => p.completed).length;
-    return totalChapters ? Math.round((completed / totalChapters) * 100) : 0;
-  };
-
   return (
     <AppContext.Provider value={{
       notification, showNotification,
       enrollCourse, toggleFavorite, updateProgress,
       submitAssessment, completeCourse, rateCourse,
-      sendMessage, getMessages, getCourseProgress, db,
+      sendMessage, getMessages, favoriteCourseIds,
+      refreshFavoriteCourses, db,
     }}>
       {children}
       <AnimatePresence>

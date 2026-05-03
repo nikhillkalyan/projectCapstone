@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getEnrolledCourses, getFavoriteCourses } from '../../api/studentApi';
 import { getCourseProgress } from '../../api/progressApi';
+import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
 import EmptyState from '../../components/shared/EmptyState';
@@ -11,7 +12,7 @@ import { BookOpen, Heart, Compass, CheckCircle2, PlayCircle, Clock, Loader2 } fr
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
-function Section({ title, icon, courses, user, isCompletedSection = false }) {
+function Section({ title, icon, courses, user, favoriteCourseIds, isCompletedSection = false }) {
   if (!courses || courses.length === 0) return null;
   return (
     <SectionShell title={title} icon={icon} className="mb-10">
@@ -23,7 +24,7 @@ function Section({ title, icon, courses, user, isCompletedSection = false }) {
               key={course.id}
               course={course}
               enrolled={!isCompletedSection}
-              favorited={user?.favoriteCourses?.includes(course.id)}
+              favorited={favoriteCourseIds.includes(course.id)}
               completed={isCompletedSection}
               score={completedData?.score}
               progress={course.progress}
@@ -37,6 +38,7 @@ function Section({ title, icon, courses, user, isCompletedSection = false }) {
 
 export function EnrolledCourses() {
   const { user } = useAuth();
+  const { favoriteCourseIds } = useApp();
   const navigate = useNavigate();
 
   const [enrolled, setEnrolled] = useState([]);
@@ -141,9 +143,9 @@ export function EnrolledCourses() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <Section title="In Progress" icon={PlayCircle} courses={inProgress} user={user} />
-            <Section title="Not Started" icon={Clock} courses={notStarted} user={user} />
-            <Section title="Completed" icon={CheckCircle2} courses={completed} user={user} isCompletedSection />
+            <Section title="In Progress" icon={PlayCircle} courses={inProgress} user={user} favoriteCourseIds={favoriteCourseIds} />
+            <Section title="Not Started" icon={Clock} courses={notStarted} user={user} favoriteCourseIds={favoriteCourseIds} />
+            <Section title="Completed" icon={CheckCircle2} courses={completed} user={user} favoriteCourseIds={favoriteCourseIds} isCompletedSection />
           </motion.div>
         )}
       </div>
@@ -153,6 +155,7 @@ export function EnrolledCourses() {
 
 export function FavoriteCourses() {
   const { user } = useAuth();
+  const { favoriteCourseIds } = useApp();
   const navigate = useNavigate();
 
   const [favorites, setFavorites] = useState([]);
@@ -176,7 +179,7 @@ export function FavoriteCourses() {
         }
     }
     if (user) fetchData();
-  }, [user]);
+  }, [user, favoriteCourseIds]);
 
   if (loading) {
     return (

@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getEnrolledCourses, getFavoriteCourses } from '../../api/studentApi';
+import { getEnrolledCourses } from '../../api/studentApi';
 import { getAllCourses } from '../../api/courseApi';
 import { getCourseProgress } from '../../api/progressApi';
+import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
 import { Star, Play, Award, Compass, BookOpen, Heart, Trophy, TrendingUp, Loader2 } from 'lucide-react';
@@ -16,10 +17,10 @@ const SIDEBAR_W = 248;
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const { favoriteCourseIds } = useApp();
   const navigate = useNavigate();
 
   const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [favCourses, setFavCourses] = useState([]);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,14 +29,10 @@ export default function StudentDashboard() {
       setLoading(true);
       try {
         // Run API calls in parallel
-        const [enrolledRes, favRes, allRes] = await Promise.all([
+        const [enrolledRes, allRes] = await Promise.all([
           getEnrolledCourses().catch(() => ({ data: [] })),
-          getFavoriteCourses().catch(() => ({ data: [] })),
           getAllCourses().catch(() => ({ data: [] }))
         ]);
-
-        const favs = favRes.data || [];
-        setFavCourses(favs);
         
         let enrollments = enrolledRes.data || [];
         
@@ -96,7 +93,7 @@ export default function StudentDashboard() {
 
   const stats = [
     { icon: BookOpen, label: 'Enrolled', value: enrolledCourses.length, color: ACCENT2, delay: 1 },
-    { icon: Heart, label: 'Favorites', value: favCourses.length, color: DANGER, delay: 2 },
+    { icon: Heart, label: 'Favorites', value: favoriteCourseIds.length, color: DANGER, delay: 2 },
     { icon: Trophy, label: 'Completed', value: completedCount, color: TEAL, delay: 3 },
     { icon: TrendingUp, label: 'Avg. Progress', value: `${totalProgress}%`, color: GOLD, delay: 4 },
   ];
@@ -169,7 +166,7 @@ export default function StudentDashboard() {
                 key={course.id} 
                 course={course} 
                 enrolled={true} 
-                favorited={favCourses.some(f => f.id === course.id)} 
+                favorited={favoriteCourseIds.includes(course.id)} 
                 progress={course.progress}
               />
             ))}
@@ -199,7 +196,7 @@ export default function StudentDashboard() {
                 key={course.id} 
                 course={course} 
                 enrolled={false} 
-                favorited={favCourses.some(f => f.id === course.id)} 
+                favorited={favoriteCourseIds.includes(course.id)} 
               />
             ))}
           </div>
@@ -221,7 +218,7 @@ export default function StudentDashboard() {
                 course={course} 
                 enrolled={true} 
                 completed={true}
-                favorited={favCourses.some(f => f.id === course.id)} 
+                favorited={favoriteCourseIds.includes(course.id)} 
                 progress={course.progress}
               />
             ))}

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 import CourseCard from '../../components/shared/CourseCard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,6 +74,7 @@ const CustomSelect = ({ label, value, options, onChange }) => {
 
 export default function ExploreCourses() {
   const { user } = useAuth();
+  const { favoriteCourseIds } = useApp();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
@@ -281,7 +283,7 @@ export default function ExploreCourses() {
                     key={`rec-${course.id}`}
                     course={course}
                     enrolled={checkEnrolled(course.id)}
-                    favorited={user?.profile?.favoriteCourses?.includes(course.id) || user?.favoriteCourses?.includes(course.id)}
+                    favorited={favoriteCourseIds.includes(course.id)}
                   />
                 ))}
               </div>
@@ -350,7 +352,7 @@ export default function ExploreCourses() {
                     <CourseCard
                       course={course}
                       enrolled={checkEnrolled(course.id)}
-                      favorited={user?.profile?.favoriteCourses?.includes(course.id) || user?.favoriteCourses?.includes(course.id)}
+                      favorited={favoriteCourseIds.includes(course.id)}
                     />
                   </motion.div>
                 ))}
