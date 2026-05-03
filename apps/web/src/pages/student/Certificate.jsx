@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import StudentLayout from '../../components/layout/v2/StudentLayout';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
@@ -12,12 +13,14 @@ export default function Certificate() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showNotification } = useApp();
   const certRef = useRef(null);
   
   const [course, setCourse] = useState(null);
   const [finalMarks, setFinalMarks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +87,15 @@ export default function Certificate() {
     : new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
   const finalScore = finalMarks?.finalScore || 0;
   const finalGrade = finalMarks?.grade || 'F';
+  const certificateId = `EF-${user.id.substring(0, 8)}-${courseId.substring(0, 6)}`;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = `${user.name}'s EduForge Certificate`;
+  const shareText = [
+    `${user.name} completed "${course.title}" on EduForge.`,
+    `Final score: ${finalScore}%`,
+    `Grade: ${finalGrade}`,
+    `Certificate ID: ${certificateId}`,
+  ].join('\n');
 
   const handleDownload = () => {
     setIsDownloading(true);
@@ -179,6 +191,54 @@ export default function Certificate() {
         alert("Please allow popups to download your certificate.");
       }
     }, 600);
+  };
+
+  const copyShareText = async () => {
+    const textToCopy = `${shareText}${shareUrl ? `\n${shareUrl}` : ''}`;
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(textToCopy);
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = textToCopy;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  };
+
+  const handleShare = async () => {
+    if (isSharing) return;
+
+    setIsSharing(true);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        showNotification('Certificate shared successfully!');
+        return;
+      }
+
+      await copyShareText();
+      showNotification('Certificate details copied to clipboard!');
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
+
+      console.error('Failed to share certificate', error);
+      showNotification('Unable to share certificate right now', 'error');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -293,7 +353,7 @@ export default function Certificate() {
                   Certificate ID
                 </span>
                 <span className="font-mono text-xs sm:text-sm text-text-secondary/60 print:text-gray-500">
-                  EF-{user.id.substring(0, 8)}-{courseId.substring(0, 6)}
+                  {certificateId}
                 </span>
               </div>
 
@@ -344,13 +404,15 @@ export default function Certificate() {
             <div className="w-px h-8 bg-border-subtle mx-1" />
 
             <button
-              onClick={() => {
-                alert("Share functionality would open a native share dialog here.");
-              }}
-              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-bg-base border border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary transition-all hover:scale-105 active:scale-95 group"
+              onClick={handleShare}
+              disabled={isSharing}
+              className={`flex items-center justify-center w-12 h-12 rounded-2xl border transition-all group ${isSharing
+                ? 'bg-bg-base border-border-subtle text-text-secondary cursor-wait'
+                : 'bg-bg-base border-transparent hover:border-border-subtle text-text-secondary hover:text-text-primary hover:scale-105 active:scale-95'
+                }`}
               title="Share Certificate"
             >
-              <Share2 className="w-5 h-5 group-hover:text-amber-400 transition-colors" />
+              <Share2 className={`w-5 h-5 transition-colors ${isSharing ? 'animate-pulse text-amber-400' : 'group-hover:text-amber-400'}`} />
             </button>
           </div>
         </motion.div>

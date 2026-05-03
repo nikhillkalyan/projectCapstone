@@ -7,6 +7,25 @@ const api = axios.create({
   },
 });
 
+const getExpiredSessionRedirectPath = () => {
+  const storedUser = localStorage.getItem('lms_user');
+
+  if (!storedUser) {
+    return '/';
+  }
+
+  try {
+    const { role } = JSON.parse(storedUser);
+
+    if (role === 'student') return '/student/login';
+    if (role === 'instructor') return '/instructor/login';
+  } catch (error) {
+    console.warn('Failed to parse stored user during auth redirect', error);
+  }
+
+  return '/';
+};
+
 // Request interceptor - attach JWT token
 api.interceptors.request.use(
   (config) => {
@@ -27,9 +46,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const redirectPath = getExpiredSessionRedirectPath();
       localStorage.removeItem('lms_user');
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.replace(redirectPath);
     }
     return Promise.reject(error);
   }
