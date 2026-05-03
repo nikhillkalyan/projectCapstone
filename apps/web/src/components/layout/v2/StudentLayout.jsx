@@ -1,13 +1,14 @@
 import AppShell from './AppShell';
 import { useAuth } from '../../../context/AuthContext';
 import {
-    LayoutDashboard, Compass, BookOpen, Heart, MessageSquare, UserCircle, Building
+    LayoutDashboard, Compass, BookOpen, Heart, MessageSquare, UserCircle, Building, History
 } from 'lucide-react';
 
 const studentNavLinks = [
     { to: '/student', icon: LayoutDashboard, label: 'Dashboard', end: true },
     { to: '/student/explore', icon: Compass, label: 'Explore Courses' },
     { to: '/student/enrolled', icon: BookOpen, label: 'My Courses' },
+    { to: '/student/history', icon: History, label: 'History' },
     { to: '/student/favorites', icon: Heart, label: 'Favorites' },
     { to: '/student/chat', icon: MessageSquare, label: 'Messages' },
     { to: '/student/university', icon: Building, label: 'University' },

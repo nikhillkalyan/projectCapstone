@@ -6,6 +6,9 @@ export const getStudentMarks = (courseId) =>
 export const getApprovedFinalMarks = (courseId) =>
   axiosInstance.get(`/marks/student/course/${courseId}/final-sheet/approved`);
 
+export const getPublicCertificateVerification = (certificateId) =>
+  axiosInstance.get(`/marks/public/certificates/${encodeURIComponent(certificateId)}`);
+
 export const getInstructorFinalMarksSheet = (courseId) =>
   axiosInstance.get(`/marks/instructor/course/${courseId}/final-sheet`);
 

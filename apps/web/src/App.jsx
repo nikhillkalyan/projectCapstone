@@ -20,6 +20,7 @@ import StudentSettings from './pages/student/StudentSettings';
 import EnrolledCourses from './pages/student/EnrolledCourses';
 import FavoriteCourses from './pages/student/FavoriteCourses';
 import Certificate from './pages/student/Certificate';
+import StudentHistory from './pages/student/StudentHistory';
 import StudentChat from './pages/student/StudentChat';
 import UniversitySpace from './pages/shared/UniversitySpace';
 import ProjectSpacePanel from './pages/instructor/ProjectSpacePanel';
@@ -34,6 +35,7 @@ import InstructorChat from './pages/instructor/InstructorChat';
 import InstructorProfile from './pages/instructor/InstructorProfile';
 import InstructorSettings from './pages/instructor/InstructorSettings';
 import InstructorWaitingRoom from './pages/instructor/InstructorWaitingRoom';
+import InstructorHistory from './pages/instructor/InstructorHistory';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import InstructorVerification from './pages/admin/InstructorVerification';
@@ -81,7 +83,9 @@ function App() {
               <Route path="/student/course/:courseId/learn" element={<PrivateRoute role="student"><CoursePlayer /></PrivateRoute>} />
               <Route path="/student/enrolled" element={<PrivateRoute role="student"><EnrolledCourses /></PrivateRoute>} />
               <Route path="/student/favorites" element={<PrivateRoute role="student"><FavoriteCourses /></PrivateRoute>} />
+              <Route path="/student/history" element={<PrivateRoute role="student"><StudentHistory /></PrivateRoute>} />
               <Route path="/student/certificate/:courseId" element={<PrivateRoute role="student"><Certificate /></PrivateRoute>} />
+              <Route path="/certificate/verify/:certificateId" element={<Certificate />} />
               <Route path="/student/chat" element={<PrivateRoute role="student"><StudentChat /></PrivateRoute>} />
               <Route path="/student/university" element={<PrivateRoute role="student"><UniversitySpace /></PrivateRoute>} />
               <Route path="/student/university/course/:courseId" element={<PrivateRoute role="student"><UniversityCoursePlayer /></PrivateRoute>} />
@@ -102,6 +106,7 @@ function App() {
               <Route path="/instructor/create-course" element={<PrivateRoute role="instructor" requireApproval><CreateCourse /></PrivateRoute>} />
               <Route path="/instructor/course/:courseId" element={<PrivateRoute role="instructor" requireApproval><ManageCourse /></PrivateRoute>} />
               <Route path="/instructor/students/:courseId" element={<PrivateRoute role="instructor" requireApproval><StudentProgress /></PrivateRoute>} />
+              <Route path="/instructor/history" element={<PrivateRoute role="instructor" requireApproval><InstructorHistory /></PrivateRoute>} />
               <Route path="/instructor/chat" element={<PrivateRoute role="instructor" requireApproval><InstructorChat /></PrivateRoute>} />
               <Route path="/instructor/university" element={<PrivateRoute role="instructor"><UniversitySpace /></PrivateRoute>} />
 

@@ -1,5 +1,6 @@
 package backend.backend.Service.Impl;
 
+import backend.backend.Dto.Response.PublicCertificateVerificationResponse;
 import backend.backend.Dto.Response.StudentApprovedFinalMarksResponse;
 import backend.backend.Entity.Branch;
 import backend.backend.Entity.Course;
@@ -11,6 +12,7 @@ import backend.backend.Entity.User;
 import backend.backend.Enums.MarksSheetStatus;
 import backend.backend.Enums.Role;
 import backend.backend.Exceptions.BadRequestException;
+import backend.backend.Exceptions.ResourceNotFoundException;
 import backend.backend.Exceptions.UnauthorizedException;
 import backend.backend.Repository.CourseAllocationRepository;
 import backend.backend.Repository.CourseRepository;
@@ -80,6 +82,7 @@ class MarksServiceImplTest {
     void getStudentApprovedFinalMarksReturnsApprovedCertificateDetails() {
         UUID studentId = UUID.randomUUID();
         UUID courseId = UUID.randomUUID();
+        UUID marksSheetId = UUID.randomUUID();
         LocalDateTime approvedAt = LocalDateTime.of(2026, 5, 3, 10, 15);
 
         User studentUser = User.builder()
@@ -118,6 +121,7 @@ class MarksServiceImplTest {
                 .isUniversityCourse(true)
                 .build();
         MarksSheet approvedSheet = MarksSheet.builder()
+                .id(marksSheetId)
                 .course(course)
                 .student(student)
                 .status(MarksSheetStatus.APPROVED)
@@ -136,6 +140,7 @@ class MarksServiceImplTest {
                 marksService.getStudentApprovedFinalMarks(studentUser.getEmail(), courseId);
 
         assertEquals(courseId, response.getCourseId());
+        assertEquals("EF-" + marksSheetId, response.getCertificateId());
         assertEquals("Advanced Java", response.getCourseTitle());
         assertEquals("Dr. Raman", response.getInstructorName());
         assertEquals(studentId, response.getStudentId());
@@ -223,5 +228,100 @@ class MarksServiceImplTest {
                 "Certificate is not available until the final marks sheet is approved.",
                 exception.getMessage()
         );
+    }
+
+    @Test
+    void getPublicCertificateVerificationReturnsApprovedCertificateDetails() {
+        UUID studentId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        UUID marksSheetId = UUID.randomUUID();
+        LocalDateTime approvedAt = LocalDateTime.of(2026, 5, 3, 10, 15);
+
+        User studentUser = User.builder()
+                .id(studentId)
+                .name("Asha Sharma")
+                .email("asha@student.com")
+                .role(Role.STUDENT)
+                .build();
+        User instructorUser = User.builder()
+                .id(UUID.randomUUID())
+                .name("Dr. Raman")
+                .email("raman@instructor.com")
+                .role(Role.INSTRUCTOR)
+                .build();
+        Instructor instructor = Instructor.builder()
+                .id(instructorUser.getId())
+                .user(instructorUser)
+                .build();
+        Branch branch = Branch.builder()
+                .name("Computer Science")
+                .build();
+        Section section = Section.builder()
+                .name("A")
+                .branch(branch)
+                .build();
+        Student student = Student.builder()
+                .id(studentId)
+                .user(studentUser)
+                .rollNumber("22CS101")
+                .section(section)
+                .build();
+        Course course = Course.builder()
+                .id(courseId)
+                .title("Advanced Java")
+                .instructor(instructor)
+                .university(backend.backend.Entity.University.builder().name("EduForge University").build())
+                .isUniversityCourse(true)
+                .build();
+        MarksSheet approvedSheet = MarksSheet.builder()
+                .id(marksSheetId)
+                .course(course)
+                .student(student)
+                .status(MarksSheetStatus.APPROVED)
+                .lockedFinalScore(91.236)
+                .lockedGrade("A+")
+                .approvedAt(approvedAt)
+                .build();
+
+        when(marksSheetRepository.findById(marksSheetId)).thenReturn(Optional.of(approvedSheet));
+
+        PublicCertificateVerificationResponse response =
+                marksService.getPublicCertificateVerification("EF-" + marksSheetId);
+
+        assertEquals("EF-" + marksSheetId, response.getCertificateId());
+        assertEquals("Advanced Java", response.getCourseTitle());
+        assertEquals("Dr. Raman", response.getInstructorName());
+        assertEquals("Asha Sharma", response.getStudentName());
+        assertEquals("22CS101", response.getRollNumber());
+        assertEquals("Computer Science", response.getBranchName());
+        assertEquals("A", response.getSectionName());
+        assertEquals("EduForge University", response.getUniversityName());
+        assertEquals(91.24, response.getFinalScore());
+        assertEquals("A+", response.getGrade());
+        assertEquals(approvedAt, response.getApprovedAt());
+        assertEquals("APPROVED", response.getStatus());
+    }
+
+    @Test
+    void getPublicCertificateVerificationRejectsInvalidCertificateIds() {
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> marksService.getPublicCertificateVerification("invalid-certificate-id")
+        );
+
+        assertEquals("Invalid certificate ID.", exception.getMessage());
+    }
+
+    @Test
+    void getPublicCertificateVerificationRejectsUnknownCertificates() {
+        UUID marksSheetId = UUID.randomUUID();
+        when(marksSheetRepository.findById(marksSheetId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> marksService.getPublicCertificateVerification("EF-" + marksSheetId)
+        );
+
+        assertEquals("Certificate not found.", exception.getMessage());
     }
 }

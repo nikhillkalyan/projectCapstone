@@ -52,6 +52,9 @@ export const deleteUniversityCourse = (courseId) =>
 export const getStudentAllocatedCourses = () =>
     axiosInstance.get('/uni-courses/student/allocated');
 
+export const getStudentUniversityEnrollments = () =>
+    axiosInstance.get('/uni-courses/student/my-enrollments');
+
 export const getUniversityBranches = () =>
     axiosInstance.get('/uni-courses/branches').catch(() =>
         axiosInstance.get('/uni-admin/context/branches')

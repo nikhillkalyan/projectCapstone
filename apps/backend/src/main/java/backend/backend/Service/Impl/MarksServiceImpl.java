@@ -9,6 +9,7 @@ import backend.backend.Dto.Response.FinalMarksSheetRowResponse;
 import backend.backend.Dto.Response.FinalMarksSheetSummaryResponse;
 import backend.backend.Dto.Response.MarksBreakdownResponse;
 import backend.backend.Dto.Response.MarksSheetListItemResponse;
+import backend.backend.Dto.Response.PublicCertificateVerificationResponse;
 import backend.backend.Dto.Response.StudentApprovedFinalMarksResponse;
 import backend.backend.Dto.Response.StudentMarksResponse;
 import backend.backend.Entity.Chapter;
@@ -63,6 +64,7 @@ public class MarksServiceImpl implements MarksService {
     private static final double PASS_SCORE = 50.0;
     private static final double MIN_ADJUSTMENT = -20.0;
     private static final double MAX_ADJUSTMENT = 20.0;
+    private static final String CERTIFICATE_ID_PREFIX = "EF-";
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
@@ -491,24 +493,26 @@ public class MarksServiceImpl implements MarksService {
             throw new BadRequestException("Certificate is not available until the final marks sheet is approved.");
         }
 
-        return StudentApprovedFinalMarksResponse.builder()
-                .courseId(course.getId())
-                .courseTitle(course.getTitle())
-                .instructorName(course.getInstructor() != null && course.getInstructor().getUser() != null
-                        ? course.getInstructor().getUser().getName()
-                        : null)
-                .studentId(student.getId())
-                .studentName(student.getUser().getName())
-                .rollNumber(student.getRollNumber())
-                .branchName(student.getSection() != null && student.getSection().getBranch() != null
-                        ? student.getSection().getBranch().getName()
-                        : null)
-                .sectionName(student.getSection() != null ? student.getSection().getName() : null)
-                .finalScore(round2(sheet.getLockedFinalScore()))
-                .grade(sheet.getLockedGrade())
-                .approvedAt(sheet.getApprovedAt())
-                .status(sheet.getStatus() != null ? sheet.getStatus().name() : MarksSheetStatus.DRAFT.name())
-                .build();
+        return buildStudentApprovedCertificateResponse(course, student, sheet);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PublicCertificateVerificationResponse getPublicCertificateVerification(String certificateId) {
+        UUID marksSheetId = parseCertificateId(certificateId);
+
+        MarksSheet sheet = marksSheetRepository.findById(marksSheetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Certificate not found."));
+
+        if (resolveRowStatus(sheet) != MarksSheetStatus.APPROVED || sheet.getLockedFinalScore() == null) {
+            throw new BadRequestException("Certificate is not available for public verification.");
+        }
+
+        if (sheet.getCourse() == null || sheet.getStudent() == null) {
+            throw new ResourceNotFoundException("Certificate not found.");
+        }
+
+        return buildPublicCertificateResponse(sheet.getCourse(), sheet);
     }
 
     private FinalMarksSheetResponse buildCourseSheetResponse(Course course) {
@@ -626,6 +630,80 @@ public class MarksServiceImpl implements MarksService {
                 .grade(sheet.getLockedGrade())
                 .approvedAt(sheet.getApprovedAt())
                 .build();
+    }
+
+    private StudentApprovedFinalMarksResponse buildStudentApprovedCertificateResponse(
+            Course course,
+            Student student,
+            MarksSheet sheet
+    ) {
+        return StudentApprovedFinalMarksResponse.builder()
+                .certificateId(buildCertificateId(sheet))
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .instructorName(course.getInstructor() != null && course.getInstructor().getUser() != null
+                        ? course.getInstructor().getUser().getName()
+                        : null)
+                .studentId(student.getId())
+                .studentName(student.getUser().getName())
+                .rollNumber(student.getRollNumber())
+                .branchName(student.getSection() != null && student.getSection().getBranch() != null
+                        ? student.getSection().getBranch().getName()
+                        : null)
+                .sectionName(student.getSection() != null ? student.getSection().getName() : null)
+                .finalScore(round2(sheet.getLockedFinalScore()))
+                .grade(sheet.getLockedGrade())
+                .approvedAt(sheet.getApprovedAt())
+                .status(sheet.getStatus() != null ? sheet.getStatus().name() : MarksSheetStatus.DRAFT.name())
+                .build();
+    }
+
+    private PublicCertificateVerificationResponse buildPublicCertificateResponse(Course course, MarksSheet sheet) {
+        Student student = sheet.getStudent();
+
+        return PublicCertificateVerificationResponse.builder()
+                .certificateId(buildCertificateId(sheet))
+                .courseTitle(course.getTitle())
+                .instructorName(course.getInstructor() != null && course.getInstructor().getUser() != null
+                        ? course.getInstructor().getUser().getName()
+                        : null)
+                .studentName(student.getUser() != null ? student.getUser().getName() : "Unknown")
+                .rollNumber(student.getRollNumber())
+                .branchName(student.getSection() != null && student.getSection().getBranch() != null
+                        ? student.getSection().getBranch().getName()
+                        : null)
+                .sectionName(student.getSection() != null ? student.getSection().getName() : null)
+                .universityName(course.getUniversity() != null ? course.getUniversity().getName() : null)
+                .finalScore(round2(sheet.getLockedFinalScore()))
+                .grade(sheet.getLockedGrade())
+                .approvedAt(sheet.getApprovedAt())
+                .status(sheet.getStatus() != null ? sheet.getStatus().name() : MarksSheetStatus.DRAFT.name())
+                .build();
+    }
+
+    private String buildCertificateId(MarksSheet sheet) {
+        if (sheet == null || sheet.getId() == null) {
+            throw new ResourceNotFoundException("Certificate not found.");
+        }
+        return CERTIFICATE_ID_PREFIX + sheet.getId();
+    }
+
+    private UUID parseCertificateId(String certificateId) {
+        if (certificateId == null) {
+            throw new BadRequestException("Certificate ID is required.");
+        }
+
+        String normalized = certificateId.trim();
+        if (!normalized.regionMatches(true, 0, CERTIFICATE_ID_PREFIX, 0, CERTIFICATE_ID_PREFIX.length())) {
+            throw new BadRequestException("Invalid certificate ID.");
+        }
+
+        String rawId = normalized.substring(CERTIFICATE_ID_PREFIX.length());
+        try {
+            return UUID.fromString(rawId);
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestException("Invalid certificate ID.");
+        }
     }
 
     private FinalMarksSheetRowResponse buildDisplayRow(

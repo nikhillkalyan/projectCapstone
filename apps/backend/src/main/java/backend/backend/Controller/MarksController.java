@@ -6,6 +6,7 @@ import backend.backend.Dto.Response.CertificateRecordResponse;
 import backend.backend.Dto.Response.FinalMarksSheetResponse;
 import backend.backend.Dto.Response.MarksBreakdownResponse;
 import backend.backend.Dto.Response.MarksSheetListItemResponse;
+import backend.backend.Dto.Response.PublicCertificateVerificationResponse;
 import backend.backend.Dto.Response.StudentApprovedFinalMarksResponse;
 import backend.backend.Dto.Response.StudentMarksResponse;
 import backend.backend.Service.MarksService;
@@ -58,6 +59,13 @@ public class MarksController {
             @AuthenticationPrincipal UserDetails principal) {
         return ResponseEntity.ok(
                 marksService.getStudentApprovedFinalMarks(principal.getUsername(), courseId));
+    }
+
+    @GetMapping("/public/certificates/{certificateId}")
+    public ResponseEntity<PublicCertificateVerificationResponse> getPublicCertificateVerification(
+            @PathVariable String certificateId) {
+        return ResponseEntity.ok(
+                marksService.getPublicCertificateVerification(certificateId));
     }
 
     @GetMapping("/instructor/course/{courseId}/final-sheet")

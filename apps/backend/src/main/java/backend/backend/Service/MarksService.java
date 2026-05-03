@@ -6,6 +6,7 @@ import backend.backend.Dto.Response.CertificateRecordResponse;
 import backend.backend.Dto.Response.FinalMarksSheetResponse;
 import backend.backend.Dto.Response.MarksBreakdownResponse;
 import backend.backend.Dto.Response.MarksSheetListItemResponse;
+import backend.backend.Dto.Response.PublicCertificateVerificationResponse;
 import backend.backend.Dto.Response.StudentApprovedFinalMarksResponse;
 import backend.backend.Dto.Response.StudentMarksResponse;
 
@@ -25,4 +26,5 @@ public interface MarksService {
     List<CertificateRecordResponse> getUniAdminCertificates(String adminEmail);
     List<MarksSheetListItemResponse> getUniAdminMarksHistory(String adminEmail);
     StudentApprovedFinalMarksResponse getStudentApprovedFinalMarks(String studentEmail, UUID courseId);
+    PublicCertificateVerificationResponse getPublicCertificateVerification(String certificateId);
 }
