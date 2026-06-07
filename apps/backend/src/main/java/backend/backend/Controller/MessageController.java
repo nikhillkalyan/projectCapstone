@@ -106,6 +106,11 @@ public class MessageController {
                 "/queue/messages",
                 response
         );
+        messagingTemplate.convertAndSendToUser(
+                response.getSenderEmail(),
+                "/queue/messages",
+                response
+        );
 
         return ResponseEntity.ok(response);
     }

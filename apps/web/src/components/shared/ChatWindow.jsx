@@ -58,22 +58,34 @@ export default function ChatWindow({ otherId, otherName, otherAvatar, courseId, 
   }, [messages, loading]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    
-    if (editingMessage) {
-      try {
-        await api.put(`/messages/${editingMessage.id}`, { messageText: input.trim() });
+    const messageText = input.trim();
+    if (!messageText) return;
+
+    try {
+      if (editingMessage) {
+        await api.put(`/messages/${editingMessage.id}`, { messageText });
         setEditingMessage(null);
-      } catch (err) {
-        console.error('Failed to edit message', err);
+      } else {
+        const sentMessage = await sendMessage(otherId, courseId, messageText, replyingTo?.id || null);
+        if (sentMessage) {
+          setMessages(prev => {
+            const existingIdx = prev.findIndex(message => message.id === sentMessage.id);
+            if (existingIdx !== -1) {
+              const updated = [...prev];
+              updated[existingIdx] = sentMessage;
+              return updated;
+            }
+            return [...prev, sentMessage];
+          });
+        }
+        setReplyingTo(null);
       }
-    } else {
-      sendMessage(otherId, courseId, input.trim(), replyingTo?.id || null);
-      setReplyingTo(null);
+
+      setInput('');
+      if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    } catch (err) {
+      console.error(editingMessage ? 'Failed to edit message' : 'Failed to send message', err);
     }
-    
-    setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
   const handleDelete = async (msgId) => {

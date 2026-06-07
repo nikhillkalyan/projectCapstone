@@ -35,6 +35,13 @@ export function AppProvider({ children }) {
   const [notification, setNotification] = useState(null);
   const [favoriteCourseIds, setFavoriteCourseIds] = useState([]);
   const notificationTimer = useRef(null);
+  const favoriteLoadKeyRef = useRef(null);
+
+  const isStudentUser = (candidate) => (
+    Boolean(candidate?.token) &&
+    typeof candidate?.role === 'string' &&
+    candidate.role.toLowerCase() === 'student'
+  );
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -48,7 +55,7 @@ export function AppProvider({ children }) {
   };
 
   const refreshFavoriteCourses = async ({ suppressError = false } = {}) => {
-    if (!user || user.role !== 'student') {
+    if (!isStudentUser(user)) {
       setFavoriteCourseIds([]);
       return [];
     }
@@ -59,7 +66,11 @@ export function AppProvider({ children }) {
       setFavoriteCourseIds(favorites.map(course => course.id).filter(Boolean));
       return favorites;
     } catch (error) {
-      if (!suppressError) {
+      const status = error.response?.status;
+      if (status === 401 || status === 403) {
+        setFavoriteCourseIds([]);
+      }
+      if (!suppressError && status !== 401 && status !== 403) {
         showNotification('Failed to refresh favorites', 'error');
       }
       throw error;
@@ -67,18 +78,28 @@ export function AppProvider({ children }) {
   };
 
   useEffect(() => {
-    if (!user || user.role !== 'student') {
+    if (!isStudentUser(user)) {
+      favoriteLoadKeyRef.current = null;
       setFavoriteCourseIds([]);
       return;
     }
 
+    const loadKey = `${user.id}:${user.token}`;
+    if (favoriteLoadKeyRef.current === loadKey) {
+      return;
+    }
+
+    favoriteLoadKeyRef.current = loadKey;
     refreshFavoriteCourses({ suppressError: true }).catch(err => {
-      console.error('Failed to load favorite courses', err);
+      const status = err.response?.status;
+      if (status !== 401 && status !== 403) {
+        console.error('Failed to load favorite courses', err);
+      }
     });
   }, [user]);
 
   const enrollCourse = (courseId) => {
-    if (!user || user.role !== 'student') return;
+    if (!isStudentUser(user)) return;
     if (user.enrolledCourses?.includes(courseId)) return;
     const enrolled = [...(user.enrolledCourses || []), courseId];
     updateUser({ enrolledCourses: enrolled });
@@ -88,7 +109,7 @@ export function AppProvider({ children }) {
   };
 
   const toggleFavorite = async (courseId) => {
-    if (!user || user.role !== 'student') return false;
+    if (!isStudentUser(user)) return false;
 
     const isFav = favoriteCourseIds.includes(courseId);
 
